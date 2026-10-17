@@ -1,0 +1,98 @@
+diff --git a/app/electron/main/src/plugin-pet-skins.ts b/app/electron/main/src/plugin-pet-skins.ts
+index 1cbcd45b..d7f501a7 100644
+--- a/app/electron/main/src/plugin-pet-skins.ts
++++ b/app/electron/main/src/plugin-pet-skins.ts
+@@ -2,7 +2,7 @@ import { readFileSync, realpathSync, statSync } from "node:fs";
+ import { isAbsolute, relative, resolve } from "node:path";
+ import type { CharacterPersona, PetSkinDefinition, PetSkinRegistration, PetSkinsHost, ResolvedPetSkin } from "@dap/plugins";
+ 
+-const MOTIONS = new Set(["idle", "running-right", "running-left", "waving", "jumping", "failed", "waiting", "running", "review", "sleep", "feed_munch", "groom", "grabbed", "success", "dance"]);
++const MOTIONS = new Set(["idle", "running-right", "running-left", "waving", "jumping", "failed", "waiting", "running", "review", "sleep", "feed_munch", "groom", "grabbed", "success", "dance", "working_v2"]);
+ const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+ function record(value: unknown): Record<string, unknown> {
+   if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) throw Error("Invalid skin object");
+diff --git a/app/electron/main/src/proactive-speech.ts b/app/electron/main/src/proactive-speech.ts
+index 961586ac..f45e376d 100644
+--- a/app/electron/main/src/proactive-speech.ts
++++ b/app/electron/main/src/proactive-speech.ts
+@@ -72,7 +72,14 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+   return new ProactiveSpeechService({
+     chatTurn: { execute: (_msg, o) => opts.runTurn(o.proactiveHint) },
+     env,
+-    prefsReader: opts.prefs ?? (() => ({})),
++    prefsReader: () => {
++      const prefs = opts.prefs?.() ?? {};
++      // Momonga waits for a short input pause, while all shared off/DND/busy gates remain intact.
++      return opts.characterId?.() === "momonga" ? {
++        ...prefs, proactive_input_idle_minutes: 2, proactive_cooldown_minutes: 15,
++        proactive_ambient_enabled: false,
++      } : prefs;
++    },
+     idleSecondsReader: opts.idleSeconds,
+     currentStateKindReader: opts.currentStateKind,
+     isBusyCheck: () => opts.isBusy() || !opts.petVisible(),
+diff --git a/app/electron/main/test/momonga-proactive.test.ts b/app/electron/main/test/momonga-proactive.test.ts
+index bc9fe808..9f1307d5 100644
+--- a/app/electron/main/test/momonga-proactive.test.ts
++++ b/app/electron/main/test/momonga-proactive.test.ts
+@@ -23,6 +23,16 @@ function speech(over: Partial<ProactiveSpeechOptions> = {}) {
+ }
+ 
+ describe("Momonga spontaneous chat", () => {
++  it("speaks after a two-minute pause, waits fifteen minutes, and leaves other characters quiet", async () => {
++    const {service,calls,bubbles}=speech({idleSeconds:()=>120});
++    service.tick(); await vi.waitFor(()=>expect(bubbles).toHaveLength(1));
++    service.tick(NOON+899); expect(calls).toHaveLength(1);
++    service.tick(NOON+900); await vi.waitFor(()=>expect(bubbles).toHaveLength(2));
++    const other=speech({characterId:()=>"hachiware",idleSeconds:()=>120});
++    other.service.tick(); expect(other.calls).toHaveLength(0);
++    const disabled=speech({idleSeconds:()=>120,prefs:()=>({proactive_quiet_profile:"off"})});
++    disabled.service.tick(); expect(disabled.service.suppressionReason).toBe("profile_off");
++  });
+   it("offers praise, self-praise and a question only for Momonga", () => {
+     expect(momongaProactiveHint("momonga", () => 0)).toContain("칭찬");
+     expect(momongaProactiveHint("momonga", () => 0.4)).toContain("자랑");
+diff --git a/app/electron/main/test/plugin-pet-skins.test.ts b/app/electron/main/test/plugin-pet-skins.test.ts
+index 9d7c3380..189be3d2 100644
+--- a/app/electron/main/test/plugin-pet-skins.test.ts
++++ b/app/electron/main/test/plugin-pet-skins.test.ts
+@@ -15,7 +15,7 @@ const definition = (): PetSkinDefinition => ({
+ 
+ describe("plugin pet skins", () => {
+   it("advertises independent actions and validates larger atlases and bounded hop schedules", () => {
+-    expect(manager().forPlugin("p").supportedMotions).toEqual(expect.arrayContaining(["sleep", "feed_munch", "groom", "grabbed", "success", "dance"]));
++    expect(manager().forPlugin("p").supportedMotions).toEqual(expect.arrayContaining(["sleep", "feed_munch", "groom", "grabbed", "success", "dance", "working_v2"]));
+     const skin = { ...definition(), cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 18 }, animations: { idle: { row: 0, holdsMs: [100] }, success: { row: 17, holdsMs: [100, 100], hops: [{ startMs: 0, durationMs: 200, heightPx: 18 }] } } };
+     expect(validateSkin(skin)).toEqual(skin);
+     expect(() => validateSkin({ ...skin, grid: { columns: 8, rows: 33 } })).toThrow();
+diff --git a/app/electron/renderer/test/pet-skin-animation.test.ts b/app/electron/renderer/test/pet-skin-animation.test.ts
+index 4c2e9bd6..94eca052 100644
+--- a/app/electron/renderer/test/pet-skin-animation.test.ts
++++ b/app/electron/renderer/test/pet-skin-animation.test.ts
+@@ -3,6 +3,14 @@ import { skinColumn, skinMotion, skinHopOffset } from "../src/pet-skin-animation
+ import type { PetAppearance } from "@dap/electron-main";
+ 
+ describe("plugin skin animation", () => {
++  it("uses the engine's random working selection without changing poses inside a work session", () => {
++    const complete = {...skin,animations:{...skin.animations,working_v2:{row:16,holdsMs:[450,260,200,300,350,140,240,400]}}};
++    const state={mood:"neutral",activity:"working",sprite_set:"working",anim:"loop",fps:12};
++    expect(skinMotion(complete,state)).toBe("running");
++    expect(skinMotion(complete,{...state,sprite_set:"working_v2"})).toBe("working_v2");
++    expect(skinMotion(skin,{...state,sprite_set:"working_v2"})).toBe("running");
++    expect(skinColumn(complete.animations.working_v2.holdsMs,2340)).toBe(0);
++  });
+   it("prefers independent action clips, aliases menu sleep, and preserves smooth success hops", () => {
+     const actions = ["sleep", "feed_munch", "groom", "grabbed", "success", "dance"];
+     const extended = { ...skin, animations: { ...skin.animations, ...Object.fromEntries(actions.map((key, i) => [key, { row: 11 + i, holdsMs: [100, 100] }])) } };
+diff --git a/docs/PLUGIN_API.md b/docs/PLUGIN_API.md
+index 088094e0..c1b7b48c 100644
+--- a/docs/PLUGIN_API.md
++++ b/docs/PLUGIN_API.md
+@@ -896,4 +896,7 @@ macOS   : ~/Library/Application Support/dap/plugins/<id>/
+ 
+ **1.6.7+**에서는 `petSkins.supportedMotions`로 지원 모션을 확인할 수 있습니다. 기존 9개에 `sleep`, `feed_munch`, `groom`, `grabbed`, `success`, `dance`가 추가되었습니다. 해당 클립이 없으면 기존 슬롯으로 대체합니다. `sleep_menu`는 `sleep` 클립을 사용하며, 춤과 점프는 독립적입니다. PNG 전체 크기 4096×4096·8MB 제한은 유지하고 행 수 상한은 32로 확장합니다(192×208 셀에서는 높이 제한에 따라 최대 19행).
+ 
++**1.6.8+**에서는 `supportedMotions`에 `working_v2`가 추가됩니다. 기본 `WorkingMotionPicker`가 작업 시작 시 `working` 또는 `working_v2`를 무작위로 고릅니다. 스킨은 `running`에 첫 작업 모션을, `working_v2`에 두 번째 작업 모션을 지정하면 됩니다. 작업 중에는 선택한 모션을 유지하며 구형 스킨은 두 경우 모두 `running`으로 대체합니다. 모몽가의 먼저 말하기는 입력 2분 정지·발화 후 15분 간격을 사용하며 꺼짐·방해금지·작업/대화 중·숨김 억제는 유지합니다.
++
++
+ 클립에는 선택적 `hops: [{startMs, durationMs, heightPx}]`를 최대 4개 지정할 수 있습니다. 각 값은 정수이며 클립 재생 시간과 셀 높이 안에 있어야 합니다. 렌더러가 포물선으로 y 오프셋을 계산하여 프레임 사이 점프를 부드럽게 연결합니다. 이 capability가 없는 호스트에는 기존 9개 모션·11행 정의만 등록하세요.

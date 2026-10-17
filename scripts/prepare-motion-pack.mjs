@@ -3,7 +3,7 @@ import {createHash} from 'node:crypto';
 import {decodeMotionPng,encodeMotionPng} from '../src/motions.mjs';
 const root=new URL('../',import.meta.url), study=new URL('dist/chiikawa-motion-v3/',root);
 const source=JSON.parse(await readFile(new URL('motions.json',study),'utf8'));
-const aliases={'eat':'feed_munch','move-left':'running-left','move-right':'running-right'};
+const aliases={'eat':'feed_munch','move-left':'running-left','move-right':'running-right','work-book':'running','work-flyer':'working_v2'};
 const pack=[];
 await mkdir(new URL('assets/generated/',root),{recursive:true});
 for(const motion of source.motions){

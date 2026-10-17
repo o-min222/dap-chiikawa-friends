@@ -14,7 +14,7 @@ export async function activate(ctx) {
   const extendedMotions = api?.supportedMotions?.includes("sleep") === true;
   let preparedSkins = SKINS;
   async function prepareSkins() {
-    preparedSkins = await Promise.all(SKINS.map(skin => prepareMotionSkin(ROOT, skin, MOTION_PACK, extendedMotions)));
+    preparedSkins = await Promise.all(SKINS.map(skin => prepareMotionSkin(ROOT, skin, MOTION_PACK, extendedMotions, api?.supportedMotions?.includes("working_v2") === true)));
   }
   if (assetsReady) await prepareSkins();
   let assetRevision = 0;

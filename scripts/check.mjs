@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,14);
+assert.equal(motions.length,17);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
@@ -40,4 +40,4 @@ async function walk(url){for(const item of await readdir(url,{withFileTypes:true
  if(item.isDirectory())await walk(file);else{assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
 }}
 await walk(base);assert.ok(files<=200&&bytes<=20*1024*1024);
-console.log(`OK: ${files} installable files, ${bytes} bytes, 14 verified generated motions; version ${metadata.version}`);
+console.log(`OK: ${files} installable files, ${bytes} bytes, ${motions.length} verified generated motions; version ${metadata.version}`);

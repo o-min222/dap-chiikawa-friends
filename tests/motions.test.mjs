@@ -21,8 +21,8 @@ test('Momonga does not grow when idle changes to the grabbed clip',async()=>{
  assert.ok(Math.max(...grabbed)<=reference*1.06,'Grabbed pose must retain idle body scale, allowing small limb movement');
 });
 
-test('all 14 approved strips decode losslessly and retain distinct character/action metadata',async()=>{
- assert.equal(new Set(pack.map(m=>m.id)).size,14);
+test('all 17 approved strips decode losslessly and retain distinct character/action metadata',async()=>{
+ assert.equal(new Set(pack.map(m=>m.id)).size,17);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
@@ -30,7 +30,7 @@ test('all 14 approved strips decode losslessly and retain distinct character/act
  }
  const dance=pack.find(m=>m.id==='momonga-dance');assert.deepEqual(dance.holdsMs,Array(8).fill(100));
 });
-test('extended atlases preserve every original row and independently select all generated clips; old hosts keep valid dimensions',async()=>{
+test('extended atlases retain unchanged rows, both full working clips and bounded dimensions on old and new hosts',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-motion-pack-'));
  try{
   await mkdir(join(root,'assets/generated'),{recursive:true});
@@ -39,9 +39,12 @@ test('extended atlases preserve every original row and independently select all 
   for(const id of ['chiikawa','hachiware','momonga']){
    const skin=skins.find(s=>s.id===id);
    await writeFile(join(root,skin.spritesheetPath),encodeMotionPng(original));
-   const extended=await prepareMotionSkin(root,skin,pack,true);
+   const extended=await prepareMotionSkin(root,skin,pack,true,true);
    const atlas=decodeMotionPng(await readFile(join(root,extended.spritesheetPath)));
-   assert.deepEqual(atlas.pixels.subarray(0,original.pixels.length),original.pixels);
+   const replaced=id==='momonga'?new Set(['idle','running-left','running-right','running'].map(key=>skin.animations[key].row)):new Set();
+   const rowBytes=1536*208*4;
+   for(let row=0;row<11;row++)if(!replaced.has(row))assert.deepEqual(atlas.pixels.subarray(row*rowBytes,(row+1)*rowBytes),original.pixels.subarray(row*rowBytes,(row+1)*rowBytes));
+   assert.ok(atlas.height<=4096);
    for(const motion of pack.filter(m=>m.characterId===id)){
     const clip=extended.animations[motion.motion];assert.deepEqual(clip.holdsMs,motion.holdsMs);
     const strip=decodeMotionPng(await readFile(join(root,motion.file)));
@@ -50,6 +53,9 @@ test('extended atlases preserve every original row and independently select all 
    }
    const legacy=await prepareMotionSkin(root,skin,pack,false);
    assert.equal(legacy.grid.rows,11);assert.equal(Object.keys(legacy.animations).length,9);
+   const previousHost=await prepareMotionSkin(root,skin,pack,true,false);
+   assert.ok(previousHost.grid.rows*208<=4096);
+   assert.equal(previousHost.animations.working_v2,undefined);
   }
   const broken=Buffer.from(await readFile(join(root,pack[0].file)));broken[100]^=1;
   await writeFile(join(root,pack[0].file),broken);

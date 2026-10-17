@@ -252,5 +252,59 @@
       110,
       900
     ]
+  },
+  {
+    "id": "momonga-groom",
+    "characterId": "momonga",
+    "motion": "groom",
+    "file": "assets/generated/momonga-groom.png",
+    "bytes": 201551,
+    "sha256": "05906c23b51ff553703fe0cb4c1800b56c4bc8b53af6829e0b9f4c74c39443d5",
+    "holdsMs": [
+      180,
+      140,
+      160,
+      200,
+      180,
+      200,
+      140,
+      180
+    ]
+  },
+  {
+    "id": "momonga-work-book",
+    "characterId": "momonga",
+    "motion": "running",
+    "file": "assets/generated/momonga-work-book.png",
+    "bytes": 204809,
+    "sha256": "82556b7606331805e3de5ed503acda4f11146c5012cae5b1b753ddbdd63c07b0",
+    "holdsMs": [
+      550,
+      300,
+      240,
+      140,
+      160,
+      180,
+      140,
+      450
+    ]
+  },
+  {
+    "id": "momonga-work-flyer",
+    "characterId": "momonga",
+    "motion": "working_v2",
+    "file": "assets/generated/momonga-work-flyer.png",
+    "bytes": 193323,
+    "sha256": "e0b0fff188d4838c8050bed1ada3868de3fedb1f14a111be92c9e4db712527e3",
+    "holdsMs": [
+      450,
+      260,
+      200,
+      300,
+      350,
+      140,
+      240,
+      400
+    ]
   }
 ]

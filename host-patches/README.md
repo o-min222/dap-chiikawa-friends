@@ -27,3 +27,7 @@ pnpm --filter @dap/electron-main exec vitest run test/momonga-proactive.test.ts 
 `independent-motions.patch`는 본체의 스킨 검증기·capability·렌더러·테스트·API 문서를 확장합니다. 기준 소스는 1.6.6의 `c80f0bf085d08c359174afcffee821ddbf6896b5`이며 기존 API v2와 9개 모션의 대체 규칙을 유지합니다. 수면·먹기·그루밍·잡힘·성공·춤의 동명 클립이 있으면 먼저 사용합니다. 점프는 춤과 독립적입니다.
 
 플러그인 1.4.0은 사용자 PC에서 원본 행을 보존하고 생성 행을 추가합니다. 공개 릴리스에는 합성된 원본 시트를 올리지 않습니다. `supportedMotions`가 없는 구형 본체에는 기존 11행만 등록합니다.
+
+## 읽기 두 버전과 먼저 말걸기 (DAP 1.6.8)
+
+momonga-working.patch는 기존 WorkingMotionPicker가 선택하는 working_v2를 스킨에서도 지원합니다. 책과 전단지를 작업 시작 시 50:50으로 선택하며 작업 중 유지합니다. 모몽가 먼저 말하기는 입력 정지 2분, 발화 후 15분 간격으로 조정하고 꺼짐·방해금지·작업/대화 중·숨김 조건을 유지합니다.

@@ -8,7 +8,7 @@
 
 ## 설치와 첫 실행
 
-1. GitHub Releases에서 `dap-chiikawa-friends-v1.1.0.zip`을 받아 풉니다.
+1. GitHub Releases에서 `dap-chiikawa-friends-v1.1.1.zip`을 받아 풉니다.
 2. 아래 폴더 바로 안에 `plugin.yaml`이 오도록 파일을 복사하고 DAP를 다시 실행합니다.
 3. DAP 트레이 또는 펫 메뉴에서 **치이카와 친구들 / 친구들**을 엽니다.
 4. **원본 이미지 받기**를 누릅니다. 11개 이미지 약 26MB를 원본 GitHub 저장소에서 직접 받아 SHA-256과 크기를 확인합니다. 준비가 끝나면 캐릭터를 고르고 **적용**을 누르세요.
@@ -18,7 +18,7 @@
 | macOS | `~/Library/Application Support/dap/plugins/io.github.o-min222.chiikawa_friends/` |
 | Windows | `%APPDATA%\dap\plugins\io.github.o-min222.chiikawa_friends\` |
 
-기존 한 캐릭터용 `chiikawa_skin`은 끄면 중복 메뉴를 피할 수 있습니다. 같은 id의 v1.0.0 로컬 팩은 v1.1.0으로 교체할 수 있습니다. 기존 이미지가 원본 해시와 일치하면 재사용합니다.
+기존 한 캐릭터용 `chiikawa_skin`은 끄면 중복 메뉴를 피할 수 있습니다. 같은 id의 v1.0.0 로컬 팩은 v1.1.1으로 교체할 수 있습니다. 기존 이미지가 원본 해시와 일치하면 재사용합니다.
 
 DAP 카탈로그 등록 뒤에는 **설정 → 플러그인 → 설치 / 업데이트**로 코드가 GitHub에서 내려옵니다. 카탈로그는 검토한 버전 태그를 가리킵니다. 설치·업데이트 때 실행하는 빌드나 npm 설치는 없습니다.
 

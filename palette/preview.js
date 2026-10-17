@@ -6,6 +6,7 @@ for (const item of skins) {
   const option = document.createElement("option"); option.value = item.id; option.textContent = item.displayName; character.append(option);
 }
 let activeId = null;
+let statusReceived = false;
 const canvas = document.getElementById("pet");
 const drawing = canvas.getContext("2d");
 const motion = document.getElementById("motion");
@@ -77,6 +78,7 @@ function selectCharacter() {
   document.getElementById("character-badge").textContent = skin.id.toUpperCase();
   document.getElementById("apply").textContent = `${skin.displayName} 적용`;
   canvas.setAttribute("aria-label", `${skin.displayName} 모션 미리보기`);
+  canvas.closest("section").setAttribute("aria-label", `${skin.displayName} 모션 미리보기`);
   drawing.clearRect(0, 0, 192, 208);
   if (assetsReady) image.src = `../${skin.spritesheetPath}?v=${assetRevision}`;
   buttons();
@@ -122,11 +124,14 @@ if (bridge) {
     if (!message || message.type !== "status") return;
     available = message.available === true;
     activeId = typeof message.activeId === "string" ? message.activeId : null;
+    const selectActive = !statusReceived && skins.some(item => item.id === activeId);
+    statusReceived = true;
+    if (selectActive) character.value = activeId;
     busy = message.busy === true;
     const refreshImage = assetsReady !== (message.assetsReady === true) || assetRevision !== message.assetRevision;
     assetsReady = message.assetsReady === true;
     assetRevision = message.assetRevision ?? 0;
-    if (refreshImage) selectCharacter();
+    if (refreshImage || selectActive) selectCharacter();
     personaToggle.checked = message.personaEnabled === true;
     document.getElementById("persona-note").textContent = "대화용 성격 해석입니다. 외형 적용 시 말투도 함께 바뀌며, 사용자 이름·호칭·기억은 유지돼요.";
     status.textContent = typeof message.message === "string" ? message.message : "";

@@ -20,7 +20,7 @@ export async function activate(ctx) {
     const active = [...registrations.values()].find(reg => reg.id === activeId);
     palette.postMessage({ type: "status", available, busy, assetsReady, assetRevision, activeId: active ? active.id.split(".").at(-1) : null,
       personaEnabled: personaWanted(), personaActive: available && api.getActivePersona() === activeId && Boolean(active),
-      message: message ?? (available ? !assetsReady ? "처음 한 번 원본 저장소에서 이미지를 받아 주세요." : active ? "선택한 캐릭터를 사용하고 있어요." : "캐릭터를 고른 뒤 적용해 주세요." : "외형 적용에는 DAP 1.6.0 이상이 필요해요.") });
+      message: message ?? (available ? !assetsReady ? "처음 한 번 원본 저장소에서 이미지를 받아 주세요." : active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : "캐릭터를 고른 뒤 적용해 주세요." : "외형 적용에는 DAP 1.6.0 이상이 필요해요.") });
   }
   async function register(id) {
     const skin = SKINS.find(item => item.id === id);

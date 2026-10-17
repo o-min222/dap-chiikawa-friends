@@ -7,6 +7,20 @@ import {decodeMotionPng,encodeMotionPng,prepareMotionSkin} from '../src/motions.
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
 
+test('Momonga does not grow when idle changes to the grabbed clip',async()=>{
+ async function heights(id){
+  const motion=pack.find(m=>m.id===id), image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
+  return motion.holdsMs.map((_,frame)=>{
+   let top=208,bottom=-1;
+   for(let y=0;y<208;y++)for(let x=0;x<192;x++)if(image.pixels[(y*image.width+frame*192+x)*4+3]>=128){top=Math.min(top,y);bottom=Math.max(bottom,y);}
+   return bottom-top+1;
+  });
+ }
+ const idle=(await heights('momonga-idle')).sort((a,b)=>a-b), grabbed=await heights('momonga-grabbed');
+ const reference=(idle[2]+idle[3])/2;
+ assert.ok(Math.max(...grabbed)<=reference*1.06,'Grabbed pose must retain idle body scale, allowing small limb movement');
+});
+
 test('all 14 approved strips decode losslessly and retain distinct character/action metadata',async()=>{
  assert.equal(new Set(pack.map(m=>m.id)).size,14);
  for(const motion of pack){

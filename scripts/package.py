@@ -5,7 +5,7 @@ root=Path(__file__).resolve().parents[1]
 version=json.loads((root/'package.json').read_text())['version']
 out=root/'dist';out.mkdir(exist_ok=True)
 archive=out/f'dap-chiikawa-friends-v{version}.zip'
-files=[root/'plugin.yaml',root/'README.md',root/'NOTICE.md']
+files=[root/'plugin.yaml',root/'README.md',root/'NOTICE.md',root/'PERSONAS.md']
 for folder in ['assets','dap_chiikawa','palette']:
     files.extend(p for p in (root/folder).rglob('*') if p.is_file())
 assert not any(p.suffix.lower() in ['.png','.gif','.webp','.jpg','.jpeg','.mp4','.part'] for p in files),'Do not publish original media'

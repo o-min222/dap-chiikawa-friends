@@ -8,6 +8,16 @@ import {createHash} from 'node:crypto';
 import {runInNewContext} from 'node:vm';
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
 const animation={window:{}};runInNewContext(await readFile(new URL('../palette/animation.js',import.meta.url),'utf8'),animation);
+test('all voice profiles fit DAP v2 and carry their situation examples into the actual prompt hint',()=>{
+ for(const {persona} of skins){
+  for(const key of ['speakingStyle','contextHint']){assert.ok([...persona[key]].length<=300);assert.doesNotMatch(persona[key],/[\u0000-\u001f\u007f]/);}
+  assert.ok(persona.traits.length<=8);for(const trait of persona.traits)assert.ok([...trait].length<=40);
+  for(const example of Object.values(persona.examples)){
+   assert.ok([...example].length<=200);
+   assert.ok(persona.contextHint.includes(example),'DAP 1.6.0 forwards contextHint, not the examples field');
+  }
+ }
+});
 test('all 11 characters keep 99 variable-duration motion cycles and 16 gaze directions',()=>{
  assert.equal(skins.length,11);
  for(const skin of skins){assert.equal(skin.id,skin.persona.id);assert.ok(skin.persona.contextHint.length<=300);assert.equal(Object.keys(skin.animations).length,9);

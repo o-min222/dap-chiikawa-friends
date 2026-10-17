@@ -152,7 +152,7 @@ export async function activate(ctx) {
   }
   ctx.actions.registerAction({ id: "open", callback: open });
   ctx.trayMenu.addItem({ itemId: "open", label: "치이카와 친구들", actionId: "open", showInContextMenu: true });
-  ctx.radialMenu.addItem({ itemId: "open", label: "친구들", actionId: "open", priority: 50 });
+  ctx.radialMenu.addItem({ itemId: "open", label: "친구들", actionId: "open", priority: 50, icon: "icon.png" });
   let ownedActive = false;
   const offSkin = available ? api.onDidChange(() => {
     const owns = [...registrations.values()].some(reg => reg.id === api.getActiveSkin());

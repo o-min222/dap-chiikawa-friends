@@ -12,6 +12,7 @@ const drawing = canvas.getContext("2d");
 const motion = document.getElementById("motion");
 const motionLabels = {idle:"쉬기", "running-right":"오른쪽 이동", "running-left":"왼쪽 이동", waving:"인사", jumping:"점프", failed:"실패", waiting:"기다림", running:"작업 중", review:"검토", sleep:"수면", feed_munch:"먹기", groom:"그루밍", grabbed:"잡힘", success:"성공", dance:"춤"};
 const pause = document.getElementById("pause");
+motionLabels.working_v2 = "작업 중 · 전단지 읽기";
 const status = document.getElementById("status");
 const apply = document.getElementById("apply");
 const reset = document.getElementById("reset");

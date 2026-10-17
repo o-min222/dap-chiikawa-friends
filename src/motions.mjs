@@ -48,13 +48,19 @@ export function encodeMotionPng({ width, height, pixels }) {
   for (let y = 0; y < height; y++) pixels.copy(raw, y * (stride + 1) + 1, y * stride, (y + 1) * stride);
   return Buffer.concat([PNG_HEADER, chunk('IHDR', header), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
-export async function prepareMotionSkin(root, skin, pack, extended) {
-  const motions = pack.filter(motion => motion.characterId === skin.id);
+export async function prepareMotionSkin(root, skin, pack, extended, workingVariants = false) {
+  const motions = pack.filter(motion => motion.characterId === skin.id && (motion.motion !== 'working_v2' || (extended && workingVariants)));
   if (!motions.length) return skin;
   const original = decodeMotionPng(await readMotionFile(motionJoin(root, skin.spritesheetPath)));
   if (original.width !== 1536 || original.height !== 2288) throw Error('Unexpected original atlas dimensions');
   const definition = structuredClone(skin), rowBytes = 1536 * 208 * 4;
-  const rows = 11 + (extended ? motions.length : 0), pixels = Buffer.alloc(rowBytes * rows);
+  // Reuse replaced canonical rows only when appending would exceed the host's 4096px limit.
+  const compact = extended && (11 + motions.length) * 208 > 4096;
+  const reusesRow = motion => Boolean(skin.animations[motion.motion]);
+  const rows = 11 + (extended ? motions.filter(motion => !compact || !reusesRow(motion)).length : 0);
+  if (rows * 208 > 4096) throw Error('Combined motion atlas exceeds the DAP dimensions');
+  const pixels = Buffer.alloc(rowBytes * rows);
+  let nextRow = 11;
   original.pixels.copy(pixels);
   for (let index = 0; index < motions.length; index++) {
     const motion = motions[index];
@@ -66,10 +72,12 @@ export async function prepareMotionSkin(root, skin, pack, extended) {
     // Older DAP versions retain shared-slot behavior; the extended host gets independent clips.
     const legacy = ({ dance: 'jumping', success: 'waving' })[motion.motion] ?? motion.motion;
     if (!extended && !skin.animations[legacy]) continue;
-    const key = extended ? motion.motion : legacy, row = extended ? 11 + index : skin.animations[legacy].row;
+    const key = extended ? motion.motion : legacy;
+    const row = extended ? compact && reusesRow(motion) ? skin.animations[key].row : nextRow++ : skin.animations[legacy].row;
     strip.pixels.copy(pixels, row * rowBytes);
-    definition.animations[key] = { row, holdsMs: motion.holdsMs };
-    if (extended && motion.hops) definition.animations[key].hops = motion.hops;
+    const clip = { row, holdsMs: motion.holdsMs };
+    if (extended && motion.hops) clip.hops = motion.hops;
+    definition.animations[key] = clip;
   }
   definition.grid.rows = rows;
   const bytes = encodeMotionPng({ width: 1536, height: rows * 208, pixels });

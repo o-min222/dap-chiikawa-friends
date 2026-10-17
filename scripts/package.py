@@ -20,4 +20,4 @@ with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
     for file in sorted(files):z.write(file,Path('dap-chiikawa-friends')/file.relative_to(root))
 with zipfile.ZipFile(archive) as z:assert z.testzip() is None
 (out/'SHA256SUMS.txt').write_text(hashlib.sha256(archive.read_bytes()).hexdigest()+'  '+archive.name+'\n')
-print(f'Packaged {archive.name}: {archive.stat().st_size:,} bytes (14 generated motions; no original atlases)')
+print(f'Packaged {archive.name}: {archive.stat().st_size:,} bytes ({len(generated)} generated motions; no original atlases)')

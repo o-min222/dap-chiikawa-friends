@@ -210,8 +210,8 @@
     "characterId": "momonga",
     "motion": "grabbed",
     "file": "assets/generated/momonga-grabbed.png",
-    "bytes": 163161,
-    "sha256": "9324f1abd24f87e696a15c422cd346332baca1bcf23e93fd5cd180929f043500",
+    "bytes": 143874,
+    "sha256": "bcb0ae3dfc29d2981eab047138f865ae704dee9f7f5319d445d59812ab5c4838",
     "holdsMs": [
       140,
       100,

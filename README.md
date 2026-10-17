@@ -16,7 +16,7 @@ DAP 1.6.1 이상에서 **설정 → 플러그인 → Chiikawa Friends → 설치
 
 ### ZIP으로 수동 설치할 때
 
-1. GitHub Releases에서 `dap-chiikawa-friends-v1.4.0.zip`을 받아 풉니다.
+1. GitHub Releases에서 `dap-chiikawa-friends-v1.4.1.zip`을 받아 풉니다.
 2. 아래 폴더 바로 안에 `plugin.yaml`이 오도록 파일을 복사하고 DAP를 다시 실행합니다.
 3. DAP 트레이 또는 펫 메뉴에서 **치이카와 친구들 / 친구들**을 엽니다.
 4. **원본 이미지 받기**를 누릅니다. 11개 이미지 약 26MB를 원본 GitHub 저장소에서 직접 받아 SHA-256과 크기를 확인합니다. 준비가 끝나면 캐릭터를 고르고 **적용**을 누르세요.

@@ -34,11 +34,12 @@ test('no startup network; explicit download, all character switches, persona tog
  const text=(await readFile(new URL('../dap_chiikawa/plugin.mjs',import.meta.url),'utf8')).replace(/^const SOURCE = .*;$/m,'const SOURCE = '+JSON.stringify(source)+';');
  await mkdir(join(root,'dap_chiikawa'));await writeFile(join(root,'dap_chiikawa/plugin.mjs'),text);
  const oldFetch=globalThis.fetch;let requests=0;globalThis.fetch=async()=>{requests++;return new Response(bytes);};
- let active=null,persona=null,listener,closed=false,failApply=false;const values={},actions=new Map(),registrations=new Map(),listeners=new Set(),messages=[];
+ let active=null,persona=null,listener,closed=false,failApply=false;const values={},actions=new Map(),registrations=new Map(),listeners=new Set(),messages=[],radialItems=[];
  const api={apiVersion:2,getActiveSkin:()=>active,getActivePersona:()=>persona,onDidChange(fn){listeners.add(fn);return()=>listeners.delete(fn);},async registerSkin(skin){const id=`demo.${skin.id}`,reg={id,async apply({usePersona}){if(failApply)throw Error('failed');active=id;persona=usePersona?id:null;for(const fn of listeners)fn();},async reset(){if(active===id){active=persona=null;for(const fn of listeners)fn();}},async dispose(){await this.reset();}};registrations.set(skin.id,reg);return reg;}};
- const ctx={pluginId:'demo',actions:{registerAction({id,callback}){actions.set(id,callback);}},trayMenu:{addItem(){}},radialMenu:{addItem(){}},host:{petSkins:api,settings:{values(id){assert.equal(id,'demo.character');return {...values};},set(id,key,value){assert.equal(id,'demo.character');values[key]=value;}},windows:{openPalette(){return{show(){},toggle(){},isDestroyed(){return closed;},close(){closed=true;},postMessage(m){messages.push(m);},onMessage(fn){listener=fn;return()=>listener=null;}};}}}};
+ const ctx={pluginId:'demo',actions:{registerAction({id,callback}){actions.set(id,callback);}},trayMenu:{addItem(){}},radialMenu:{addItem(item){radialItems.push(item);}},host:{petSkins:api,settings:{values(id){assert.equal(id,'demo.character');return {...values};},set(id,key,value){assert.equal(id,'demo.character');values[key]=value;}},windows:{openPalette(){return{show(){},toggle(){},isDestroyed(){return closed;},close(){closed=true;},postMessage(m){messages.push(m);},onMessage(fn){listener=fn;return()=>listener=null;}};}}}};
  try{
   const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);const stop=await activate(ctx);assert.equal(requests,0);
+  assert.equal(radialItems[0].icon,'icon.png');assert.ok(actions.has(radialItems[0].actionId));
   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,false);
   await listener({type:'apply',id:'usagi'});assert.equal(active,null);assert.equal(requests,0);
   await listener({type:'download-assets'});assert.equal(requests,11);assert.equal(messages.at(-1).assetsReady,true);

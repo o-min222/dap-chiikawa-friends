@@ -1,0 +1,48 @@
+name: Check and release plugin
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run build
+      - run: git diff --exit-code -- dap_chiikawa/plugin.mjs assets/catalog.js
+      - run: npm test
+      - run: node scripts/check.mjs "$RELEASE_REF"
+        env:
+          RELEASE_REF: ${{ github.ref_name }}
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check.mjs "$GITHUB_REF_NAME"
+      - run: python3 scripts/package.py
+      - name: Publish image-free plugin archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/*.zip dist/SHA256SUMS.txt --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.zip dist/SHA256SUMS.txt --verify-tag --title "Chiikawa Friends $GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md
+          fi

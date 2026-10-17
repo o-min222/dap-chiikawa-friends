@@ -1,11 +1,11 @@
 id: io.github.o-min222.chiikawa_friends
 name: Chiikawa Friends
-version: 1.2.0
+version: 1.3.0
 manifest_version: 2
 entry: dap_chiikawa.plugin:activate
-description: 11개 캐릭터 스킨·말투. 이미지는 첫 사용 시 원본 저장소에서 직접 받습니다.
+description: 11개 캐릭터 외형·이름·성격·말투. 이미지는 첫 사용 시 원본 저장소에서 직접 받습니다.
 author: o-min222
-min_app_version: "1.6.0"
+min_app_version: "1.6.1"
 surface: user
 permissions:
   - window.palette

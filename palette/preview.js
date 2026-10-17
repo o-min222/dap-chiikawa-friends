@@ -133,7 +133,7 @@ if (bridge) {
     assetRevision = message.assetRevision ?? 0;
     if (refreshImage || selectActive) selectCharacter();
     personaToggle.checked = message.personaEnabled === true;
-    document.getElementById("persona-note").textContent = "대화용 성격 해석입니다. 외형 적용 시 말투도 함께 바뀌며, 사용자 이름·호칭·기억은 유지돼요.";
+    document.getElementById("persona-note").textContent = "캐릭터 이름·자기 지칭·성격·말투를 함께 적용해요. 사용자 이름·사용자에 대한 호칭·기억은 유지되며, 옵션을 끄면 기존 펫 이름과 말투로 돌아가요.";
     status.textContent = typeof message.message === "string" ? message.message : "";
     buttons();
   });

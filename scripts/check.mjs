@@ -5,7 +5,7 @@ const base=new URL('../',import.meta.url);
 const manifest=await readFile(new URL('plugin.yaml',base),'utf8');
 const metadata=JSON.parse(await readFile(new URL('package.json',base),'utf8'));
 assert.match(manifest,new RegExp(`^version: ${metadata.version.replaceAll('.','\\.')}\\s*$`,'m'));
-assert.match(manifest,/^min_app_version: "1\.6\.0"$/m);
+assert.match(manifest,/^min_app_version: "1\.6\.1"$/m);
 assert.match(manifest,/^  - pet\.skin$/m);
 assert.match(manifest,/^  - window\.palette$/m);
 const tag=process.argv[2];if(tag?.startsWith('v'))assert.equal(tag,`v${metadata.version}`);

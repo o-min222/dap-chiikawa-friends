@@ -1,5 +1,5 @@
 "use strict";
-const skins = window.CHIIKAWA_SKINS;
+let skins = window.CHIIKAWA_SKINS;
 let skin = skins[0];
 const character = document.getElementById("character");
 for (const item of skins) {
@@ -10,6 +10,7 @@ let statusReceived = false;
 const canvas = document.getElementById("pet");
 const drawing = canvas.getContext("2d");
 const motion = document.getElementById("motion");
+const motionLabels = {idle:"쉬기", "running-right":"오른쪽 이동", "running-left":"왼쪽 이동", waving:"인사", jumping:"점프", failed:"실패", waiting:"기다림", running:"작업 중", review:"검토", sleep:"수면", feed_munch:"먹기", groom:"그루밍", grabbed:"잡힘", success:"성공", dance:"춤"};
 const pause = document.getElementById("pause");
 const status = document.getElementById("status");
 const apply = document.getElementById("apply");
@@ -50,7 +51,7 @@ function render() {
   };
   drawing.clearRect(0, 0, 192, 208);
   drawing.imageSmoothingEnabled = false;
-  drawing.drawImage(image, cell.column * 192, cell.row * 208, 192, 208, 0, 0, 192, 208);
+  drawing.drawImage(image, cell.column * 192, cell.row * 208, 192, 208, 0, clip ? window.ChiikawaAnimation.hopOffset?.(clip, elapsed) ?? 0 : 0, 192, 208);
 }
 function tick(time) {
   if (stopped) return;
@@ -60,7 +61,7 @@ function tick(time) {
   animationId = requestAnimationFrame(tick);
 }
 image.onload = () => {
-  if (image.naturalWidth !== 1536 || image.naturalHeight !== 2288) {
+  if (image.naturalWidth !== skin.cell.width * skin.grid.columns || image.naturalHeight !== skin.cell.height * skin.grid.rows) {
     status.textContent = "스프라이트 이미지 크기가 맞지 않습니다.";
     return;
   }
@@ -71,7 +72,16 @@ image.onload = () => {
 image.onerror = () => { status.textContent = "스프라이트 이미지를 불러오지 못했습니다. assets 폴더를 확인해 주세요."; };
 function selectCharacter() {
   skin = skins.find(item => item.id === character.value) ?? skins[0];
+  const previousMotion = motion.value;
+  if (motion.replaceChildren) {
+    motion.replaceChildren();
+    for (const key of [...Object.keys(skin.animations), ...(skin.look ? ["look"] : [])]) {
+      const option = document.createElement("option"); option.value = key; option.textContent = motionLabels[key] ?? "시선 따라가기"; motion.append(option);
+    }
+    motion.value = skin.animations[previousMotion] || previousMotion === "look" && skin.look ? previousMotion : "idle";
+  }
   elapsed = 0; loaded = false;
+  document.getElementById("motion-name").textContent = motionLabels[motion.value] ?? "시선 따라가기";
   document.getElementById("persona-title").textContent = `${skin.displayName}의 성격`;
   document.getElementById("persona-traits").textContent = skin.persona.traits.join(" · ");
   document.getElementById("persona-example").textContent = skin.persona.examples.greeting;
@@ -91,7 +101,7 @@ motion.addEventListener("change", () => {
   canvas.setAttribute("aria-label", `${skin.displayName} ${motion.selectedOptions[0].textContent}`);
   document.getElementById("hint").textContent = motion.value === "look"
     ? "미리보기 위에서 커서를 움직이면 16방향으로 바라봐요."
-    : "원본 프레임별 속도로 재생해요.";
+    : "모션별 프레임 속도로 재생해요.";
   render();
 });
 canvas.addEventListener("pointermove", (event) => {
@@ -123,6 +133,8 @@ if (bridge) {
   offMessage = bridge.onMessage((message) => {
     if (!message || message.type !== "status") return;
     available = message.available === true;
+    const catalogChanged = Array.isArray(message.skins) && JSON.stringify(message.skins) !== JSON.stringify(skins);
+    if (catalogChanged) skins = message.skins;
     activeId = typeof message.activeId === "string" ? message.activeId : null;
     const selectActive = !statusReceived && skins.some(item => item.id === activeId);
     statusReceived = true;
@@ -131,7 +143,7 @@ if (bridge) {
     const refreshImage = assetsReady !== (message.assetsReady === true) || assetRevision !== message.assetRevision;
     assetsReady = message.assetsReady === true;
     assetRevision = message.assetRevision ?? 0;
-    if (refreshImage || selectActive) selectCharacter();
+    if (refreshImage || selectActive || catalogChanged) selectCharacter();
     personaToggle.checked = message.personaEnabled === true;
     document.getElementById("persona-note").textContent = "캐릭터 이름·자기 지칭·성격·말투를 함께 적용해요. 사용자 이름·사용자에 대한 호칭·기억은 유지되며, 옵션을 끄면 기존 펫 이름과 말투로 돌아가요.";
     status.textContent = typeof message.message === "string" ? message.message : "";

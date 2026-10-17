@@ -1,8 +1,21 @@
 import {readFile,readdir,stat} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 // Use file URLs for actual reads so paths with spaces and Windows drive letters remain valid.
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
+const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
+assert.equal(motions.length,14);
+const generated=new Set();
+for(const motion of motions){
+ assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
+ const url=new URL(motion.file,base), data=await readFile(url);
+ assert.equal(data.length,motion.bytes);assert.equal(createHash('sha256').update(data).digest('hex'),motion.sha256);
+ assert.equal(data.readUInt32BE(16),1536);assert.equal(data.readUInt32BE(20),208);
+ assert.ok(motion.holdsMs.length>=1&&motion.holdsMs.length<=8);
+ assert.ok(motion.holdsMs.every(hold=>Number.isInteger(hold)&&hold>=20&&hold<=5000));
+ generated.add(url.href);
+}
 const icon=await readFile(iconUrl);
 assert.ok(icon.length<=512*1024,'radial icon must fit the DAP 512KB limit');
 assert.ok(icon.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'icon must be a PNG');
@@ -24,7 +37,7 @@ let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
  if(['.git','.github','node_modules','dist','.DS_Store'].includes(item.name))continue;
  const file=new URL(encodeURIComponent(item.name)+(item.isDirectory()?'/':''),url);
- if(item.isDirectory())await walk(file);else{assert.ok(file.href===iconUrl.href||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only the generated radial icon may ship; do not distribute original media');files++;bytes+=(await stat(file)).size;}
+ if(item.isDirectory())await walk(file);else{assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
 }}
 await walk(base);assert.ok(files<=200&&bytes<=20*1024*1024);
-console.log(`OK: ${files} installable files, ${bytes} bytes, generated icon only; version ${metadata.version}`);
+console.log(`OK: ${files} installable files, ${bytes} bytes, 14 verified generated motions; version ${metadata.version}`);

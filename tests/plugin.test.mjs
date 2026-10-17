@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,readFile,writeFile,mkdir,rm} from 'node:fs/promises';
+import {mkdtemp,readFile,writeFile,mkdir,rm,cp} from 'node:fs/promises';
+import {encodeMotionPng} from '../src/motions.mjs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -26,8 +27,8 @@ test('all 11 characters keep 99 variable-duration motion cycles and 16 gaze dire
  for(let i=0;i<16;i++){const angle=i*Math.PI/8,c=animation.window.ChiikawaAnimation.lookCell(Math.sin(angle),-Math.cos(angle));assert.equal((c.row-9)*8+c.column,i);}
 });
 test('no startup network; explicit download, all character switches, persona toggle, failure, reset and unload',async()=>{
- const root=await mkdtemp(join(tmpdir(),'dap-plugin-')),bytes=Buffer.alloc(32);
- Buffer.from([137,80,78,71,13,10,26,10]).copy(bytes);bytes.writeUInt32BE(1536,16);bytes.writeUInt32BE(2288,20);
+ const root=await mkdtemp(join(tmpdir(),'dap-plugin-')),bytes=encodeMotionPng({width:1536,height:2288,pixels:Buffer.alloc(1536*2288*4)});
+ await mkdir(join(root,'assets'));await cp(new URL('../assets/generated',import.meta.url),join(root,'assets/generated'),{recursive:true});
  const checksum=createHash('sha256').update(bytes).digest('hex');
  const source=JSON.parse(await readFile(new URL('../assets/originals.json',import.meta.url),'utf8'));
  source.assets=source.assets.map(asset=>({...asset,bytes:bytes.length,sha256:checksum}));
@@ -35,7 +36,10 @@ test('no startup network; explicit download, all character switches, persona tog
  await mkdir(join(root,'dap_chiikawa'));await writeFile(join(root,'dap_chiikawa/plugin.mjs'),text);
  const oldFetch=globalThis.fetch;let requests=0;globalThis.fetch=async()=>{requests++;return new Response(bytes);};
  let active=null,persona=null,listener,closed=false,failApply=false;const values={},actions=new Map(),registrations=new Map(),listeners=new Set(),messages=[],radialItems=[];
- const api={apiVersion:2,getActiveSkin:()=>active,getActivePersona:()=>persona,onDidChange(fn){listeners.add(fn);return()=>listeners.delete(fn);},async registerSkin(skin){const id=`demo.${skin.id}`,reg={id,async apply({usePersona}){if(failApply)throw Error('failed');active=id;persona=usePersona?id:null;for(const fn of listeners)fn();},async reset(){if(active===id){active=persona=null;for(const fn of listeners)fn();}},async dispose(){await this.reset();}};registrations.set(skin.id,reg);return reg;}};
+ const api={apiVersion:2,supportedMotions:['sleep','feed_munch','groom','grabbed','success','dance'],getActiveSkin:()=>active,getActivePersona:()=>persona,onDidChange(fn){listeners.add(fn);return()=>listeners.delete(fn);},async registerSkin(skin){
+  if(skin.id==='momonga'){assert.equal(skin.grid.rows,18);assert.equal(skin.animations.dance.holdsMs.reduce((a,b)=>a+b),800);assert.notEqual(skin.animations.sleep.row,skin.animations.grabbed.row);}
+  if(skin.id==='chiikawa'){assert.equal(skin.grid.rows,17);assert.equal(skin.animations.success.hops.length,2);assert.notEqual(skin.animations.dance.row,skin.animations.jumping.row);}
+  const id=`demo.${skin.id}`,reg={id,async apply({usePersona}){if(failApply)throw Error('failed');active=id;persona=usePersona?id:null;for(const fn of listeners)fn();},async reset(){if(active===id){active=persona=null;for(const fn of listeners)fn();}},async dispose(){await this.reset();}};registrations.set(skin.id,reg);return reg;}};
  const ctx={pluginId:'demo',actions:{registerAction({id,callback}){actions.set(id,callback);}},trayMenu:{addItem(){}},radialMenu:{addItem(item){radialItems.push(item);}},host:{petSkins:api,settings:{values(id){assert.equal(id,'demo.character');return {...values};},set(id,key,value){assert.equal(id,'demo.character');values[key]=value;}},windows:{openPalette(){return{show(){},toggle(){},isDestroyed(){return closed;},close(){closed=true;},postMessage(m){messages.push(m);},onMessage(fn){listener=fn;return()=>listener=null;}};}}}};
  try{
   const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);const stop=await activate(ctx);assert.equal(requests,0);

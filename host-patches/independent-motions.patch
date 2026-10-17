@@ -1,0 +1,217 @@
+diff --git a/app/electron/main/src/plugin-pet-skins.ts b/app/electron/main/src/plugin-pet-skins.ts
+index 1545e725..1cbcd45b 100644
+--- a/app/electron/main/src/plugin-pet-skins.ts
++++ b/app/electron/main/src/plugin-pet-skins.ts
+@@ -2,7 +2,7 @@ import { readFileSync, realpathSync, statSync } from "node:fs";
+ import { isAbsolute, relative, resolve } from "node:path";
+ import type { CharacterPersona, PetSkinDefinition, PetSkinRegistration, PetSkinsHost, ResolvedPetSkin } from "@dap/plugins";
+ 
+-const MOTIONS = new Set(["idle", "running-right", "running-left", "waving", "jumping", "failed", "waiting", "running", "review"]);
++const MOTIONS = new Set(["idle", "running-right", "running-left", "waving", "jumping", "failed", "waiting", "running", "review", "sleep", "feed_munch", "groom", "grabbed", "success", "dance"]);
+ const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+ function record(value: unknown): Record<string, unknown> {
+   if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) throw Error("Invalid skin object");
+@@ -26,16 +26,25 @@ export function validateSkin(value: unknown): PetSkinDefinition {
+   const cell = record(raw.cell), grid = record(raw.grid);
+   keys(cell, ["width", "height"]); keys(grid, ["columns", "rows"]);
+   integer(cell.width, 1, 4096); integer(cell.height, 1, 4096);
+-  integer(grid.columns, 1, 8); integer(grid.rows, 1, 11);
++  integer(grid.columns, 1, 8); integer(grid.rows, 1, 32);
+   if (cell.width * grid.columns > 4096 || cell.height * grid.rows > 4096 || cell.width * cell.height * grid.columns * grid.rows > 16_000_000) throw Error("Skin image too large");
+   const animations = record(raw.animations);
+   if (!animations.idle || Object.keys(animations).some(key => !MOTIONS.has(key))) throw Error("Invalid skin motions");
+   for (const value of Object.values(animations)) {
+     const clip = record(value);
+-    keys(clip, ["row", "holdsMs"]);
++    keys(clip, ["row", "holdsMs", "hops"]);
+     integer(clip.row, 0, grid.rows - 1);
+     if (!Array.isArray(clip.holdsMs) || clip.holdsMs.length < 1 || clip.holdsMs.length > grid.columns) throw Error("Invalid skin frames");
+     for (const duration of clip.holdsMs) integer(duration, 20, 5000);
++    if (clip.hops !== undefined) {
++      if (!Array.isArray(clip.hops) || clip.hops.length > 4) throw Error("Invalid skin hops");
++      const total = clip.holdsMs.reduce((sum: number, hold: number) => sum + hold, 0);
++      for (const value of clip.hops) {
++        const hop = record(value); keys(hop, ["startMs", "durationMs", "heightPx"]);
++        integer(hop.startMs, 0, total); integer(hop.durationMs, 1, total); integer(hop.heightPx, 0, cell.height);
++        if (hop.startMs + hop.durationMs > total) throw Error("Hop exceeds animation duration");
++      }
++    }
+   }
+   if (raw.look !== undefined) {
+     const look = record(raw.look);
+@@ -118,6 +127,7 @@ export function createPetSkinsManager(options: {
+       group.add(lease); leases.set(pluginId, group);
+       return {
+         apiVersion: 2,
++        supportedMotions: Object.freeze([...MOTIONS]),
+         getActiveSkin: () => active?.resolved.id ?? null,
+         getActivePersona: () => usePersona ? active?.resolved.id ?? null : null,
+         onDidChange(listener) {
+diff --git a/app/electron/main/test/plugin-pet-skins.test.ts b/app/electron/main/test/plugin-pet-skins.test.ts
+index 6a79e04b..9d7c3380 100644
+--- a/app/electron/main/test/plugin-pet-skins.test.ts
++++ b/app/electron/main/test/plugin-pet-skins.test.ts
+@@ -14,6 +14,16 @@ const definition = (): PetSkinDefinition => ({
+ });
+ 
+ describe("plugin pet skins", () => {
++  it("advertises independent actions and validates larger atlases and bounded hop schedules", () => {
++    expect(manager().forPlugin("p").supportedMotions).toEqual(expect.arrayContaining(["sleep", "feed_munch", "groom", "grabbed", "success", "dance"]));
++    const skin = { ...definition(), cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 18 }, animations: { idle: { row: 0, holdsMs: [100] }, success: { row: 17, holdsMs: [100, 100], hops: [{ startMs: 0, durationMs: 200, heightPx: 18 }] } } };
++    expect(validateSkin(skin)).toEqual(skin);
++    expect(() => validateSkin({ ...skin, grid: { columns: 8, rows: 33 } })).toThrow();
++    expect(() => validateSkin({ ...skin, grid: { columns: 8, rows: 20 } })).toThrow(/large/);
++    for (const hop of [{ startMs: 0, durationMs: 201, heightPx: 18 }, { startMs: 0, durationMs: 200, heightPx: 209 }, { startMs: 0, durationMs: 200, heightPx: NaN }]) {
++      expect(() => validateSkin({ ...skin, animations: { idle: { row: 0, holdsMs: [100, 100], hops: [hop] } } })).toThrow();
++    }
++  });
+   let root: string;
+   beforeEach(() => { root = mkdtempSync(join(tmpdir(), "dap-skins-")); mkdirSync(join(root, "assets")); writeFileSync(join(root, "assets/sheet.png"), PNG); });
+   afterEach(() => rmSync(root, { recursive: true, force: true }));
+diff --git a/app/electron/renderer/src/pet-skin-animation.ts b/app/electron/renderer/src/pet-skin-animation.ts
+index 5c57d887..18c20f2a 100644
+--- a/app/electron/renderer/src/pet-skin-animation.ts
++++ b/app/electron/renderer/src/pet-skin-animation.ts
+@@ -9,10 +9,21 @@ export function skinMotion(skin: PetSkinDefinition, state: PetState | null): str
+     grabbed: "waiting", error: "failed", jumping: "jumping",
+     dance: "jumping", feed_munch: "running", groom: "waiting", sleep: "waiting", sleep_menu: "waiting",
+   };
++  const requested = state?.sprite_set === "sleep_menu" ? "sleep" : state?.sprite_set ?? "";
++  if (skin.animations[requested]) return requested;
+   const motion = mapped[state?.sprite_set ?? ""] ?? "idle";
+   return skin.animations[motion] ? motion : "idle";
+ }
+ 
++export function skinHopOffset(clip: PetSkinDefinition["animations"][string], elapsed: number): number {
++  const time = Math.max(0, elapsed) % clip.holdsMs.reduce((sum, hold) => sum + hold, 0);
++  for (const hop of clip.hops ?? []) {
++    const phase = (time - hop.startMs) / hop.durationMs;
++    if (phase > 0 && phase < 1) return -4 * hop.heightPx * phase * (1 - phase);
++  }
++  return 0;
++}
++
+ export function skinColumn(holds: number[], elapsed: number): number {
+   let time = Math.max(0, elapsed) % holds.reduce((sum, duration) => sum + duration, 0);
+   for (let index = 0; index < holds.length; index++) {
+diff --git a/app/electron/renderer/src/pet-view.ts b/app/electron/renderer/src/pet-view.ts
+index 7333a7ef..827505a1 100644
+--- a/app/electron/renderer/src/pet-view.ts
++++ b/app/electron/renderer/src/pet-view.ts
+@@ -12,7 +12,7 @@
+ /// <reference types="vite/client" />
+ import type { PetModel, PetState } from "./pet-model.js";
+ import type { DapBridge, ResolvedLink, PetAppearance } from "@dap/electron-main";
+-import { skinColumn, skinMotion } from "./pet-skin-animation.js";
++import { skinColumn, skinMotion, skinHopOffset } from "./pet-skin-animation.js";
+ 
+ /** Pet bounding box (px) — matches the engine's petSize and oshi-desk's CHAR_SIZE. */
+ const CHAR_SIZE = 130;
+@@ -325,7 +325,7 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+     const { width, height } = skin.definition.cell;
+     context.clearRect(0, 0, width, height);
+     context.imageSmoothingEnabled = false;
+-    context.drawImage(skinImage, column * width, clip.row * height, width, height, 0, 0, width, height);
++    context.drawImage(skinImage, column * width, clip.row * height, width, height, 0, skinHopOffset(clip, nowMs - skinMotionStart), width, height);
+   };
+ 
+   let spriteSet = "";
+diff --git a/app/electron/renderer/test/pet-skin-animation.test.ts b/app/electron/renderer/test/pet-skin-animation.test.ts
+index 247a1486..4c2e9bd6 100644
+--- a/app/electron/renderer/test/pet-skin-animation.test.ts
++++ b/app/electron/renderer/test/pet-skin-animation.test.ts
+@@ -1,8 +1,20 @@
+ import { describe, expect, it } from "vitest";
+-import { skinColumn, skinMotion } from "../src/pet-skin-animation.js";
++import { skinColumn, skinMotion, skinHopOffset } from "../src/pet-skin-animation.js";
+ import type { PetAppearance } from "@dap/electron-main";
+ 
+ describe("plugin skin animation", () => {
++  it("prefers independent action clips, aliases menu sleep, and preserves smooth success hops", () => {
++    const actions = ["sleep", "feed_munch", "groom", "grabbed", "success", "dance"];
++    const extended = { ...skin, animations: { ...skin.animations, ...Object.fromEntries(actions.map((key, i) => [key, { row: 11 + i, holdsMs: [100, 100] }])) } };
++    const state = { mood: "neutral", activity: "idle", sprite_set: "idle", anim: "loop", fps: 12 };
++    for (const action of actions) expect(skinMotion(extended, { ...state, sprite_set: action })).toBe(action);
++    expect(skinMotion(extended, { ...state, sprite_set: "sleep_menu" })).toBe("sleep");
++    const clip = { row: 11, holdsMs: [100, 100, 100, 100], hops: [{ startMs: 0, durationMs: 200, heightPx: 18 }] };
++    expect(skinHopOffset(clip, 0)).toBe(0);
++    expect(skinHopOffset(clip, 100)).toBe(-18);
++    expect(skinHopOffset(clip, 200)).toBe(0);
++    expect(skinHopOffset(clip, 500)).toBe(-18);
++  });
+   const skin: NonNullable<PetAppearance["skin"]>["definition"] = {
+     id: "sample", displayName: "Sample", schemaVersion: 1, spritesheetPath: "sheet.png",
+     cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 11 },
+diff --git a/app/packages/plugins/src/pet-skins.ts b/app/packages/plugins/src/pet-skins.ts
+index b4e461bf..7688e8ad 100644
+--- a/app/packages/plugins/src/pet-skins.ts
++++ b/app/packages/plugins/src/pet-skins.ts
+@@ -16,7 +16,7 @@ export interface PetSkinDefinition {
+   spritesheetPath: string;
+   cell: { width: number; height: number };
+   grid: { columns: number; rows: number };
+-  animations: Record<string, { row: number; holdsMs: number[] }>;
++  animations: Record<string, { row: number; holdsMs: number[]; hops?: Array<{ startMs: number; durationMs: number; heightPx: number }> }>;
+   look?: { startRow: number; directions: 16; startAngleDegrees: 0; clockwise: true };
+   persona?: CharacterPersona;
+ }
+@@ -36,6 +36,8 @@ export interface PetSkinRegistration {
+ 
+ export interface PetSkinsHost {
+   readonly apiVersion: 2;
++  /** Additive capability: hosts without this property support only the original nine clips. */
++  readonly supportedMotions?: readonly string[];
+   registerSkin(skin: PetSkinDefinition): Promise<PetSkinRegistration>;
+   getActiveSkin(): string | null;
+   getActivePersona(): string | null;
+diff --git a/docs/PLUGIN_API.md b/docs/PLUGIN_API.md
+index c359b6ac..088094e0 100644
+--- a/docs/PLUGIN_API.md
++++ b/docs/PLUGIN_API.md
+@@ -893,3 +893,7 @@ macOS   : ~/Library/Application Support/dap/plugins/<id>/
+ 권한을 선언한 플러그인만 자기 등록에 대한 apply/reset/dispose를 사용할 수 있습니다.
+ 입력 크기·경로·PNG 검증, 모션 대응, 페르소나 수명과 예시는 [PLUGIN_PET_SKINS.md](PLUGIN_PET_SKINS.md) 참조.
+ `manifest_version: 2`와 기존 워크스페이스 프로토콜은 유지합니다. 16방향 시선은 현재 팔레트 미리보기 전용입니다.
++
++**1.6.7+**에서는 `petSkins.supportedMotions`로 지원 모션을 확인할 수 있습니다. 기존 9개에 `sleep`, `feed_munch`, `groom`, `grabbed`, `success`, `dance`가 추가되었습니다. 해당 클립이 없으면 기존 슬롯으로 대체합니다. `sleep_menu`는 `sleep` 클립을 사용하며, 춤과 점프는 독립적입니다. PNG 전체 크기 4096×4096·8MB 제한은 유지하고 행 수 상한은 32로 확장합니다(192×208 셀에서는 높이 제한에 따라 최대 19행).
++
++클립에는 선택적 `hops: [{startMs, durationMs, heightPx}]`를 최대 4개 지정할 수 있습니다. 각 값은 정수이며 클립 재생 시간과 셀 높이 안에 있어야 합니다. 렌더러가 포물선으로 y 오프셋을 계산하여 프레임 사이 점프를 부드럽게 연결합니다. 이 capability가 없는 호스트에는 기존 9개 모션·11행 정의만 등록하세요.
+diff --git a/docs/PLUGIN_PET_SKINS.md b/docs/PLUGIN_PET_SKINS.md
+index 332ef8ad..f6cf1386 100644
+--- a/docs/PLUGIN_PET_SKINS.md
++++ b/docs/PLUGIN_PET_SKINS.md
+@@ -35,7 +35,7 @@ interface PetSkinDefinition {
+   spritesheetPath: string;
+   cell: { width: number; height: number };
+   grid: { columns: number; rows: number };
+-  animations: Record<string, { row: number; holdsMs: number[] }>;
++  animations: Record<string, { row: number; holdsMs: number[]; hops?: {startMs: number; durationMs: number; heightPx: number}[] }>;
+   look?: { startRow: number; directions: 16; startAngleDegrees: 0; clockwise: true };
+   persona?: CharacterPersona;
+ }
+@@ -52,7 +52,7 @@ interface CharacterPersona {
+ |---|---|
+ | 등록 수 | 플러그인당 최대 16 |
+ | PNG | 최대 8,000,000 bytes, 한 변 4096px, 전체 16,000,000 pixels 이하 |
+-| grid | 최대 8열 × 11행 |
++| grid | 최대 8열 × 32행 (PNG 한 변 4096px 제한도 적용). 1.6.6 이하는 최대 11행 |
+ | 프레임 시간 | 각 20~5000ms, 한 모션 최대 grid 열 수 |
+ | 정의 JSON | 64KiB 이하, 알 수 없는 필드 거부 |
+ | persona | skin과 같은 id, traits 1~8개, contextHint·speakingStyle 각각 300자 이하 |
+@@ -73,6 +73,8 @@ interface CharacterPersona {
+ | groom / sleep / sleep_menu (1.6.2+) | waiting |
+ | 그 외 | idle |
+ 
++**1.6.7+**: `supportedMotions`는 기존 9개에 `sleep`, `feed_munch`, `groom`, `grabbed`, `success`, `dance`를 추가해 알려 줍니다. 해당 상태의 동명 클립이 있으면 위 대체 슬롯보다 우선하며 `sleep_menu`도 `sleep`을 사용합니다. 기존 스킨의 대체 동작은 유지합니다. 클립의 선택적 `hops`는 최대 4개, 클립 길이 이내의 정수 시각과 셀 높이 이내의 정수 높이만 허용합니다. 프레임 사이 y 오프셋은 연속 포물선으로 계산합니다.
++
+ 스킨이 제공하지 않는 모션만 `idle`로 돌아갑니다. 1.6.2부터 춤·먹기·그루밍·휴식 상태에도 기존 모션을 대응해, 기본 펫이 반응할 때 스킨만 평소 대기처럼 보이던 누락을 수정했습니다. 전용 춤·먹기·수면 프레임을 새로 만든 것은 아니며 기존 스킨의 가장 가까운 모션을 사용합니다. 스킨 적용 자체는 이동 속도·배회 확률·행동 타이머를 바꾸지 않습니다.
+ 
+ ## 앱에 추가한 연결
+@@ -91,6 +93,6 @@ interface CharacterPersona {
+ 
+ 치이카와·하치와레·우사기·모몽가·시사·랏코·쿠리만쥬·세이렌·후루혼야·아노코·데카츠요. 각자 9개 모션, 원본 가변 프레임 시간, 성격·말투·예시 대사를 제공합니다. 말투는 서비스용 해석이며, 세이렌·아노코·데카츠요는 창작 초안임을 표시합니다.
+ 
+-원본 PNG 합계 약 25.9MB이며 공개 플러그인 ZIP에는 포함하지 않습니다. [Chiikawa Friends](https://github.com/o-min222/dap-chiikawa-friends)는 코드만 GitHub·DAP 카탈로그로 배포하고, 사용자가 선택창에서 원본 저장소 다운로드를 요청하면 고정 커밋의 이미지를 받아 해시를 검증합니다. 공개 DAP 앱·릴리스에도 이미지를 포함하지 않습니다.
++원본 PNG 합계 약 25.9MB이며 공개 플러그인 ZIP에는 포함하지 않습니다. [Chiikawa Friends](https://github.com/o-min222/dap-chiikawa-friends)는 코드와 새로 생성한 모션 스트립을 GitHub·DAP 카탈로그로 배포하고, 사용자가 선택창에서 원본 저장소 다운로드를 요청하면 고정 커밋의 이미지를 받아 해시를 검증합니다. 공개 DAP 앱·릴리스에도 이미지를 포함하지 않습니다.
+ 
+ 근거: [DAP 개발 가이드](https://project-undonghae.github.io/desk-ai-pet/developers.html#ai-build), [원본 에셋](https://github.com/heelee912/chiikawa-dots-pets), [공식 캐릭터 소개](https://www.chiikawaofficial.com/characters).

@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const SOURCE = __SOURCE_JSON__;
 const SKINS = __SKINS_JSON__;
+const MOTION_PACK = __MOTIONS_JSON__;
 export async function activate(ctx) {
   const api = ctx.host.petSkins;
   const available = api?.apiVersion === 2;
@@ -10,6 +11,12 @@ export async function activate(ctx) {
   let palette = null, offPalette = null, disposed = false, busy = false;
   let queue = Promise.resolve();
   let assetsReady = await hasOriginalAssets(ROOT, SOURCE);
+  const extendedMotions = api?.supportedMotions?.includes("sleep") === true;
+  let preparedSkins = SKINS;
+  async function prepareSkins() {
+    preparedSkins = await Promise.all(SKINS.map(skin => prepareMotionSkin(ROOT, skin, MOTION_PACK, extendedMotions)));
+  }
+  if (assetsReady) await prepareSkins();
   let assetRevision = 0;
   const downloads = new AbortController();
   const values = () => ctx.host.settings.values(section);
@@ -18,12 +25,12 @@ export async function activate(ctx) {
     if (disposed || !palette || palette.isDestroyed()) return;
     const activeId = available ? api.getActiveSkin() : null;
     const active = [...registrations.values()].find(reg => reg.id === activeId);
-    palette.postMessage({ type: "status", available, busy, assetsReady, assetRevision, activeId: active ? active.id.split(".").at(-1) : null,
+    palette.postMessage({ type: "status", available, busy, assetsReady, assetRevision, skins: preparedSkins, extendedMotions, activeId: active ? active.id.split(".").at(-1) : null,
       personaEnabled: personaWanted(), personaActive: available && api.getActivePersona() === activeId && Boolean(active),
       message: message ?? (available ? !assetsReady ? "처음 한 번 원본 저장소에서 이미지를 받아 주세요." : active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.1 이상이 필요해요.") });
   }
   async function register(id) {
-    const skin = SKINS.find(item => item.id === id);
+    const skin = preparedSkins.find(item => item.id === id);
     if (!skin) throw Error("Unknown character");
     if (!assetsReady) throw Error("원본 이미지를 먼저 받아 주세요.");
     if (!registrations.has(id)) registrations.set(id, await api.registerSkin(skin));
@@ -42,6 +49,7 @@ export async function activate(ctx) {
             onProgress: (count, total) => push(`원본 이미지를 준비하고 있어요. ${count}/${total}`),
           });
           assetsReady = true; assetRevision++;
+          await prepareSkins();
           resultMessage = "이미지 준비가 끝났어요. 캐릭터를 고른 뒤 적용해 주세요.";
         } else if (message.type === "set-persona") {
           if (typeof message.enabled !== "boolean") return;

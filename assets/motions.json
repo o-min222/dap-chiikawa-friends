@@ -1,0 +1,256 @@
+[
+  {
+    "id": "sleep",
+    "characterId": "chiikawa",
+    "motion": "sleep",
+    "file": "assets/generated/sleep.png",
+    "bytes": 168103,
+    "sha256": "1ef8baebfb95e3a297dc678de41da049e6221f2467adcc815ec9c1ac96317f41",
+    "holdsMs": [
+      350,
+      350,
+      400,
+      450,
+      400,
+      350
+    ]
+  },
+  {
+    "id": "eat",
+    "characterId": "chiikawa",
+    "motion": "feed_munch",
+    "file": "assets/generated/eat.png",
+    "bytes": 247228,
+    "sha256": "28706113766bd5a2d833ac3e63d8e3fbe0363631b6c22a02901ab05bb64c5df8",
+    "holdsMs": [
+      160,
+      120,
+      180,
+      120,
+      160,
+      120,
+      180,
+      120
+    ]
+  },
+  {
+    "id": "groom",
+    "characterId": "chiikawa",
+    "motion": "groom",
+    "file": "assets/generated/groom.png",
+    "bytes": 224402,
+    "sha256": "912e79526f1d567638f473a4bc289a0f48a174ea11564e67f758c791c6673bce",
+    "holdsMs": [
+      130,
+      110,
+      110,
+      110,
+      160,
+      110,
+      110,
+      110
+    ]
+  },
+  {
+    "id": "grabbed",
+    "characterId": "chiikawa",
+    "motion": "grabbed",
+    "file": "assets/generated/grabbed.png",
+    "bytes": 171079,
+    "sha256": "cee43f0c5b212dd19b2a763a7ead878cb7f806f6c369c5b1bc14812f0b924f82",
+    "holdsMs": [
+      160,
+      160,
+      160,
+      160,
+      160,
+      160
+    ]
+  },
+  {
+    "id": "success",
+    "characterId": "chiikawa",
+    "motion": "success",
+    "file": "assets/generated/success.png",
+    "bytes": 236981,
+    "sha256": "d912b3364ee647ae89282b33a8b0e599b87cf9a7aba521e2db531a44015baf3d",
+    "holdsMs": [
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      400
+    ],
+    "hops": [
+      {
+        "startMs": 100,
+        "durationMs": 380,
+        "heightPx": 18
+      },
+      {
+        "startMs": 480,
+        "durationMs": 220,
+        "heightPx": 8
+      }
+    ]
+  },
+  {
+    "id": "dance",
+    "characterId": "chiikawa",
+    "motion": "dance",
+    "file": "assets/generated/dance.png",
+    "bytes": 241933,
+    "sha256": "71e76fdaea0088fd5bd28ab3fb56351eebc21a8449d2a4d22d48765721c7a4bb",
+    "holdsMs": [
+      140,
+      120,
+      140,
+      120,
+      140,
+      120,
+      140,
+      120
+    ]
+  },
+  {
+    "id": "hachiware-dance",
+    "characterId": "hachiware",
+    "motion": "dance",
+    "file": "assets/generated/hachiware-dance.png",
+    "bytes": 288855,
+    "sha256": "90d1857b618168d98cea6842686d095cb23afc625e7552962ac41954a2c7c415",
+    "holdsMs": [
+      140,
+      140,
+      140,
+      140,
+      140,
+      140,
+      140,
+      140
+    ]
+  },
+  {
+    "id": "momonga-eat",
+    "characterId": "momonga",
+    "motion": "feed_munch",
+    "file": "assets/generated/momonga-eat.png",
+    "bytes": 326480,
+    "sha256": "75e8655fcb6c1ada03fb1a1344954b13caad7131c94423333682103c43825894",
+    "holdsMs": [
+      140,
+      160,
+      140,
+      160,
+      180,
+      140,
+      140,
+      160
+    ]
+  },
+  {
+    "id": "momonga-dance",
+    "characterId": "momonga",
+    "motion": "dance",
+    "file": "assets/generated/momonga-dance.png",
+    "bytes": 171754,
+    "sha256": "e7c053895dd65537233d1f23b4fb5e47d6bc7318a8643bee3d8d1b674454d0c4",
+    "holdsMs": [
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100
+    ]
+  },
+  {
+    "id": "momonga-move-left",
+    "characterId": "momonga",
+    "motion": "running-left",
+    "file": "assets/generated/momonga-move-left.png",
+    "bytes": 201160,
+    "sha256": "658814dbe29498eb2c1ae0572dafb4402c760d55ec0dc2251dc227b84a16afb2",
+    "holdsMs": [
+      110,
+      90,
+      100,
+      100,
+      110,
+      90,
+      100,
+      100
+    ]
+  },
+  {
+    "id": "momonga-move-right",
+    "characterId": "momonga",
+    "motion": "running-right",
+    "file": "assets/generated/momonga-move-right.png",
+    "bytes": 203562,
+    "sha256": "e8adf9a101bdd97b27f7361702f213066b13d5bc2808a5d9bdaab4b8bff50522",
+    "holdsMs": [
+      110,
+      90,
+      100,
+      100,
+      110,
+      90,
+      100,
+      100
+    ]
+  },
+  {
+    "id": "momonga-grabbed",
+    "characterId": "momonga",
+    "motion": "grabbed",
+    "file": "assets/generated/momonga-grabbed.png",
+    "bytes": 163161,
+    "sha256": "9324f1abd24f87e696a15c422cd346332baca1bcf23e93fd5cd180929f043500",
+    "holdsMs": [
+      140,
+      100,
+      140,
+      100,
+      140,
+      180
+    ]
+  },
+  {
+    "id": "momonga-sleep",
+    "characterId": "momonga",
+    "motion": "sleep",
+    "file": "assets/generated/momonga-sleep.png",
+    "bytes": 159451,
+    "sha256": "0f5f51d16fdf6c6ca1672888968a6cfcb29e47c82ec085e4f48d24118cf9d09f",
+    "holdsMs": [
+      500,
+      350,
+      350,
+      500,
+      350,
+      350
+    ]
+  },
+  {
+    "id": "momonga-idle",
+    "characterId": "momonga",
+    "motion": "idle",
+    "file": "assets/generated/momonga-idle.png",
+    "bytes": 146200,
+    "sha256": "35947c3be254662fc58e6af975bfef68f2c99360e8bcb30b01b21516c5673e33",
+    "holdsMs": [
+      1300,
+      500,
+      110,
+      110,
+      110,
+      900
+    ]
+  }
+]

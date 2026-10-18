@@ -19,8 +19,9 @@ const lines=['# DAP에 연결된 모션 제작 현황','','DAP 1.6.8의 상태 �
 for(const key of PRODUCTION_MOTIONS)lines.push('| '+labels[key]+' | '+triggers[key]+' | '+catalog.map(s=>({ready:'자체',upstream:'원본 유지',shared:'일하기 공유'})[coverage[s.id][key].status]).join(' | ')+' |');
 lines.push('','`jumping`·`waiting`은 구형 스킨 검증/폴백용 호환 슬롯으로만 유지합니다. 현재 독립 행동의 제작 목록과 선택창에서는 제외합니다. 인사 전용 동작은 없으며 `waving`은 쓰다듬기 기쁨 반응입니다.','',
 '기준 소스: DAP `app/packages/core/src/pet/pet-controller.ts`, `pet-states.ts`, `index.ts`, `app/electron/renderer/src/pet-skin-animation.ts`. 등록 가능한 키와 실제 호출되는 행동을 구분합니다.','',
-'우사기는 자율·이동·일하기·먹기·수면·드래그·춤의 주요 동작 제작을 마쳤습니다. 클릭 기쁨 반응과 채팅 생각 중은 선택 보강 대상으로 남기고 기존 원본을 유지합니다. 실패·성공·독립 점프·기다림과 두 번째 일하기는 필수 제작에서 제외합니다.','',
+'우사기는 자율·이동·일하기·먹기·수면·드래그·춤의 주요 동작 제작을 마쳤습니다. 채팅 생각 중은 새 모션으로 교체했으며 클릭 기쁨 반응은 선택 보강 대상으로 기존 원본을 유지합니다. 실패·성공·독립 점프·기다림과 두 번째 일하기는 필수 제작에서 제외합니다.','',
 '성공은 SuccessState 정의와 스킨 키만 있고 일반 작업 완료/에이전트 종료에서는 진입하지 않습니다. 오류는 외부 pet.context의 activity=error를 직접 받을 때만 진입하며, 일반 AI_REQUEST_ERROR는 말풍선을 표시하고 생각 중 상태를 대기로 돌립니다. 기존 호환 키·원본은 유지하고 신규 제작은 보류합니다. 우사기 성공 초안도 보관만 합니다. 그루밍은 한쪽으로 “하아?” 하는 갸웃하기만 유지합니다.','',
 '외부 소스는 heelee912/chiikawa-dots-pets의 고정 커밋과 SHA-256으로 검증합니다. 네 캐릭터만 내려받으며, 승인된 자체 모션만 교체합니다. 모든 필수 동작이 자체 모션으로 채워지면 원본 없이 시트를 조합할 수 있고 원본 다운로드도 자동 생략됩니다. 최종 전환 시 고정 소스 메타데이터와 다운로드 코드를 제거합니다.','');
+lines.push('v2.1.0 채팅 응답 대기(review): 모몽가 턱 짚고 갸웃하기 8프레임·2.2초와 우사기 팔짱 끼고 하아? 8프레임·2.12초를 승인본으로 적용했습니다. 채팅 전송 후 AI 응답을 기다리는 동안 thinking/headtilt 경로에서 재생합니다. 그루밍·일하기 슬롯은 그대로 유지합니다.','');
 await writeFile(new URL('MOTIONS.md',root),lines.join('\n'));
 console.log(`Built ${catalog.length} characters; ${pack.length} approved strips; upstream fallback retained until replacement completes`);

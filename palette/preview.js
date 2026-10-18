@@ -146,7 +146,7 @@ if (bridge) {
     assetRevision = message.assetRevision ?? 0;
     if (refreshImage || selectActive || catalogChanged) selectCharacter();
     personaToggle.checked = message.personaEnabled === true;
-    document.getElementById("persona-note").textContent = "캐릭터 이름·자기 지칭·성격·말투를 함께 적용해요. 사용자 이름·사용자에 대한 호칭·기억은 유지되며, 옵션을 끄면 기존 펫 이름과 말투로 돌아가요.";
+    document.getElementById("persona-note").textContent = "캐릭터 이름·성격·말투와 사용자를 부르는 표현을 함께 적용해요. 직접 정한 이름·호칭을 우선하고, 별도 지정이 없으면 캐릭터에 맞게 불러요. 옵션을 끄면 기본 말투로 돌아가요.";
     status.textContent = typeof message.message === "string" ? message.message : "";
     buttons();
   });

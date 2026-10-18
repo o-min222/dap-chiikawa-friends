@@ -462,5 +462,43 @@
       480
     ],
     "reviewStatus": "approved"
+  },
+  {
+    "id": "momonga-review",
+    "characterId": "momonga",
+    "motion": "review",
+    "file": "assets/generated/momonga-review.png",
+    "bytes": 189184,
+    "sha256": "358b2ad094c53120502e146dfd17441bc87008cab3f2762584a5999aad8108cb",
+    "holdsMs": [
+      400,
+      240,
+      320,
+      400,
+      100,
+      100,
+      240,
+      400
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-review",
+    "characterId": "usagi",
+    "motion": "review",
+    "file": "assets/generated/usagi-review.png",
+    "bytes": 185776,
+    "sha256": "e05026eb41dd12ad5ed0cb587a7f1443a15054b5b4dc463fb8cd3bc0a2983cb4",
+    "holdsMs": [
+      400,
+      200,
+      320,
+      400,
+      90,
+      110,
+      200,
+      400
+    ],
+    "reviewStatus": "approved"
   }
 ]

@@ -191,16 +191,16 @@
       "source": "generated"
     },
     "waving": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-usagi-waving",
-      "source": "upstream"
+      "motionId": "usagi-happy",
+      "source": "generated"
     },
     "failed": {
-      "status": "upstream",
+      "status": "ready",
       "production": false,
-      "motionId": "upstream-usagi-failed",
-      "source": "upstream"
+      "motionId": "usagi-idle",
+      "source": "generated"
     },
     "running": {
       "status": "ready",
@@ -239,10 +239,10 @@
       "source": "generated"
     },
     "success": {
-      "status": "upstream",
+      "status": "ready",
       "production": false,
-      "motionId": "upstream-usagi-waving",
-      "source": "upstream"
+      "motionId": "usagi-happy",
+      "source": "generated"
     },
     "dance": {
       "status": "ready",

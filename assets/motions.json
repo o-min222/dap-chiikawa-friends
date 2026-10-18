@@ -531,5 +531,31 @@
       }
     ],
     "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-happy",
+    "characterId": "usagi",
+    "motion": "waving",
+    "file": "assets/generated/usagi-happy.png",
+    "bytes": 175374,
+    "sha256": "f98ac75a41ac17a23dd1b20d8392e9602b29f9b93c2db86e5723cc9782a1a3aa",
+    "holdsMs": [
+      120,
+      180,
+      220,
+      300,
+      220,
+      180,
+      280,
+      500
+    ],
+    "hops": [
+      {
+        "startMs": 300,
+        "durationMs": 500,
+        "heightPx": 7
+      }
+    ],
+    "reviewStatus": "approved"
   }
 ]

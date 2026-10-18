@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,29);
+assert.equal(motions.length,30);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);

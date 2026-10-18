@@ -14,13 +14,16 @@ export async function activate(ctx) {
   let queue = Promise.resolve();
   await verifyBundledAssets(ROOT, BUNDLED_ASSETS);
   const requiredSource = {...SOURCE, assets: SOURCE.assets.filter(asset => SKINS.some(skin => skin.id === asset.id && Object.values(planMotions(skin, MOTION_PACK).choices).some(m => m.source === "upstream")))};
-  let assetsReady = await hasOriginalAssets(ROOT, requiredSource);
+  let assetsReady = false, readySkinIds = [];
   const extendedMotions = api?.supportedMotions?.includes("sleep") === true;
   let preparedSkins = SKINS;
   async function prepareSkins() {
-    preparedSkins = await Promise.all(SKINS.map(skin => prepareMotionSkin(ROOT, skin, MOTION_PACK, extendedMotions, api?.supportedMotions?.includes("working_v2") === true)));
+    const ready = await Promise.all(SKINS.map(skin => hasOriginalAssets(ROOT, {...requiredSource, assets: requiredSource.assets.filter(asset => asset.id === skin.id)})));
+    preparedSkins = await Promise.all(SKINS.map((skin, index) => ready[index] ? prepareMotionSkin(ROOT, skin, MOTION_PACK, extendedMotions, api?.supportedMotions?.includes("working_v2") === true) : skin));
+    readySkinIds = SKINS.filter((_, index) => ready[index]).map(skin => skin.id);
+    assetsReady = readySkinIds.length === SKINS.length;
   }
-  if (assetsReady) await prepareSkins();
+  await prepareSkins();
   let assetRevision = 0;
   const downloads = new AbortController();
   const values = () => ctx.host.settings.values(section);
@@ -29,14 +32,14 @@ export async function activate(ctx) {
     if (disposed || !palette || palette.isDestroyed()) return;
     const activeId = available ? api.getActiveSkin() : null;
     const active = [...registrations.values()].find(reg => reg.id === activeId);
-    palette.postMessage({ type: "status", available, busy, assetsReady, assetRevision, skins: preparedSkins, coverage: COVERAGE, extendedMotions, activeId: active ? active.id.split(".").at(-1) : null,
+    palette.postMessage({ type: "status", available, busy, assetsReady, readySkinIds, assetRevision, skins: preparedSkins, coverage: COVERAGE, extendedMotions, activeId: active ? active.id.split(".").at(-1) : null,
       personaEnabled: personaWanted(), personaActive: available && api.getActivePersona() === activeId && Boolean(active),
-      message: message ?? (available ? !assetsReady ? "처음 한 번 원본 저장소에서 이미지를 받아 주세요." : active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.1 이상이 필요해요.") });
+      message: message ?? (available ? active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : !assetsReady ? "준비된 캐릭터는 바로 적용할 수 있어요. 나머지 캐릭터는 이미지 준비를 눌러 주세요." : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.1 이상이 필요해요.") });
   }
   async function register(id) {
     const skin = preparedSkins.find(item => item.id === id);
     if (!skin) throw Error("Unknown character");
-    if (!assetsReady) throw Error("원본 이미지를 먼저 받아 주세요.");
+    if (!readySkinIds.includes(id)) throw Error("이 캐릭터의 원본 이미지를 먼저 받아 주세요.");
     if (!registrations.has(id)) registrations.set(id, await api.registerSkin(skin));
     return registrations.get(id);
   }
@@ -53,7 +56,7 @@ export async function activate(ctx) {
             onProgress: (count, total) => push(`원본 이미지를 준비하고 있어요. ${count}/${total}`),
           });
           await prepareSkins();
-          assetsReady = true; assetRevision++;
+          assetRevision++;
           resultMessage = "이미지 준비가 끝났어요. 캐릭터를 고른 뒤 적용해 주세요.";
         } else if (message.type === "set-persona") {
           if (typeof message.enabled !== "boolean") return;
@@ -108,7 +111,7 @@ export async function activate(ctx) {
   }) : null;
   const saved = values().appliedCharacter;
   if (saved && !SKINS.some(skin => skin.id === saved)) await ctx.host.settings.set(section, "appliedCharacter", "");
-  if (available && assetsReady && SKINS.some(skin => skin.id === saved)) await enqueue({ type: "apply", id: saved });
+  if (available && readySkinIds.includes(saved)) await enqueue({ type: "apply", id: saved });
   return async () => {
     if (disposed) return;
     disposed = true; downloads.abort(); offPalette?.(); offSkin?.(); palette?.close();

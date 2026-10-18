@@ -8,19 +8,19 @@ import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
 
-test('29 strips connect approved character motions, including Momonga click happiness',async()=>{
- assert.equal(pack.length,29);assert.equal(new Set(pack.map(m=>m.id)).size,29);
+test('30 strips connect approved character motions, including both click reactions',async()=>{
+ assert.equal(pack.length,30);assert.equal(new Set(pack.map(m=>m.id)).size,30);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
   assert.deepEqual(decodeMotionPng(encodeMotionPng(image)).pixels,image.pixels);
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='ready').length,31);
+ assert.equal(coverage.filter(m=>m.status==='ready').length,34);
  assert.equal(coverage.filter(m=>m.status==='shared').length,3);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,22);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,19);
  const momonga=planMotions(skins.find(s=>s.id==='momonga'),pack).coverage;
  assert.equal(momonga.review.motionId,'momonga-review');
  assert.equal(momonga.review.status,'ready');
@@ -29,6 +29,8 @@ test('29 strips connect approved character motions, including Momonga click happ
  assert.ok(Object.values(momonga).every(m=>m.source!=='upstream'));
  assert.equal(pack.find(m=>m.id==='momonga-review').holdsMs.reduce((a,b)=>a+b,0),2200);
  const usagi=planMotions(skins.find(s=>s.id==='usagi'),pack).coverage;
+ assert.equal(usagi.waving.motionId,'usagi-happy');
+ assert.ok(Object.values(usagi).every(m=>m.source!=='upstream'));
  assert.equal(usagi.review.motionId,'usagi-review');
  assert.equal(usagi.review.status,'ready');
  assert.equal(pack.find(m=>m.id==='usagi-review').holdsMs.reduce((a,b)=>a+b,0),2120);
@@ -110,26 +112,36 @@ test('fully replaced character composes without downloading or reading originals
  }finally{await rm(root,{recursive:true,force:true});}
 });
 
-test('approved Momonga click reaction keeps preview timing, closes on idle, and composes without originals',async()=>{
- const happy=pack.find(m=>m.id==='momonga-happy');
+test('approved click reactions keep preview timing and compose every slot without originals',async()=>{
+ for(const character of ['momonga','usagi']){
+ const happy=pack.find(m=>m.id===character+'-happy');
  assert.equal(happy.reviewStatus,'approved');
- assert.deepEqual(happy.holdsMs,[120,180,260,300,260,240,240,400]);
- assert.deepEqual(happy.hops,[{startMs:180,durationMs:640,heightPx:6},{startMs:950,durationMs:450,heightPx:3}]);
+ assert.deepEqual(happy.holdsMs,character==='momonga'?[120,180,260,300,260,240,240,400]:[120,180,220,300,220,180,280,500]);
+ assert.deepEqual(happy.hops,character==='momonga'?[{startMs:180,durationMs:640,heightPx:6},{startMs:950,durationMs:450,heightPx:3}]:[{startMs:300,durationMs:500,heightPx:7}]);
  const image=decodeMotionPng(await readFile(new URL('../'+happy.file,import.meta.url)));
- const idle=decodeMotionPng(await readFile(new URL('../assets/generated/momonga-idle.png',import.meta.url)));
+ const idle=decodeMotionPng(await readFile(new URL('../assets/generated/'+character+'-idle.png',import.meta.url)));
  for(let y=0;y<208;y++)for(const frame of[0,7]){
   const start=(y*1536+frame*192)*4;
   assert.deepEqual(image.pixels.subarray(start,start+192*4),idle.pixels.subarray(y*1536*4,(y*1536+192)*4));
  }
- const root=await mkdtemp(join(tmpdir(),'dap-momonga-happy-'));
+ const root=await mkdtemp(join(tmpdir(),'dap-'+character+'-happy-'));
  try{
   const {catalog}=await fixture(root,skins,{originals:false});
-  const skin=catalog.find(s=>s.id==='momonga');
+  const skin=catalog.find(s=>s.id===character);
   assert.ok(Object.values(planMotions(skin,pack).choices).every(m=>m.source!=='upstream'));
-  const result=await prepareMotionSkin(root,skin,pack,true,true);
-  assert.deepEqual(result.animations.waving.hops,happy.hops);
+  for(const modern of [true,false]){
+  const result=await prepareMotionSkin(root,skin,pack,modern,modern);
+  const atlas=decodeMotionPng(await readFile(join(root,result.spritesheetPath)));
+  const choices=planMotions(skin,pack).choices,rowBytes=1536*208*4;
+  for(const [key,clip] of Object.entries(result.animations)){
+   const expected=decodeMotionPng(await readFile(new URL('../'+choices[key].file,import.meta.url)));
+   assert.deepEqual(atlas.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),expected.pixels);
+  }
+  if(modern)assert.deepEqual(result.animations.waving.hops,happy.hops);
   assert.deepEqual(result.animations.waving.holdsMs,happy.holdsMs);
   assert.equal(result.animations.failed.row,result.animations.idle.row);
-  assert.equal(result.animations.success.row,result.animations.waving.row);
+  if(modern)assert.equal(result.animations.success.row,result.animations.waving.row);
+  }
  }finally{await rm(root,{recursive:true,force:true});}
+ }
 });

@@ -16,4 +16,10 @@ test('reopened palette selects active character once and preserves later preview
  assert.equal(element('stage').attrs['aria-label'],'모몽가 모션 미리보기');
  element('character').value='usagi';element('character').listeners.change();receive({...status,busy:false});
  assert.equal(element('character').value,'usagi');assert.equal(element('apply').disabled,false);
+ receive({...status,assetsReady:false,readySkinIds:['usagi','momonga']});
+ assert.equal(element('apply').disabled,false);assert.equal(element('download-assets').hidden,true);
+ element('character').value='chiikawa';element('character').listeners.change();
+ assert.equal(element('apply').disabled,true);assert.equal(element('download-assets').hidden,false);
+ element('character').value='momonga';element('character').listeners.change();
+ assert.equal(element('download-assets').hidden,true);
 });

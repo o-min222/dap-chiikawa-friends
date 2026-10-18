@@ -30,14 +30,15 @@ let animationId = 0;
 let stopped = false;
 let loaded = false;
 let available = false;
-let assetsReady = false;
+let readySkinIds = [];
 let assetRevision = 0;
 let busy = false;
 const image = new Image();
 function buttons() {
-  download.hidden = assetsReady;
+  const selectedReady = readySkinIds.includes(skin.id);
+  download.hidden = selectedReady;
   download.disabled = !available || busy;
-  apply.disabled = !available || !assetsReady || busy || activeId === skin.id;
+  apply.disabled = !available || !selectedReady || busy || activeId === skin.id;
   character.disabled = busy;
   reset.disabled = !available || busy || !activeId;
   personaToggle.disabled = !bridge || busy;
@@ -99,7 +100,7 @@ function selectCharacter() {
   canvas.setAttribute("aria-label", `${skin.displayName} 모션 미리보기`);
   canvas.closest("section").setAttribute("aria-label", `${skin.displayName} 모션 미리보기`);
   drawing.clearRect(0, 0, 192, 208);
-  if (assetsReady) image.src = `../${skin.spritesheetPath}?v=${assetRevision}`;
+  if (readySkinIds.includes(skin.id)) image.src = `../${skin.spritesheetPath}?v=${assetRevision}`;
   buttons();
 }
 character.addEventListener("change", selectCharacter);
@@ -141,8 +142,9 @@ if (bridge) {
     statusReceived = true;
     if (selectActive) character.value = activeId;
     busy = message.busy === true;
-    const refreshImage = assetsReady !== (message.assetsReady === true) || assetRevision !== message.assetRevision;
-    assetsReady = message.assetsReady === true;
+    const nextReady = message.readySkinIds ?? (message.assetsReady === true ? skins.map(item => item.id) : []);
+    const refreshImage = JSON.stringify(readySkinIds) !== JSON.stringify(nextReady) || assetRevision !== message.assetRevision;
+    readySkinIds = nextReady;
     assetRevision = message.assetRevision ?? 0;
     if (refreshImage || selectActive || catalogChanged) selectCharacter();
     personaToggle.checked = message.personaEnabled === true;

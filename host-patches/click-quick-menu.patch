@@ -1,0 +1,58 @@
+diff --git a/app/electron/renderer/src/pet-view.ts b/app/electron/renderer/src/pet-view.ts
+index 827505a1..e3577d1b 100644
+--- a/app/electron/renderer/src/pet-view.ts
++++ b/app/electron/renderer/src/pet-view.ts
+@@ -766,10 +766,8 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+   window.addEventListener("mousemove", onWindowMove);
+   const activatePet = (offsetX: number, offsetY: number): void => {
+     const links = radialLinks.filter((l) => l.enabled);
+-    if (links.length === 0) {
+-      model.interact(offsetX, offsetY);
+-      return;
+-    }
++    model.interact(offsetX, offsetY);
++    if (links.length === 0) return;
+     if (radialEl) closeRadial();
+     else openRadial(links.map(linkToRadialItem), "quick");
+   };
+@@ -817,9 +815,8 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+       activatePet(e.offsetX, e.offsetY);
+     }
+   };
+-  // A genuine left-click (no drag) opens the radial quick-menu; a click synthesized right after a drag
+-  // is swallowed. With no menu items configured, fall back to the pet reaction so a click still does
+-  // something (and the user can add items via the "환경설정" context-menu entry).
++  // A genuine click reacts and also opens configured quick-menu items. A click synthesized
++  // right after a drag is swallowed.
+   const onClick = (e: MouseEvent): void => {
+     if (suppressClick) {
+       suppressClick = false;
+diff --git a/app/electron/renderer/test/pet-view.test.ts b/app/electron/renderer/test/pet-view.test.ts
+index 4ea4ac93..64e3c43d 100644
+--- a/app/electron/renderer/test/pet-view.test.ts
++++ b/app/electron/renderer/test/pet-view.test.ts
+@@ -559,7 +559,7 @@ describe("mountPetView", () => {
+   });
+ 
+   it("pet click toggles the radial open AND closed; main's radial:close push collapses it (oshi form)", async () => {
+-    const { bridge, emit, setRadialMenu, fireRadialClose } = fakeBridge();
++    const { bridge, emit, notify, setRadialMenu, fireRadialClose } = fakeBridge();
+     vi.mocked(bridge.getRadialItems).mockResolvedValue([
+       { id: "l1", label: "Web", kind: "url", url: "https://example.com", enabled: true, order: 0 },
+     ]);
+@@ -577,6 +577,7 @@ describe("mountPetView", () => {
+     const openRing = () => root.querySelector(".dap-pet__radial.open");
+ 
+     petClick();
++    expect(notify.mock.calls.filter(call => call[0] === "pet.command" && call[1]?.action === "interact")).toHaveLength(1);
+     expect(openRing()).not.toBeNull();
+     expect(openRing()!.classList.contains("dap-pet__radial--quick")).toBe(true);
+     // Opening arms main's cursor-leave watcher (center + reach>0).
+@@ -591,6 +592,7 @@ describe("mountPetView", () => {
+     // Second pet click must DISMISS the ring (regression: pointerdown pre-close re-opened it) —
+     // items collapse back into the pet and the watcher is disarmed.
+     petClick();
++    expect(notify.mock.calls.filter(call => call[0] === "pet.command" && call[1]?.action === "interact")).toHaveLength(2);
+     expect(openRing()).toBeNull();
+     expect(setRadialMenu).toHaveBeenLastCalledWith(false, 0, 0, 0);
+     expect(item.style.transform).toBe("translate(0px, 0px) scale(0.2)");

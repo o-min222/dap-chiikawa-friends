@@ -1,0 +1,287 @@
+diff --git a/app/electron/main/src/main.ts b/app/electron/main/src/main.ts
+index 21eb896e..c8627fb1 100644
+--- a/app/electron/main/src/main.ts
++++ b/app/electron/main/src/main.ts
+@@ -84,7 +84,7 @@ import { PermissionStore } from "./permission-store.js";
+ import { createEpisodeLog } from "./episode-log.js";
+ import { GovernanceRuntime } from "./governance-runtime.js";
+ import { createProjectActivity } from "./project-activity.js";
+-import { createProactiveSpeech } from "./proactive-speech.js";
++import { createProactiveSpeech, characterBubbleLine } from "./proactive-speech.js";
+ import { createPluginRuntime } from "./plugin-runtime.js";
+ import { createPluginMeetingManager } from "./plugin-meeting.js";
+ import { createWhisperMeetingBackend } from "./whisper-meeting-backend.js";
+@@ -787,7 +787,9 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+   });
+ 
+   // R4: pet reactions — behavior events -> overlay speech bubbles (pushed to the pet overlay window).
+-  const reactions = new PetReactions(new DeskSurfacePush((type, payload) => backend.broadcast(type, payload)));
++  const reactions = new PetReactions(new DeskSurfacePush((type, payload) => backend.broadcast(type, payload)), {
++    petLine: () => characterBubbleLine(petSkins.getSkin()?.definition.id ?? null),
++  });
+   behaviorBus.on((event) => reactions.handle(event));
+   // 처리 중 is a PET STATE, not just a bubble: chat/agentic turns tilt the pet into thinking
+   // (head-tilt sprite via petStatePayload) and settle back on done/error. Dance is never cut —
+diff --git a/app/electron/main/src/pet-reactions.ts b/app/electron/main/src/pet-reactions.ts
+index 934de709..f278a818 100644
+--- a/app/electron/main/src/pet-reactions.ts
++++ b/app/electron/main/src/pet-reactions.ts
+@@ -21,6 +21,8 @@ export interface PetReactionsOptions {
+   setTimer?: (fn: () => void, ms: number) => TimerHandle;
+   clearTimer?: (h: TimerHandle) => void;
+   now?: () => number;
++  /** Current skin's click reaction; null keeps the default pet response. */
++  petLine?: () => string | null;
+ }
+ 
+ /** A bubble that persists until the matching DONE/ERROR event dismisses it (no auto-timer). */
+@@ -31,6 +33,7 @@ export class PetReactions {
+   private readonly setTimer: (fn: () => void, ms: number) => TimerHandle;
+   private readonly clearTimer: (h: TimerHandle) => void;
+   private readonly now: () => number;
++  private readonly petLine: (() => string | null) | undefined;
+   private readonly timers = new Map<string, TimerHandle>();
+   /** The single bubble currently shown (null when none) — enforces one-at-a-time. */
+   private current: string | null = null;
+@@ -43,6 +46,7 @@ export class PetReactions {
+     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
+     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
+     this.now = opts.now ?? (() => Date.now());
++    this.petLine = opts.petLine;
+   }
+ 
+   /** Route a behavior event to a bubble. Unknown events are ignored. */
+@@ -59,9 +63,11 @@ export class PetReactions {
+       case BE.AI_REQUEST_ERROR:
+         this.showTimed("으, 문제가 생겼어", "error", 2500);
+         break;
+-      case BE.USER_PET:
+-        this.showTimed("헤헤", "react", 1500, "pet");
++      case BE.USER_PET: {
++        const line = this.petLine?.();
++        this.showTimed(line ?? "헤헤", "react", line ? 3000 : 1500, "pet");
+         break;
++      }
+       case BE.USER_FEED:
+         this.showTimed("냠냠 고마워!", "react", 1800, "feed");
+         break;
+diff --git a/app/electron/main/src/proactive-speech.ts b/app/electron/main/src/proactive-speech.ts
+index d6bd8856..2005380e 100644
+--- a/app/electron/main/src/proactive-speech.ts
++++ b/app/electron/main/src/proactive-speech.ts
+@@ -2,8 +2,8 @@
+  * RP4: proactive speech wiring — the cat occasionally speaks first (legacy
+  * ProactiveSpeechService parity). Pure composition: builds the ported core service from
+  * main-process signals (idle time, pet state/visibility, chat busy) and the pipeline's
+- * serialized proactive turn. The four character skins use bubble-only lines, without chat
+- * turns, LLM calls or memory reads. Electron-FREE (all inputs injected) so it tests headlessly.
++ * serialized proactive turn. The four character skins speak on clicks instead of this timer.
++ * Electron-FREE (all inputs injected) so it tests headlessly.
+  *
+  * Environment context is minimal for now: no weather source is wired (weather slot is a
+  * deferred peripheral), so hints come from memory recall (RecallTrigger, 6h idle / 24h
+@@ -38,7 +38,7 @@ export interface ProactiveSpeechOptions {
+   prefs?: () => Record<string, unknown>;
+   now?: () => number;
+   rng?: () => number;
+-  /** Selected skin's character id; spontaneous bubbles do not require a chat persona. */
++  /** Selected skin's character id; click-only characters stay silent on this timer. */
+   characterId?: () => string | null;
+ }
+ 
+@@ -48,7 +48,6 @@ const CHARACTER_LINES: Readonly<Record<string, readonly string[]>> = {
+   usagi: ["야하!", "우럇!", "푸루루루!", "하아?!"],
+   momonga: ["이 귀여운 나를 봐!", "칭찬해 봐!", "오늘도 귀엽지?", "더 귀여워해 줘!"],
+ };
+-const CHARACTER_BUBBLE = "character-bubble-only";
+ 
+ export function characterBubbleLine(characterId: string | null, rng: () => number = Math.random): string | null {
+   const lines = characterId && Object.hasOwn(CHARACTER_LINES, characterId) ? CHARACTER_LINES[characterId] : null;
+@@ -75,27 +74,15 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+   };
+   const recall = new RecallTrigger(opts.memory, opts.lastInteractionAt);
+   return new ProactiveSpeechService({
+-    // Character chatter never enters the LLM/chat pipeline, including its history and memory.
+-    chatTurn: { execute: (_msg, o) => o.proactiveHint === CHARACTER_BUBBLE
+-      ? characterBubbleLine(opts.characterId?.() ?? null, opts.rng)
+-      : opts.runTurn(o.proactiveHint) },
++    chatTurn: { execute: (_msg, o) => opts.runTurn(o.proactiveHint) },
+     env,
+-    prefsReader: () => {
+-      const prefs = opts.prefs?.() ?? {};
+-      // Short bubble-only lines may appear while typing/working, without interrupting chat.
+-      return hasCharacterBubble() ? {
+-        ...prefs, proactive_cooldown_minutes: prefs.proactive_quiet_profile === "balanced" ? 5 : 15,
+-        proactive_ambient_enabled: false,
+-      } : prefs;
+-    },
++    prefsReader: () => opts.prefs?.() ?? {},
+     idleSecondsReader: opts.idleSeconds,
+     currentStateKindReader: opts.currentStateKind,
+-    isBusyCheck: () => opts.isBusy() || !opts.petVisible(),
++    isBusyCheck: () => hasCharacterBubble() || opts.isBusy() || !opts.petVisible(),
+     sessionIdProvider: () => opts.sessionId,
+     onBubble: opts.onBubble,
+-    memoryRecall: (t) => hasCharacterBubble() ? null : recall.idleFollowupHint(t),
+-    characterHint: () => hasCharacterBubble() ? CHARACTER_BUBBLE : null,
+-    allowDuringActivity: hasCharacterBubble,
++    memoryRecall: (t) => recall.idleFollowupHint(t),
+     clock: now,
+     rng: opts.rng,
+   });
+diff --git a/app/electron/main/test/momonga-proactive.test.ts b/app/electron/main/test/momonga-proactive.test.ts
+index 3e859f07..af68a369 100644
+--- a/app/electron/main/test/momonga-proactive.test.ts
++++ b/app/electron/main/test/momonga-proactive.test.ts
+@@ -3,6 +3,9 @@ import { mkdtempSync, rmSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { JsonlChatSessionStore } from "@dap/storage";
++import { BehaviorEvent } from "@dap/core";
++import { DeskSurfacePush } from "@dap/workspace-server";
++import { PetReactions } from "../src/pet-reactions.js";
+ import { createChatPipeline } from "../src/chat-pipeline.js";
+ import { createProactiveSpeech, characterBubbleLine, type ProactiveSpeechOptions } from "../src/proactive-speech.js";
+ 
+@@ -22,20 +25,21 @@ function speech(over: Partial<ProactiveSpeechOptions> = {}) {
+   return { service, calls, bubbles };
+ }
+ 
+-describe("Character bubbles without chat turns", () => {
+-  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("speaks for %s while working/typing without reading memories or calling AI", async (id) => {
++describe("Click-only character bubbles without chat turns", () => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("never speaks automatically for %s, even after long idle/cooldown", () => {
+     const recent = vi.fn(() => []);
+     const { service, calls, bubbles } = speech({ characterId: () => id, idleSeconds: () => 0, currentStateKind: () => "working",
+       memory: { recent }, lastInteractionAt: () => NOON - 7 * 3600,
+       prefs: () => ({ proactive_quiet_profile: "balanced" }),
+     });
+     service.tick();
+-    await vi.waitFor(() => expect(bubbles).toEqual([characterBubbleLine(id, () => 0)]));
++    service.tick(NOON + 6 * 3600);
++    expect(bubbles).toEqual([]);
+     expect(calls).toEqual([]);
+     expect(recent).not.toHaveBeenCalled();
+-    service.tick(NOON + 299); expect(bubbles).toHaveLength(1);
+-    service.tick(NOON + 300); await vi.waitFor(() => expect(bubbles).toHaveLength(2));
+-    expect(calls).toEqual([]);
++    const idle = speech({ characterId: () => id });
++    idle.service.tick();
++    expect(idle.bubbles).toEqual([]); expect(idle.calls).toEqual([]);
+   });
+ 
+   it("includes Usagi's short sounds and Momonga's praise requests", () => {
+@@ -45,27 +49,20 @@ describe("Character bubbles without chat turns", () => {
+     for (const id of [null, "cat", "other", "constructor", "__proto__"]) expect(characterBubbleLine(id)).toBeNull();
+   });
+ 
+-  it("keeps chat-busy, hidden, thinking/error, off and nighttime gates", () => {
+-    for (const over of [
+-      { isBusy: () => true }, { petVisible: () => false },
+-      { currentStateKind: () => "thinking" }, { prefs: () => ({ proactive_quiet_profile: "off" }) },
+-      { currentStateKind: () => "error" }, { now: () => NOON + 12 * 3600 },
+-    ]) {
+-      const { service, calls, bubbles } = speech(over); service.tick();
+-      expect(calls).toHaveLength(0); expect(bubbles).toHaveLength(0);
+-      expect(service.suppressionReason).toBeTruthy();
+-    }
+-  });
+-
+-  it("uses the current character after a switch and stops on skin reset", async () => {
++  it("uses the current skin on every click, and falls back after skin reset", () => {
+     let id: string | null = "momonga";
+-    const { service, calls, bubbles } = speech({ characterId: () => id });
+-    service.tick(); await vi.waitFor(() => expect(bubbles).toHaveLength(1));
++    const pushes: Array<{type:string; payload:Record<string,unknown>}> = [];
++    const reactions = new PetReactions(new DeskSurfacePush((type,payload) => pushes.push({type,payload})), {
++      petLine: () => characterBubbleLine(id, () => 0),
++    });
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload.text).toBe(characterBubbleLine("momonga", () => 0));
+     id = "usagi";
+-    service.tick(NOON + 60); expect(bubbles).toHaveLength(1);
+-    service.tick(NOON + 900); await vi.waitFor(() => expect(bubbles.at(-1)).toBe("야하!"));
+-    id = null; service.tick(NOON + 3 * 3600); expect(bubbles).toHaveLength(2);
+-    expect(calls).toEqual([]);
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload.text).toBe("야하!");
++    id = null;
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload.text).toBe("헤헤");
+   });
+ 
+   it.each(["chiikawa", "hachiware", "usagi", "momonga"])("%s bubbles never enter live chat, persisted history or the next user turn", async (id) => {
+@@ -77,7 +74,13 @@ describe("Character bubbles without chat turns", () => {
+       logAppend: () => {}, });
+     const runTurn = vi.fn((hint: string) => chat.runProactiveTurn(hint));
+     const { service, bubbles } = speech({ characterId: () => id, sessionId: chat.sessionId, runTurn });
+-    service.tick(); await vi.waitFor(() => expect(bubbles).toEqual([characterBubbleLine(id, () => 0)]));
++    service.tick(); expect(bubbles).toEqual([]);
++    const clickedLine = characterBubbleLine(id, () => 0);
++    const reactions = new PetReactions(new DeskSurfacePush((type,payload) => pushes.push({type,payload})), {
++      petLine: () => clickedLine,
++    });
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.filter(p => p.type === "overlay.bubble.show").at(-1)?.payload.text).toBe(clickedLine);
+     const rows = new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId);
+     expect(rows).toEqual([]);
+     expect(pushes.filter(p => p.type === "message.appended")).toEqual([]);
+@@ -87,7 +90,7 @@ describe("Character bubbles without chat turns", () => {
+     expect(pushes.filter(p => p.type === "message.appended")).toEqual([]);
+     chat.handler({ utterance: "안녕" }); await chat.whenIdle();
+     expect(llm.chatReply).toHaveBeenCalledTimes(1);
+-    expect(llm.chatReply.mock.calls[0]?.[1]?.some(line => line.includes(bubbles[0]!))).toBeFalsy();
++    expect(llm.chatReply.mock.calls[0]?.[1]?.some(line => line.includes(clickedLine!))).toBeFalsy();
+     expect(new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId)).toHaveLength(2);
+   });
+ });
+diff --git a/app/electron/main/test/pet-reactions.test.ts b/app/electron/main/test/pet-reactions.test.ts
+index eabd9ca0..c9103da5 100644
+--- a/app/electron/main/test/pet-reactions.test.ts
++++ b/app/electron/main/test/pet-reactions.test.ts
+@@ -6,13 +6,14 @@ import { PetReactions } from "../src/pet-reactions.js";
+ type Push = { type: string; payload: Record<string, unknown> };
+ 
+ /** Build PetReactions over a spy broadcast + a manual timer queue. `clock` drives now(). */
+-function setup() {
++function setup(petLine?: () => string | null) {
+   const pushes: Push[] = [];
+   const timers: Array<{ fn: () => void; ms: number; cleared: boolean }> = [];
+   const clock = { t: 0 };
+   let n = 0;
+   const reactions = new PetReactions(new DeskSurfacePush((type, payload) => pushes.push({ type, payload })), {
+     newId: () => `id${++n}`,
++    petLine,
+     now: () => clock.t,
+     setTimer: (fn, ms) => {
+       timers.push({ fn, ms, cleared: false });
+@@ -27,6 +28,16 @@ function setup() {
+ }
+ 
+ describe("PetReactions", () => {
++  it("uses a skin click line for three seconds and dismisses the previous click bubble", () => {
++    const { reactions, pushes, timers } = setup(() => "우럇!");
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload).toMatchObject({text:"우럇!",style:"react",duration_ms:3000,reaction:"pet"});
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.map(p => p.type)).toEqual(["overlay.bubble.show","overlay.bubble.dismiss","overlay.bubble.show"]);
++    expect(timers[0].cleared).toBe(true);
++    timers.at(-1)!.fn();
++    expect(pushes.at(-1)?.type).toBe("overlay.bubble.dismiss");
++  });
+   it("shows brief task notices and dismisses them after 2.5 seconds", () => {
+     const { reactions, pushes, timers } = setup();
+     for (const status of ["done", "error", "approval"] as const) reactions.notifyTask(status);
+diff --git a/app/electron/renderer/src/settings-config-view.ts b/app/electron/renderer/src/settings-config-view.ts
+index e8e66f5f..5b63e5c7 100644
+--- a/app/electron/renderer/src/settings-config-view.ts
++++ b/app/electron/renderer/src/settings-config-view.ts
+@@ -272,7 +272,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+       b.addEventListener("click", () => void save({ config: { proactive: p.value } }));
+       seg.append(b);
+     }
+-    look.body.append(field("먼저 말 걸기", seg, "치이카와 친구들은 작업·입력 중에도 말풍선으로 짧게 말해요. 자주는 약 5분, 가끔은 약 15분 간격이며 채팅 기록에는 남지 않아요. (밤 11시~아침 7시는 항상 조용)"));
++    look.body.append(field("먼저 말 걸기", seg, "이 설정은 기본 펫의 자동 말 걸기에 적용돼요. 치이카와 친구들은 클릭할 때만 말풍선으로 짧게 답하고 채팅 기록에는 남지 않아요."));
+ 
+     // A3: daily briefing. Opt-in (unprompted speech), and the time picker only appears once it is
+     // on — a disabled clock is noise. Native <input type="time"> instead of a custom picker.

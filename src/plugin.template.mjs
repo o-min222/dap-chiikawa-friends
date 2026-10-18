@@ -1,9 +1,10 @@
 import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
-const BUNDLED_ASSETS = __ASSETS_JSON__;
-const LEGACY_SKINS = __LEGACY_SKINS_JSON__;
-const COVERAGE = __COVERAGE_JSON__;
+const SOURCE = __SOURCE_JSON__;
 const SKINS = __SKINS_JSON__;
+const MOTION_PACK = __MOTIONS_JSON__;
+const COVERAGE = __COVERAGE_JSON__;
+const BUNDLED_ASSETS = __ASSETS_JSON__;
 export async function activate(ctx) {
   const api = ctx.host.petSkins;
   const available = api?.apiVersion === 2;
@@ -12,24 +13,30 @@ export async function activate(ctx) {
   let palette = null, offPalette = null, disposed = false, busy = false;
   let queue = Promise.resolve();
   await verifyBundledAssets(ROOT, BUNDLED_ASSETS);
+  const requiredSource = {...SOURCE, assets: SOURCE.assets.filter(asset => SKINS.some(skin => skin.id === asset.id && Object.values(planMotions(skin, MOTION_PACK).choices).some(m => m.source === "upstream")))};
+  let assetsReady = await hasOriginalAssets(ROOT, requiredSource);
   const extendedMotions = api?.supportedMotions?.includes("sleep") === true;
-  const preparedSkins = structuredClone(extendedMotions ? SKINS : LEGACY_SKINS);
-  if (!api?.supportedMotions?.includes("working_v2")) {
-    for (const skin of preparedSkins) delete skin.animations.working_v2;
+  let preparedSkins = SKINS;
+  async function prepareSkins() {
+    preparedSkins = await Promise.all(SKINS.map(skin => prepareMotionSkin(ROOT, skin, MOTION_PACK, extendedMotions, api?.supportedMotions?.includes("working_v2") === true)));
   }
+  if (assetsReady) await prepareSkins();
+  let assetRevision = 0;
+  const downloads = new AbortController();
   const values = () => ctx.host.settings.values(section);
   const personaWanted = () => values().personaEnabled !== false;
   function push(message) {
     if (disposed || !palette || palette.isDestroyed()) return;
     const activeId = available ? api.getActiveSkin() : null;
     const active = [...registrations.values()].find(reg => reg.id === activeId);
-    palette.postMessage({ type: "status", available, busy, assetsReady: true, assetRevision: 0, skins: preparedSkins, coverage: COVERAGE, extendedMotions, activeId: active ? active.id.split(".").at(-1) : null,
+    palette.postMessage({ type: "status", available, busy, assetsReady, assetRevision, skins: preparedSkins, coverage: COVERAGE, extendedMotions, activeId: active ? active.id.split(".").at(-1) : null,
       personaEnabled: personaWanted(), personaActive: available && api.getActivePersona() === activeId && Boolean(active),
-      message: message ?? (available ? active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.1 이상이 필요해요.") });
+      message: message ?? (available ? !assetsReady ? "처음 한 번 원본 저장소에서 이미지를 받아 주세요." : active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.1 이상이 필요해요.") });
   }
   async function register(id) {
     const skin = preparedSkins.find(item => item.id === id);
     if (!skin) throw Error("Unknown character");
+    if (!assetsReady) throw Error("원본 이미지를 먼저 받아 주세요.");
     if (!registrations.has(id)) registrations.set(id, await api.registerSkin(skin));
     return registrations.get(id);
   }
@@ -40,7 +47,15 @@ export async function activate(ctx) {
       const before = values().personaEnabled;
       let resultMessage;
       try {
-        if (message.type === "set-persona") {
+        if (message.type === "download-assets") {
+          if (!available) { resultMessage = "DAP 1.6.1 이상이 필요해요."; return; }
+          await downloadOriginalAssets(ROOT, requiredSource, { signal: downloads.signal,
+            onProgress: (count, total) => push(`원본 이미지를 준비하고 있어요. ${count}/${total}`),
+          });
+          await prepareSkins();
+          assetsReady = true; assetRevision++;
+          resultMessage = "이미지 준비가 끝났어요. 캐릭터를 고른 뒤 적용해 주세요.";
+        } else if (message.type === "set-persona") {
           if (typeof message.enabled !== "boolean") return;
           await ctx.host.settings.set(section, "personaEnabled", message.enabled);
           const active = [...registrations.values()].find(reg => reg.id === api?.getActiveSkin());
@@ -57,7 +72,9 @@ export async function activate(ctx) {
         }
       } catch (error) {
         if (message.type === "set-persona") await ctx.host.settings.set(section, "personaEnabled", before ?? true);
-        resultMessage = "변경하지 못했어요. 앱 로그를 확인해 주세요.";
+        resultMessage = message.type === "download-assets"
+          ? `이미지를 받지 못했어요. ${error instanceof Error ? error.message : "연결 상태를 확인하고 다시 시도해 주세요."}`
+          : "변경하지 못했어요. 앱 로그를 확인해 주세요.";
       } finally { busy = false; push(resultMessage); }
     }).catch(() => { busy = false; push("설정을 저장하지 못했어요. 다시 시도해 주세요."); });
     return queue;
@@ -70,7 +87,7 @@ export async function activate(ctx) {
     offPalette = palette.onMessage(message => {
       if (!message || typeof message !== "object" || disposed) return;
       if (message.type === "ready") push();
-      else if (["apply", "reset", "set-persona"].includes(message.type)) return enqueue(message);
+      else if (["apply", "reset", "set-persona", "download-assets"].includes(message.type)) return enqueue(message);
     });
     palette.show();
   }
@@ -91,10 +108,10 @@ export async function activate(ctx) {
   }) : null;
   const saved = values().appliedCharacter;
   if (saved && !SKINS.some(skin => skin.id === saved)) await ctx.host.settings.set(section, "appliedCharacter", "");
-  if (available && SKINS.some(skin => skin.id === saved)) await enqueue({ type: "apply", id: saved });
+  if (available && assetsReady && SKINS.some(skin => skin.id === saved)) await enqueue({ type: "apply", id: saved });
   return async () => {
     if (disposed) return;
-    disposed = true; offPalette?.(); offSkin?.(); palette?.close();
+    disposed = true; downloads.abort(); offPalette?.(); offSkin?.(); palette?.close();
     await queue;
     for (const reg of registrations.values()) await reg.dispose();
     registrations.clear();

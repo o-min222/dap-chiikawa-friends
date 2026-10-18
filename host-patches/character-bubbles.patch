@@ -1,0 +1,250 @@
+diff --git a/app/electron/main/src/main.ts b/app/electron/main/src/main.ts
+index 196beb89..21eb896e 100644
+--- a/app/electron/main/src/main.ts
++++ b/app/electron/main/src/main.ts
+@@ -2635,17 +2635,11 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+ 
+     // RP4: proactive speech — 60s tick through the ported gate chain (enabled/dnd/busy/pet-state/
+     // idle/cooldown; quiet-profile defaults: 90min idle, 120min cooldown). Speaks via the pet
+-    // bubble; the turn persists to chat history with proactive metadata. Hidden/fullscreen-ducked
+-    // pet and in-flight chat turns are suppressed via isBusy/petVisible.
++    // bubble. Character catchphrases bypass chat/history; the default pet retains AI proactive
++    // turns. Hidden/fullscreen-ducked pet and in-flight chat are suppressed via isBusy/petVisible.
+     const proactive = createProactiveSpeech({
+-      runTurn: (hint) => {
+-        const characterId = petSkins.getPersona()?.id;
+-        return chat.runProactiveTurn(hint, {
+-          publishToChat: characterId === "momonga",
+-          characterId: characterId === "momonga" ? characterId : undefined,
+-        });
+-      },
+-      characterId: () => petSkins.getPersona()?.id ?? null,
++      runTurn: (hint) => chat.runProactiveTurn(hint),
++      characterId: () => petSkins.getSkin()?.definition.id ?? null,
+       isBusy: () => chat.isBusy(),
+       petVisible: () => !overlayWin.isDestroyed() && overlayWin.isVisible(),
+       idleSeconds: () => powerMonitor.getSystemIdleTime(),
+diff --git a/app/electron/main/src/proactive-speech.ts b/app/electron/main/src/proactive-speech.ts
+index f45e376d..61a4b984 100644
+--- a/app/electron/main/src/proactive-speech.ts
++++ b/app/electron/main/src/proactive-speech.ts
+@@ -2,7 +2,8 @@
+  * RP4: proactive speech wiring — the cat occasionally speaks first (legacy
+  * ProactiveSpeechService parity). Pure composition: builds the ported core service from
+  * main-process signals (idle time, pet state/visibility, chat busy) and the pipeline's
+- * serialized proactive turn. Electron-FREE (all inputs injected) so it tests headlessly.
++ * serialized proactive turn. The four character skins use bubble-only lines, without chat
++ * turns, LLM calls or memory reads. Electron-FREE (all inputs injected) so it tests headlessly.
+  *
+  * Environment context is minimal for now: no weather source is wired (weather slot is a
+  * deferred peripheral), so hints come from memory recall (RecallTrigger, 6h idle / 24h
+@@ -37,19 +38,22 @@ export interface ProactiveSpeechOptions {
+   prefs?: () => Record<string, unknown>;
+   now?: () => number;
+   rng?: () => number;
+-  /** Active persona id, not the skin-only selection (persona-off stays silent). */
++  /** Selected skin's character id; spontaneous bubbles do not require a chat persona. */
+   characterId?: () => string | null;
+ }
+ 
+-export function momongaProactiveHint(characterId: string | null, rng: () => number = Math.random): string | null {
+-  if (characterId !== "momonga") return null;
+-  const topics = [
+-    "귀여운 나를 칭찬해 보라고 능청스럽게 요구해.",
+-    "오늘도 내가 귀엽다고 짧게 자랑해.",
+-    "사용자에게 가벼운 질문을 하며 먼저 말을 걸어.",
+-  ];
+-  const topic = topics[Math.min(topics.length - 1, Math.max(0, Math.floor(rng() * topics.length)))]!;
+-  return `[모몽가 먼저 말걸기] ${topic} 기존 말투로 1~2문장만 말해. 보지 못한 사용자 행동을 꾸미거나 답을 재촉하지 마.`;
++const CHARACTER_LINES: Readonly<Record<string, readonly string[]>> = {
++  chiikawa: ["와아…!", "에헤헤…", "응…!"],
++  hachiware: ["와아!", "헤헤, 좋다!", "어라…?"],
++  usagi: ["야하!", "우럇!", "푸루루루!", "하아?!"],
++  momonga: ["이 귀여운 나를 봐!", "칭찬해 봐!", "오늘도 귀엽지?", "더 귀여워해 줘!"],
++};
++const CHARACTER_BUBBLE = "character-bubble-only";
++
++export function characterBubbleLine(characterId: string | null, rng: () => number = Math.random): string | null {
++  const lines = characterId && Object.hasOwn(CHARACTER_LINES, characterId) ? CHARACTER_LINES[characterId] : null;
++  if (!lines) return null;
++  return lines[Math.min(lines.length - 1, Math.max(0, Math.floor(rng() * lines.length)))]!;
+ }
+ 
+ /** Local-clock time-of-day bucket (ambient hint context only — no env service is wired). */
+@@ -62,6 +66,7 @@ export function timeOfDayBucket(hour: number): string {
+ 
+ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSpeechService {
+   const now = opts.now ?? (() => Date.now() / 1000);
++  const hasCharacterBubble = () => Object.hasOwn(CHARACTER_LINES, opts.characterId?.() ?? "");
+   const env: EnvContextPort = {
+     currentWeather: () => null,
+     currentTimeOfDay: () => timeOfDayBucket(new Date(now() * 1000).getHours()),
+@@ -70,12 +75,15 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+   };
+   const recall = new RecallTrigger(opts.memory, opts.lastInteractionAt);
+   return new ProactiveSpeechService({
+-    chatTurn: { execute: (_msg, o) => opts.runTurn(o.proactiveHint) },
++    // Character chatter never enters the LLM/chat pipeline, including its history and memory.
++    chatTurn: { execute: (_msg, o) => o.proactiveHint === CHARACTER_BUBBLE
++      ? characterBubbleLine(opts.characterId?.() ?? null, opts.rng)
++      : opts.runTurn(o.proactiveHint) },
+     env,
+     prefsReader: () => {
+       const prefs = opts.prefs?.() ?? {};
+-      // Momonga waits for a short input pause, while all shared off/DND/busy gates remain intact.
+-      return opts.characterId?.() === "momonga" ? {
++      // Keep the existing off/DND/busy gates and occasional cadence for all four characters.
++      return hasCharacterBubble() ? {
+         ...prefs, proactive_input_idle_minutes: 2, proactive_cooldown_minutes: 15,
+         proactive_ambient_enabled: false,
+       } : prefs;
+@@ -85,8 +93,8 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+     isBusyCheck: () => opts.isBusy() || !opts.petVisible(),
+     sessionIdProvider: () => opts.sessionId,
+     onBubble: opts.onBubble,
+-    memoryRecall: (t) => recall.idleFollowupHint(t),
+-    characterHint: () => momongaProactiveHint(opts.characterId?.() ?? null, opts.rng),
++    memoryRecall: (t) => hasCharacterBubble() ? null : recall.idleFollowupHint(t),
++    characterHint: () => hasCharacterBubble() ? CHARACTER_BUBBLE : null,
+     clock: now,
+     rng: opts.rng,
+   });
+diff --git a/app/electron/main/test/momonga-proactive.test.ts b/app/electron/main/test/momonga-proactive.test.ts
+index 9f1307d5..4e858a19 100644
+--- a/app/electron/main/test/momonga-proactive.test.ts
++++ b/app/electron/main/test/momonga-proactive.test.ts
+@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { JsonlChatSessionStore } from "@dap/storage";
+ import { createChatPipeline } from "../src/chat-pipeline.js";
+-import { createProactiveSpeech, momongaProactiveHint, type ProactiveSpeechOptions } from "../src/proactive-speech.js";
++import { createProactiveSpeech, characterBubbleLine, type ProactiveSpeechOptions } from "../src/proactive-speech.js";
+ 
+ const NOON = Date.parse("2026-10-18T12:00:00") / 1000;
+ const dirs: string[] = [];
+@@ -22,66 +22,72 @@ function speech(over: Partial<ProactiveSpeechOptions> = {}) {
+   return { service, calls, bubbles };
+ }
+ 
+-describe("Momonga spontaneous chat", () => {
+-  it("speaks after a two-minute pause, waits fifteen minutes, and leaves other characters quiet", async () => {
+-    const {service,calls,bubbles}=speech({idleSeconds:()=>120});
+-    service.tick(); await vi.waitFor(()=>expect(bubbles).toHaveLength(1));
+-    service.tick(NOON+899); expect(calls).toHaveLength(1);
+-    service.tick(NOON+900); await vi.waitFor(()=>expect(bubbles).toHaveLength(2));
+-    const other=speech({characterId:()=>"hachiware",idleSeconds:()=>120});
+-    other.service.tick(); expect(other.calls).toHaveLength(0);
+-    const disabled=speech({idleSeconds:()=>120,prefs:()=>({proactive_quiet_profile:"off"})});
+-    disabled.service.tick(); expect(disabled.service.suppressionReason).toBe("profile_off");
++describe("Character bubbles without chat turns", () => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("speaks for %s after a pause without reading memories or calling AI", async (id) => {
++    const recent = vi.fn(() => []);
++    const { service, calls, bubbles } = speech({ characterId: () => id, idleSeconds: () => 120,
++      memory: { recent }, lastInteractionAt: () => NOON - 7 * 3600,
++      prefs: () => ({ proactive_quiet_profile: "balanced" }),
++    });
++    service.tick();
++    await vi.waitFor(() => expect(bubbles).toEqual([characterBubbleLine(id, () => 0)]));
++    expect(calls).toEqual([]);
++    expect(recent).not.toHaveBeenCalled();
++    service.tick(NOON + 899); expect(bubbles).toHaveLength(1);
++    service.tick(NOON + 900); await vi.waitFor(() => expect(bubbles).toHaveLength(2));
++    expect(calls).toEqual([]);
+   });
+-  it("offers praise, self-praise and a question only for Momonga", () => {
+-    expect(momongaProactiveHint("momonga", () => 0)).toContain("칭찬");
+-    expect(momongaProactiveHint("momonga", () => 0.4)).toContain("자랑");
+-    expect(momongaProactiveHint("momonga", () => 0.9)).toContain("질문");
+-    for (const id of [null, "chiikawa", "hachiware", "usagi", "rakko", "shisa", "kurimanju", "siren", "furuhonya", "anoko", "dekatsuyo"]) {
+-      expect(momongaProactiveHint(id)).toBeNull();
+-      const { service, calls } = speech({ characterId: () => id }); service.tick(); expect(calls).toHaveLength(0);
+-    }
++
++  it("includes Usagi's short sounds and Momonga's praise requests", () => {
++    expect(characterBubbleLine("usagi", () => 0)).toBe("야하!");
++    expect(characterBubbleLine("usagi", () => 0.3)).toBe("우럇!");
++    expect(characterBubbleLine("momonga", () => 0.3)).toContain("칭찬");
++    for (const id of [null, "cat", "other", "constructor", "__proto__"]) expect(characterBubbleLine(id)).toBeNull();
+   });
+ 
+-  it("keeps busy, hidden, recent-input, muted-state and off gates", () => {
++  it("keeps busy, hidden, recent-input, muted-state, off and nighttime gates", () => {
+     for (const over of [
+       { isBusy: () => true }, { petVisible: () => false }, { idleSeconds: () => 60 },
+       { currentStateKind: () => "thinking" }, { prefs: () => ({ proactive_quiet_profile: "off" }) },
++      { currentStateKind: () => "working" }, { now: () => NOON + 12 * 3600 },
+     ]) {
+-      const { service, calls } = speech(over); service.tick(); expect(calls).toHaveLength(0);
++      const { service, calls, bubbles } = speech(over); service.tick();
++      expect(calls).toHaveLength(0); expect(bubbles).toHaveLength(0);
++      expect(service.suppressionReason).toBeTruthy();
+     }
+   });
+ 
+-  it("honors cooldown and stops supplying the topic when the character changes", async () => {
+-    let id = "momonga";
++  it("uses the current character after a switch and stops on skin reset", async () => {
++    let id: string | null = "momonga";
+     const { service, calls, bubbles } = speech({ characterId: () => id });
+     service.tick(); await vi.waitFor(() => expect(bubbles).toHaveLength(1));
+-    service.tick(NOON + 60); expect(calls).toHaveLength(1);
+-    id = "hachiware"; service.tick(NOON + 3 * 3600); expect(calls).toHaveLength(1);
++    id = "usagi";
++    service.tick(NOON + 60); expect(bubbles).toHaveLength(1);
++    service.tick(NOON + 900); await vi.waitFor(() => expect(bubbles.at(-1)).toBe("야하!"));
++    id = null; service.tick(NOON + 3 * 3600); expect(bubbles).toHaveLength(2);
++    expect(calls).toEqual([]);
+   });
+ 
+-  it("one generated reply reaches bubble, live chat and persisted history with one stable id", async () => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("%s bubbles never enter live chat, persisted history or the next user turn", async (id) => {
+     const dir = mkdtempSync(join(tmpdir(), "dap-momonga-")); dirs.push(dir);
+     const pushes: Array<{ type: string; payload: Record<string, unknown> }> = [];
+-    let id = "momonga";
+     const reply = "귀여운 나를 칭찬해 봐! 오늘도 귀엽지?";
+     const llm = { generate: async () => "", summarizeText: async () => "", classifyIntent: async () => "chat_local", chatReply: vi.fn(async (_user: string, _history?: string[] | null) => reply) };
+     const chat = createChatPipeline({ userDataDir: dir, broadcast: (type, payload) => pushes.push({ type, payload }), llm,
+-      characterPersona: () => ({ id, displayName: "모몽가", traits: [], speakingStyle: "귀여움을 자랑하는 모몽가", contextHint: "짧게 말해" }), logAppend: () => {}, });
+-    const { service, bubbles } = speech({ sessionId: chat.sessionId, runTurn: hint => chat.runProactiveTurn(hint, { publishToChat: true, characterId: "momonga" }) });
+-    service.tick(); await vi.waitFor(() => expect(bubbles).toEqual([reply]));
++      logAppend: () => {}, });
++    const runTurn = vi.fn((hint: string) => chat.runProactiveTurn(hint));
++    const { service, bubbles } = speech({ characterId: () => id, sessionId: chat.sessionId, runTurn });
++    service.tick(); await vi.waitFor(() => expect(bubbles).toEqual([characterBubbleLine(id, () => 0)]));
+     const rows = new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId);
+-    expect(rows).toHaveLength(1); expect(rows[0]).toMatchObject({ role: "assistant", text: reply, metadata: { proactive: true } });
+-    const live = pushes.filter(p => p.type === "message.appended");
+-    expect(live).toHaveLength(1); expect(live[0]!.payload["message"]).toMatchObject({ message_id: rows[0]!.id, speaker: "모몽가", text: reply });
+-    expect(llm.chatReply).toHaveBeenCalledTimes(1);
++    expect(rows).toEqual([]);
++    expect(pushes.filter(p => p.type === "message.appended")).toEqual([]);
++    expect(runTurn).not.toHaveBeenCalled();
++    expect(llm.chatReply).not.toHaveBeenCalled();
+     pushes.length = 0; chat.replayOnReady();
+-    expect(pushes.filter(p => p.type === "message.appended")[0]!.payload["message"]).toMatchObject({ message_id: rows[0]!.id });
+-    chat.handler({ utterance: "귀엽네, 칭찬해줄게." }); await chat.whenIdle();
+-    expect(llm.chatReply.mock.calls[1]?.[1]?.some(line => line.includes(reply))).toBe(true);
+-    expect(new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId)).toHaveLength(3);
+-    id = "hachiware";
+-    expect(await chat.runProactiveTurn("이전 모몽가 요청", { publishToChat: true, characterId: "momonga" })).toBeNull();
+-    expect(llm.chatReply).toHaveBeenCalledTimes(2);
++    expect(pushes.filter(p => p.type === "message.appended")).toEqual([]);
++    chat.handler({ utterance: "안녕" }); await chat.whenIdle();
++    expect(llm.chatReply).toHaveBeenCalledTimes(1);
++    expect(llm.chatReply.mock.calls[0]?.[1]?.some(line => line.includes(bubbles[0]!))).toBeFalsy();
++    expect(new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId)).toHaveLength(2);
+   });
+ });
+diff --git a/app/electron/renderer/src/settings-config-view.ts b/app/electron/renderer/src/settings-config-view.ts
+index dd8845bf..eefcfc14 100644
+--- a/app/electron/renderer/src/settings-config-view.ts
++++ b/app/electron/renderer/src/settings-config-view.ts
+@@ -272,7 +272,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+       b.addEventListener("click", () => void save({ config: { proactive: p.value } }));
+       seg.append(b);
+     }
+-    look.body.append(field("먼저 말 걸기", seg, "한동안 자리를 비웠다 오면 고양이가 먼저 한 마디 건네요. (밤 11시~아침 7시는 항상 조용)"));
++    look.body.append(field("먼저 말 걸기", seg, "한동안 입력이 없으면 펫이 먼저 한 마디 건네요. 치이카와 친구들의 대사는 말풍선에만 표시돼요. (밤 11시~아침 7시는 항상 조용)"));
+ 
+     // A3: daily briefing. Opt-in (unprompted speech), and the time picker only appears once it is
+     // on — a disabled clock is noise. Native <input type="time"> instead of a custom picker.

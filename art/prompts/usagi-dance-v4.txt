@@ -1,0 +1,10 @@
+Edit IMAGE1 (eight-frame dance sheet) to REMOVE ALL COSTUME FEATURES, keeping the dance choreography. IMAGE2 is only the natural, unclothed Usagi character-appearance reference. Preserve IMAGE1's eight different foot-cross / knee-dip / quick hip-flick / side-step poses, all in exactly the same 4-column2-row reading order. Do not copy IMAGE2's static poses or remove the dynamic leaning dance.
+
+Required changes in EVERY cell of image1:
+- Remove the hood ring / inner face-opening outline completely. Usagi's head is its natural round cream-yellow head, not inside a hood or a helmet.
+- Remove BOTH belly buttons; belly is plain cream yellow, no dots or holes.
+- Remove the stronger golden-yellow costume/body color boundary. Use IMAGE2's single PALE BUTTER CREAM-YELLOW fur fill across the natural head and body.
+- Give the real long rabbit ears soft PINK inner areas, exactly like natural Usagi in IMAGE2. No hood seam, hood piping or fabric.
+- Natural short rounded forepaws, tiny feet, wide round cheeks, same big arched brows and small oval dark eyes with white highlights as image2. Pink cheek ovals with three hatch lines. Keep image1's little open w-mouth/pink tongue in singing poses and little closed w-smile on recovery. Warm dark brown thick cartoon lines, flat fill, no shading/gradients.
+
+KEEP the dance content from IMAGE1: asymmetric crossed tiny feet shifting weight from one to the other, visible lower-body hip flick, quick knee dips, arms curled at waist then flicking sideways, slight torso and ear leans on the offbeats. Keep one naturally unclothed Usagi only in each cell, same head width and ear-to-foot scale across the sheet. The poses can have intentional body lean but never camera zoom or random size changes. No pants, shoes, mittens, suit, buttons, neckline, accessories, props, stars, ground shadow, notes, text, labels, cell dividers or other characters. Short LOCAL hip motion ticks allowed as image1, no duplicate bodies. Real transparent alpha. Full ears and both feet visible with generous margins in every equal square cell. Output only the corrected 4x2 EIGHT-frame natural Usagi dance sheet.

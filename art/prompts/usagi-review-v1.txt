@@ -1,0 +1,15 @@
+Use case: illustration-story, coherent sprite animation from references.
+Asset: Usagi "Haa?" puzzled head-tilt motion, exactly EIGHT complete whole-character frames arranged FOUR columns by TWO rows, reading left to right then next row.
+INPUT ROLES: Image 1 is the pose/expression reference supplied by the user: tilted round head, long ears tilted together, forepaws folded in front, slightly open questioning mouth with a tiny pink tongue and quizzical brows. Image 2 is the APPROVED character drawing-style master: copy this character's head/body proportions, pale cream color, near-black thick clean organic outline, small black glossy eyes, pink oval cheeks with three short dark strokes, pink ear interiors, compact body and tiny feet.
+Main request: Usagi folds the two tiny forepaws at the belly and tilts its head from side to side as if saying "Haa?" The face and both ears tilt TOGETHER with the head, eyes and mouth keeping their relative facial placement; head size never stretches or elongates. Capture the skeptical-curious, slightly cheeky look of Image 1, not sleepy, sad, angry or smiling sweetly. Tiny open mouth with small pink tongue, one eyebrow subtly raised. The torso has only a very slight natural response and the feet stay planted, rather than swaying the entire body like a dance.
+One smooth loop, exact pose order:
+1. neutral head upright, folded forepaws, questioning expression.
+2. head tilting 12 degrees toward viewer LEFT.
+3. clear head tilt about 25 degrees toward viewer LEFT, matching the character attitude of Image 1.
+4. head returning to 12 degrees LEFT.
+5. head upright again.
+6. head tilting 12 degrees toward viewer RIGHT.
+7. clear head tilt about 25 degrees toward viewer RIGHT.
+8. head returning to 12 degrees RIGHT, ready to flow into frame1.
+Do not mirror the entire character: the forepaw overlap and little tail stay on the same sides in every cell. Keep feet, belly and folded paws in the same compact shape and place. Tail matches Image 2: a few separated short dark fur tick strokes behind the lower right flank, open gaps, NO closed circular/scalloped pompom outline. Include full ears, full body and tiny feet in all frames even though Image1 is cropped. Hand-draw each complete coherent pose using the same model, no detached parts.
+Composition: identical fixed per-cell scale with generous TRANSPARENT margins on every side for tilted ears; no cropping and no grid lines. No clothing, tools, brush, washing, hands touching cheeks, props, words, speech bubbles, question marks, hearts, background, shadow or glow. The words Haa? are only acting direction and must NOT be drawn. Flat clean illustration matching Image2, genuinely transparent outside sprites.

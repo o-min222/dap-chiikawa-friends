@@ -1,0 +1,26 @@
+{
+  "repository": "heelee912/chiikawa-dots-pets",
+  "commit": "bb96582f525fbdf88a236b4703433ae92bfd5888",
+  "assets": [
+    {
+      "id": "chiikawa",
+      "sha256": "811dc97aaef56ed7bb8685800ca2194aed85ea80ae001208e428d1b3e4d3f870",
+      "bytes": 2241195
+    },
+    {
+      "id": "hachiware",
+      "sha256": "6c44e400306ff9844a126ed1ddc9ceec4e188e9d5ab7971453646d2b945adbac",
+      "bytes": 2068368
+    },
+    {
+      "id": "usagi",
+      "sha256": "d165247d14422d9ce1a5e01748b2b4b3d4a3915fea8320f3de0bef27b1d8e946",
+      "bytes": 1488917
+    },
+    {
+      "id": "momonga",
+      "sha256": "bd5a3616354bbbb54bdb891aa125d5fd773eb6ffe3c683a3f698d1113449a5f6",
+      "bytes": 2722232
+    }
+  ]
+}

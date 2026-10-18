@@ -1,0 +1,20 @@
+Edit the referenced Usagi animation into a much clearer TWO-ARM WINDING / ROLLING LOOP. Output ONE new transparent sprite sheet with EIGHT chronological full-body frames in FOUR columns TWO rows.
+
+Input image1 is the current 4-keypose work animation: KEEP this exact character identity, head/ear/body proportions, warm brown hand-drawn outlines, cream yellow flat fill, pink cheeks and ears, happy open w-mouth and little pink tongue. User likes the character but the forearms merely twitch; replace the arm choreography. Do not redesign the face. Head, ears, torso, planted feet and tail should be the SAME drawing at the SAME location and scale in all eight cells. Tiny overall rhythmic sway will be added during sprite registration, so draw the non-arm body stable.
+
+MAIN CHANGE: make the two continuous curved arms visibly roll OVER-UNDER each other around a VERTICAL OVAL in front of the belly. BOTH rounded hand ends remain gathered on the VIEWER-LEFT HALF of the belly. One arm is the LONG curved forearm from viewer-right shoulder across front of body, the other the SHORT U-shaped forearm from viewer-left shoulder. Their shoulder roots stay connected and fixed. The rounded endpoints revolve in the SAME circular direction HALF A TURN APART, so when one is at the TOP the other is at the BOTTOM, and as the first passes DOWN IN FRONT the second comes UP BEHIND; the front/back overlap then swaps. This must show a complete circular winding path, not hands waving sideways and not a 2-pose arm swap.
+
+Enlarge the vertical travel substantially: one rounded paw reaches upper belly immediately below the mouth/chin, while the other reaches lower belly above the feet. Their vertical separation at top/bottom extremes is about 15% of full ear-to-foot height (roughly60px if character height400px). Both hand endpoints stay left-of-body-center; horizontal diameter of the vertical oval about25px. Keep rounded paws and long curved overlapping forearms; no human fingers, detached fists, X pose, third arm, hands on opposite sides, props or held objects.
+
+Eight phases in reading order. Imagine arm A is the long forearm from right shoulder, arm B the short forearm from left:
+1 A at TOP of belly oval, B at BOTTOM, clean reference-like curl.
+2 A moves DOWN/FORWARD at upper-front of oval, B moves UP/BACK at lower-back; first clear passing drawing.
+3 A at FRONT-MIDDLE and B at BACK-MIDDLE, both endpoints near same height but separated front/back horizontally, A's continuous forearm occludes B. A short curved wrist speed arc is allowed.
+4 A FRONT-LOWER, B BACK-UPPER; clearly more vertical separation again.
+5 A at BOTTOM, B at TOP, opposite of frame1. The long arm now makes a low sweeping curve across belly; short arm is high curl.
+6 A moves UP/BACK at lower-back, B DOWN/FRONT at upper-front, front/back order swapped from frame2.
+7 A at BACK-MIDDLE, B FRONT-MIDDLE; short forearm now occludes the long one. A short curved wrist speed arc allowed.
+8 A BACK-UPPER, B FRONT-LOWER, approaching frame1 naturally.
+Do not repeat identical frames. Keep motion continuous around the oval. NOT pure up-down pumping: convey the front/back passage and changed occlusion in phases3 vs7. Local curved motion marks limited to wrist area, never cover face or imply extra limbs.
+
+All eight frames MUST be equally sized and registered, same body outline, expression, ear angle, eye spacing and tongue. Full body from both ears to both feet visible in every square cell, ample transparent margins. No body morphing, head turn, facial change, camera zoom, shadows, grass, text, arrows, labels, borders or extra characters. No shading gradients. True transparent alpha. Only ONE 4x2 sheet of this enhanced arm-rolling working motion.

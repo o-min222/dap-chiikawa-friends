@@ -1,0 +1,22 @@
+Edit image1's natural Usagi dance sheet to correct ONE specific error: the video dance always flicks the hips in the SAME direction. Image2 is the video's main crossed-foot pose. Image3 is the SAME dance's one-direction hip flick. Keep the natural unclothed Usagi appearance from image1 (cream-yellow fur, pink inner ears, NO costume, NO hood ring, NO buttons). Use images2-3 ONLY for choreography, ignore their clothes, scenery, text and notes.
+
+Output exactly EIGHT full-body chronological frames, FOUR columns TWO rows, transparent background. The WHOLE LOOP is "reference crossed-foot stance -> hip flick to VIEWER-RIGHT -> recover to the same stance", repeatedly on this ONE SIDE. DO NOT add a mirrored left half of the dance. DO NOT alternate hip direction or alternate which foot crosses in front. DO NOT alternate arms reaching out left/right. DO NOT turn this into a left-right swaying walk.
+
+Anchored choreography:
+- The same short support foot stays planted at the same ground position; the same other foot remains lightly crossed in front or briefly lifts during the flick. No lateral travel across screen.
+- Forepaw on VIEWER-LEFT stays curled by waist throughout.
+- Forepaw on VIEWER-RIGHT is the only paw that briefly flicks outward and returns.
+- Lower torso and hip push to VIEWER-RIGHT on the accent, then return to neutral. Head counterbalances slightly toward viewer-left. There is no left hip push on any frame. Rightward hip push should be clear in the body silhouette, not merely a duplicate pose shifted horizontally.
+- Upper head silhouette, face proportions and size remain consistent. Slight body/ear lean and knee compression are deliberate, not random jitter or camera zoom. Keep the warm little smiling w mouth / small singing tongue and tiny oval eyes.
+
+Frames in reading order, ONE rightward flick cycle:
+1 Main crossed-foot pose like image2, paws curled beside waist, relaxed upright head.
+2 Very small knee dip and right hip starts pushing out, same support foot position.
+3 Clear RIGHT hip flick like image3: lower torso extends right, torso leans with it, head counterbalances gently left, RIGHT forepaw opens outward, LEFT paw still curled.
+4 Peak of the SAME rightward flick, small local right-hip speed ticks, no extra limbs or duplicate head/body. Same feet orientation as frame3.
+5 Recover from rightward flick: hip moving from right back toward center, RIGHT paw folds back in, no movement beyond neutral to the left.
+6 Return to the original upright crossed-foot stance, both paws at waist.
+7 Small in-place knee rebound, same crossed-foot direction, same neutral hip position.
+8 Relax into starting stance, ready for frame1. No leftward step or mirror of frames3-4.
+
+Preserve image1's natural Usagi identity, pink cheeks with three hatch marks, warm brown clean hand-drawn outlines, cream flat fills, small feet and compact body. Single character per cell, no costume features anywhere. All feet/ears complete in each equally spaced square cell with generous transparent margins. Stable scale, fixed full-body camera. No arrows, floor, shadows, notes, text, borders, background or other characters. True alpha. Output just the corrected ONE-SIDED 4x2 dance animation sheet.

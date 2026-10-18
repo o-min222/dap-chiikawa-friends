@@ -2,11 +2,11 @@ import { readFile, lstat, realpath } from "node:fs/promises";
 import { resolve, relative } from "node:path";
 import { createHash } from "node:crypto";
 
-/** Local bundled artwork only: no downloader or remote source in the runtime. */
+/** Verify locally bundled generated strips before applying any skin. */
 export async function verifyBundledAssets(root, assets) {
   const base = await realpath(root);
   for (const asset of assets) {
-    if (!/^assets\/atlases\/[a-z-]+\.png$/.test(asset.file)) throw Error("Invalid bundled asset path");
+    if (!/^assets\/(?:atlases|generated)\/[a-z-]+\.png$/.test(asset.file)) throw Error("Invalid bundled asset path");
     const file = resolve(base, asset.file), actual = await realpath(file);
     if (relative(base, actual).startsWith("..") || (await lstat(file)).isSymbolicLink()) throw Error("Unsafe bundled asset path");
     const bytes = await readFile(file);

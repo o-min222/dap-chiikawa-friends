@@ -1,266 +1,346 @@
 {
   "chiikawa": {
     "idle": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-idle",
+      "source": "upstream"
     },
     "running-right": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-running-right",
+      "source": "upstream"
     },
     "running-left": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-running-left",
+      "source": "upstream"
     },
     "waving": {
-      "status": "substitute",
-      "motionId": "success"
-    },
-    "jumping": {
-      "status": "substitute",
-      "motionId": "success"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-waving",
+      "source": "upstream"
     },
     "failed": {
-      "status": "substitute",
-      "motionId": "groom"
-    },
-    "waiting": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-chiikawa-failed",
+      "source": "upstream"
     },
     "running": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-running",
+      "source": "upstream"
     },
     "review": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-review",
+      "source": "upstream"
     },
     "sleep": {
       "status": "ready",
-      "motionId": "sleep"
+      "production": true,
+      "motionId": "sleep",
+      "source": "generated"
     },
     "feed_munch": {
       "status": "ready",
-      "motionId": "eat"
+      "production": true,
+      "motionId": "eat",
+      "source": "generated"
     },
     "groom": {
       "status": "ready",
-      "motionId": "groom"
+      "production": true,
+      "motionId": "groom",
+      "source": "generated"
     },
     "grabbed": {
       "status": "ready",
-      "motionId": "grabbed"
+      "production": true,
+      "motionId": "grabbed",
+      "source": "generated"
     },
     "success": {
       "status": "ready",
-      "motionId": "success"
+      "production": false,
+      "motionId": "success",
+      "source": "generated"
     },
     "dance": {
       "status": "ready",
-      "motionId": "dance"
+      "production": true,
+      "motionId": "dance",
+      "source": "generated"
     },
     "working_v2": {
-      "status": "substitute",
-      "motionId": "groom"
+      "status": "shared",
+      "production": true,
+      "motionId": "upstream-chiikawa-running",
+      "source": "upstream"
     }
   },
   "hachiware": {
     "idle": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-idle",
+      "source": "upstream"
     },
     "running-right": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running-right",
+      "source": "upstream"
     },
     "running-left": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running-left",
+      "source": "upstream"
     },
     "waving": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
-    },
-    "jumping": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waving",
+      "source": "upstream"
     },
     "failed": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
-    },
-    "waiting": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-hachiware-failed",
+      "source": "upstream"
     },
     "running": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running",
+      "source": "upstream"
     },
     "review": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-review",
+      "source": "upstream"
     },
     "sleep": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waiting",
+      "source": "upstream"
     },
     "feed_munch": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running",
+      "source": "upstream"
     },
     "groom": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waiting",
+      "source": "upstream"
     },
     "grabbed": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waiting",
+      "source": "upstream"
     },
     "success": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-hachiware-waving",
+      "source": "upstream"
     },
     "dance": {
       "status": "ready",
-      "motionId": "hachiware-dance"
+      "production": true,
+      "motionId": "hachiware-dance",
+      "source": "generated"
     },
     "working_v2": {
-      "status": "substitute",
-      "motionId": "hachiware-dance"
+      "status": "shared",
+      "production": true,
+      "motionId": "upstream-hachiware-running",
+      "source": "upstream"
     }
   },
   "usagi": {
     "idle": {
-      "status": "review",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-idle",
+      "source": "generated"
     },
     "running-right": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-move-right",
+      "source": "generated"
     },
     "running-left": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-move-left",
+      "source": "generated"
     },
     "waving": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
-    },
-    "jumping": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-usagi-waving",
+      "source": "upstream"
     },
     "failed": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
-    },
-    "waiting": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-usagi-failed",
+      "source": "upstream"
     },
     "running": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-work",
+      "source": "generated"
     },
     "review": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-usagi-review",
+      "source": "upstream"
     },
     "sleep": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-sleep",
+      "source": "generated"
     },
     "feed_munch": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-eat",
+      "source": "generated"
     },
     "groom": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-groom",
+      "source": "generated"
     },
     "grabbed": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-grabbed",
+      "source": "generated"
     },
     "success": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-usagi-waving",
+      "source": "upstream"
     },
     "dance": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-dance",
+      "source": "generated"
     },
     "working_v2": {
-      "status": "substitute",
-      "motionId": "usagi-idle"
+      "status": "shared",
+      "production": true,
+      "motionId": "usagi-work",
+      "source": "generated"
     }
   },
   "momonga": {
     "idle": {
       "status": "ready",
-      "motionId": "momonga-idle"
+      "production": true,
+      "motionId": "momonga-idle",
+      "source": "generated"
     },
     "running-right": {
       "status": "ready",
-      "motionId": "momonga-move-right"
+      "production": true,
+      "motionId": "momonga-move-right",
+      "source": "generated"
     },
     "running-left": {
       "status": "ready",
-      "motionId": "momonga-move-left"
+      "production": true,
+      "motionId": "momonga-move-left",
+      "source": "generated"
     },
     "waving": {
-      "status": "substitute",
-      "motionId": "momonga-idle"
-    },
-    "jumping": {
-      "status": "substitute",
-      "motionId": "momonga-idle"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-momonga-waving",
+      "source": "upstream"
     },
     "failed": {
-      "status": "substitute",
-      "motionId": "momonga-idle"
-    },
-    "waiting": {
-      "status": "substitute",
-      "motionId": "momonga-idle"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-momonga-failed",
+      "source": "upstream"
     },
     "running": {
       "status": "ready",
-      "motionId": "momonga-work-book"
+      "production": true,
+      "motionId": "momonga-work-book",
+      "source": "generated"
     },
     "review": {
-      "status": "substitute",
-      "motionId": "momonga-idle"
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-momonga-review",
+      "source": "upstream"
     },
     "sleep": {
       "status": "ready",
-      "motionId": "momonga-sleep"
+      "production": true,
+      "motionId": "momonga-sleep",
+      "source": "generated"
     },
     "feed_munch": {
       "status": "ready",
-      "motionId": "momonga-eat"
+      "production": true,
+      "motionId": "momonga-eat",
+      "source": "generated"
     },
     "groom": {
       "status": "ready",
-      "motionId": "momonga-groom"
+      "production": true,
+      "motionId": "momonga-groom",
+      "source": "generated"
     },
     "grabbed": {
       "status": "ready",
-      "motionId": "momonga-grabbed"
+      "production": true,
+      "motionId": "momonga-grabbed",
+      "source": "generated"
     },
     "success": {
-      "status": "substitute",
-      "motionId": "momonga-idle"
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-momonga-waving",
+      "source": "upstream"
     },
     "dance": {
       "status": "ready",
-      "motionId": "momonga-dance"
+      "production": true,
+      "motionId": "momonga-dance",
+      "source": "generated"
     },
     "working_v2": {
       "status": "ready",
-      "motionId": "momonga-work-flyer"
+      "production": true,
+      "motionId": "momonga-work-flyer",
+      "source": "generated"
     }
   }
 }

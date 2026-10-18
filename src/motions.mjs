@@ -1,7 +1,7 @@
 import { inflateSync, deflateSync } from 'node:zlib';
-import { readFile as readMotionFile, writeFile as writeMotionFile } from 'node:fs/promises';
+import { readFile as readMotionFile, writeFile as writeMotionFile, rename as renameMotionFile } from 'node:fs/promises';
 import { join as motionJoin } from 'node:path';
-import { createHash as motionHash } from 'node:crypto';
+import { createHash as motionHash, randomUUID as motionUuid } from 'node:crypto';
 
 const PNG_HEADER = Buffer.from([137,80,78,71,13,10,26,10]);
 function crc(bytes) {
@@ -50,46 +50,67 @@ export function encodeMotionPng({ width, height, pixels }) {
 }
 export const LEGACY_MOTIONS = ['idle','running-right','running-left','waving','jumping','failed','waiting','running','review'];
 export const EXTRA_MOTIONS = ['sleep','feed_munch','groom','grabbed','success','dance','working_v2'];
-
+// Renderer-compatible slots. A renderer mapping alone does not establish a normal UI trigger.
+export const ACTIVE_MOTIONS = [...LEGACY_MOTIONS.filter(key=>!['jumping','waiting'].includes(key)),...EXTRA_MOTIONS];
+// Success has no normal transition; error requires explicit external pet.context input.
+export const PRODUCTION_MOTIONS = ACTIVE_MOTIONS.filter(key=>!['success','failed'].includes(key));
+const ORIGINAL_FALLBACK = {sleep:'waiting',feed_munch:'running',groom:'waiting',grabbed:'waiting',success:'waving',dance:'jumping'};
 export function planMotions(skin, pack) {
-  const own = pack.filter(motion => motion.characterId === skin.id);
-  const byKey = new Map(own.map(motion => [motion.motion, motion]));
-  const idle = byKey.get('idle') ?? own.find(motion => motion.id === skin.defaultMotionId);
-  if (!idle) throw Error(`No independent base artwork for ${skin.id}`);
-  const choices = Object.fromEntries(LEGACY_MOTIONS.map(key => [key, byKey.get(key) ?? idle]));
-  for (const key of ['waving','jumping']) choices[key] = byKey.get(key) ?? byKey.get('success') ?? idle;
-  for (const key of EXTRA_MOTIONS) choices[key] = byKey.get(key) ?? choices[({success:'waving',dance:'jumping',feed_munch:'running'})[key] ?? 'waiting'];
-  const coverage = Object.fromEntries(Object.entries(choices).map(([key,motion]) => [key, {
-    status: motion.motion !== key ? 'substitute' : motion.reviewStatus === 'awaiting-user-review' ? 'review' : 'ready',
-    motionId: motion.id,
+  const byKey = new Map(pack.filter(m=>m.characterId===skin.id && !['deferred','awaiting-user-review'].includes(m.reviewStatus)).map(m=>[m.motion,m]));
+  const original = key => {
+    const clip=skin.animations?.[key];
+    if(!clip)throw Error(`Missing upstream motion ${skin.id}/${key}`);
+    return {id:`upstream-${skin.id}-${key}`,motion:key,source:'upstream',sourceRow:clip.row,file:skin.spritesheetPath,holdsMs:clip.holdsMs,...skin.originalAsset};
+  };
+  const choices={};
+  for(const key of PRODUCTION_MOTIONS){
+    choices[key]=byKey.get(key) ?? (key==='working_v2' ? choices.running : original(ORIGINAL_FALLBACK[key]??key));
+  }
+  const needsOriginal=Object.values(choices).some(m=>m.source==='upstream');
+  choices.failed=byKey.get('failed') ?? (needsOriginal ? original('failed') : choices.idle);
+  choices.success=byKey.get('success') ?? choices.waving;
+  // Required by older skin validators; neither is a new animation-production task.
+  choices.jumping=choices.dance;
+  choices.waiting=choices.idle;
+  const coverage=Object.fromEntries(ACTIVE_MOTIONS.map(key=>[key,{
+    status:key==='working_v2'&&!byKey.has(key)?'shared':choices[key].source==='upstream'?'upstream':'ready',
+    production:PRODUCTION_MOTIONS.includes(key),
+    motionId:choices[key].id,
+    source:choices[key].source??'generated',
   }]));
-  return { choices, coverage };
+  return {choices,coverage};
 }
 
-/** Compose our generated strips only, without an original character sheet. */
-export async function prepareMotionSkin(root, skin, pack, extended, workingVariants, outputFile) {
-  if (!/^assets\/atlases\/[a-z-]+\.png$/.test(outputFile)) throw Error('Invalid atlas output path');
-  const {choices} = planMotions(skin, pack);
-  const keys = [...LEGACY_MOTIONS, ...(extended ? EXTRA_MOTIONS.filter(key => (key !== 'working_v2' || workingVariants) && pack.some(m => m.characterId === skin.id && m.motion === key)) : [])];
-  const motions = [...new Map(keys.map(key => [choices[key].id,choices[key]])).values()];
-  const rowBytes = 1536 * 208 * 4, pixels = Buffer.alloc(rowBytes * motions.length);
-  if (!motions.length || motions.length * 208 > 4096) throw Error('Invalid atlas dimensions');
-  for (const [index,motion] of motions.entries()) {
-    if (!/^assets\/generated\/[a-z-]+\.png$/.test(motion.file)) throw Error('Invalid generated motion path');
-    const bytes = await readMotionFile(motionJoin(root,motion.file));
-    if (bytes.length !== motion.bytes || motionHash('sha256').update(bytes).digest('hex') !== motion.sha256) throw Error('Generated motion integrity check failed');
-    const strip = decodeMotionPng(bytes);
-    if (strip.width !== 1536 || strip.height !== 208) throw Error('Invalid generated strip dimensions');
-    strip.pixels.copy(pixels,index*rowBytes);
+/** Replace approved rows; keep unreplaced actions from the pinned upstream sheet. */
+export async function prepareMotionSkin(root, skin, pack, extended, workingVariants=false, outputFile) {
+  if(outputFile && !/^assets\/atlases\/[a-z-]+\.png$/.test(outputFile))throw Error('Invalid atlas output path');
+  const {choices}=planMotions(skin,pack);
+  const keys=[...LEGACY_MOTIONS,...(extended?EXTRA_MOTIONS.filter(key=>key!=='working_v2'||workingVariants):[])];
+  const motions=[...new Map(keys.map(key=>[choices[key].id,choices[key]])).values()];
+  const rowBytes=1536*208*4,pixels=Buffer.alloc(rowBytes*motions.length);
+  if(!motions.length||motions.length*208>4096)throw Error('Invalid atlas dimensions');
+  let original;
+  for(const [index,motion] of motions.entries()){
+    const upstream=motion.source==='upstream';
+    if(upstream){if(motion.file!==`assets/${skin.id}.png`)throw Error('Invalid original motion path');}
+    else if(!/^assets\/generated\/[a-z-]+\.png$/.test(motion.file))throw Error('Invalid generated motion path');
+    if(upstream&&original){original.pixels.copy(pixels,index*rowBytes,motion.sourceRow*rowBytes,(motion.sourceRow+1)*rowBytes);continue;}
+    const bytes=await readMotionFile(motionJoin(root,motion.file));
+    if(bytes.length!==motion.bytes||motionHash('sha256').update(bytes).digest('hex')!==motion.sha256)throw Error('Motion artwork integrity check failed');
+    const strip=decodeMotionPng(bytes);
+    if(strip.width!==1536||strip.height!==(upstream?2288:208))throw Error('Invalid motion dimensions');
+    if(upstream){original=strip;strip.pixels.copy(pixels,index*rowBytes,motion.sourceRow*rowBytes,(motion.sourceRow+1)*rowBytes);}
+    else strip.pixels.copy(pixels,index*rowBytes);
   }
-  const animations = Object.fromEntries(keys.map(key => {
-    const motion=choices[key], clip={row:motions.findIndex(item=>item.id===motion.id),holdsMs:motion.holdsMs};
-    if (extended && motion.hops) clip.hops=motion.hops;
+  const animations=Object.fromEntries(keys.map(key=>{
+    const motion=choices[key],clip={row:motions.findIndex(m=>m.id===motion.id),holdsMs:motion.holdsMs};
+    if(extended&&motion.hops)clip.hops=motion.hops;
     return [key,clip];
   }));
-  const bytes=encodeMotionPng({width:1536,height:motions.length*208,pixels});
-  if (bytes.length>8_000_000) throw Error('Combined motion atlas exceeds the DAP limit');
-  await writeMotionFile(motionJoin(root,outputFile),bytes);
-  return {id:skin.id,displayName:skin.displayName,schemaVersion:1,spritesheetPath:outputFile,
-    cell:{width:192,height:208},grid:{columns:8,rows:motions.length},animations,persona:skin.persona};
+  const bytes=encodeMotionPng({width:1536,height:208*motions.length,pixels});
+  if(bytes.length>8_000_000)throw Error('Combined motion atlas exceeds the DAP limit');
+  const path=outputFile??`assets/${skin.id}-motion-${motionHash('sha256').update(bytes).digest('hex').slice(0,16)}.png`;
+  const destination=motionJoin(root,path),temporary=`${destination}.${motionUuid()}.part`;
+  await writeMotionFile(temporary,bytes);await renameMotionFile(temporary,destination);
+  return {id:skin.id,displayName:skin.displayName,schemaVersion:1,spritesheetPath:path,cell:{width:192,height:208},grid:{columns:8,rows:motions.length},animations,persona:skin.persona};
 }

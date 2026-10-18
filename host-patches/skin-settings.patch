@@ -1,0 +1,221 @@
+diff --git a/app/electron/main/src/app.ts b/app/electron/main/src/app.ts
+index 507f4af2..5a085e0a 100644
+--- a/app/electron/main/src/app.ts
++++ b/app/electron/main/src/app.ts
+@@ -381,6 +381,7 @@ export class ElectronDapApp {
+   private hotkeysChangedCb: (() => void) | null = null;
+   private petAppearanceCb: (() => void) | null = null;
+   private pluginSkinProvider: (() => import("@dap/plugins").ResolvedPetSkin | null) | null = null;
++  private pluginSkinReset: (() => void) | null = null;
+   private characterPersonaProvider: (() => import("@dap/plugins").CharacterPersona | null) | null = null;
+   private readonly onboarding: OnboardingMarkerStore;
+   private readonly persona: JsonPersonaStore;
+@@ -529,9 +530,10 @@ export class ElectronDapApp {
+     this.petAppearanceCb = cb;
+   }
+ 
+-  attachPluginSkin(provider: () => import("@dap/plugins").ResolvedPetSkin | null, persona?: () => import("@dap/plugins").CharacterPersona | null): void {
++  attachPluginSkin(provider: () => import("@dap/plugins").ResolvedPetSkin | null, persona?: () => import("@dap/plugins").CharacterPersona | null, reset?: () => void): void {
+     this.pluginSkinProvider = provider;
+     this.characterPersonaProvider = persona ?? null;
++    this.pluginSkinReset = reset ?? null;
+   }
+ 
+   refreshPetAppearance(): void {
+@@ -1657,6 +1659,7 @@ export class ElectronDapApp {
+       // apply live (no restart).
+       const PET_KEYS = ["petCharacter", "petMiniProfileId", "petMiniSize", "petSize"] as const;
+       if (patch.config && PET_KEYS.some((k) => k in patch.config!)) {
++        if ("petCharacter" in patch.config || "petMiniProfileId" in patch.config) this.pluginSkinReset?.();
+         this.petAppearanceCb?.();
+         this.broadcastPetAppearance();
+       }
+diff --git a/app/electron/main/src/main.ts b/app/electron/main/src/main.ts
+index eab9e3cb..196beb89 100644
+--- a/app/electron/main/src/main.ts
++++ b/app/electron/main/src/main.ts
+@@ -1604,7 +1604,7 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+       return [...core, ...plugin];
+     },
+   });
+-  dapApp.attachPluginSkin(() => petSkins.getSkin(), () => petSkins.getPersona());
++  dapApp.attachPluginSkin(() => petSkins.getSkin(), () => petSkins.getPersona(), () => petSkins.clear());
+   void pluginRuntime.start();
+ 
+   // R2.2 first-run gate: until the wizard completes, the pet stays paused + hidden (computed once;
+@@ -2143,8 +2143,7 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+     // Mini appearance saved in settings → re-resolve and apply to the engine live (app.ts pushes
+     // the petAppearanceChanged event to the overlay/settings renderers itself).
+     dapApp.attachPetAppearanceChanged(() => {
+-      petSkins.clear();
+-      const a = resolvePetAppearance(new ConfigStore(userDataDir).read());
++      const a = resolvePetAppearance(new ConfigStore(userDataDir).read(), petSkins.getSkin());
+       petEngine?.setPetSize(a.size);
+       petEngine?.setMiniMode(a.character === "mini");
+     });
+diff --git a/app/electron/main/test/app.test.ts b/app/electron/main/test/app.test.ts
+index 6f50b4c7..0a16e681 100644
+--- a/app/electron/main/test/app.test.ts
++++ b/app/electron/main/test/app.test.ts
+@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
+ import { mkdtempSync } from "node:fs";
+ import { join } from "node:path";
+ import { tmpdir } from "node:os";
+-import type { CharacterPersona } from "@dap/plugins";
++import type { CharacterPersona, ResolvedPetSkin } from "@dap/plugins";
+ 
+ /**
+  * Headless test of ElectronDapApp wiring: the `electron` module is mocked (no runtime binary),
+@@ -153,6 +153,31 @@ function fakeBackend() {
+ }
+ 
+ describe("ElectronDapApp", () => {
++  it("preserves the plugin skin and persona on resize, resetting only on explicit character/profile selection", async () => {
++    const fb = fakeBackend();
++    const dapApp = new ElectronDapApp({ backend: fb.backend as never, preloadPath: "/p", pushTypes: [], userDataDir: mkdtempSync(join(tmpdir(), "dap-skin-size-")) });
++    const persona: CharacterPersona = { id: "momonga", displayName: "모몽가", interpretation: "해석", traits: ["성격"], speakingStyle: "말투", contextHint: "맥락", examples: { greeting: "인사", encourage: "응원", task: "작업", failed: "실패" } };
++    const skin: ResolvedPetSkin = { id: "friends.momonga", imageDataUrl: "data:image/png;base64,AA==", definition: { id: "momonga", displayName: "모몽가", schemaVersion: 1, spritesheetPath: "assets/sheet.png", cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 1 }, animations: { idle: { row: 0, holdsMs: [100] } }, persona } };
++    let selected: ResolvedPetSkin | null = skin;
++    const reset = vi.fn(() => { selected = null; });
++    dapApp.attachPluginSkin(() => selected, () => selected?.definition.persona ?? null, reset);
++    await dapApp.whenReady();
++    const identity = ipcHandlers.get(IPC.getPersona)!({});
++    for (const size of [60, 180, 240]) {
++      await ipcHandlers.get(IPC.saveConfig)!({}, { config: { petSize: size } });
++      expect(ipcHandlers.get(IPC.petAppearance)!({})).toMatchObject({ character: "cat", size, skin });
++      expect(ipcHandlers.get(IPC.getPersona)!({})).toEqual(identity);
++    }
++    expect(reset).not.toHaveBeenCalled();
++    for (const selection of [{ petCharacter: "cat" }, { petCharacter: "mini" }, { petMiniProfileId: "chosen" }]) {
++      selected = skin;
++      await ipcHandlers.get(IPC.saveConfig)!({}, { config: selection });
++      expect(selected).toBeNull();
++      expect(ipcHandlers.get(IPC.petAppearance)!({})).not.toHaveProperty("skin");
++    }
++    expect(reset).toHaveBeenCalledTimes(3);
++  });
++
+   it("collects background reports without opening windows and replays only the selected task", async () => {
+     const fb = fakeBackend();
+     const dapApp = new ElectronDapApp({ backend: fb.backend as never, preloadPath: "/p", pushTypes: [], userDataDir: "/tmp/dap-test" });
+diff --git a/app/electron/renderer/src/settings-config-view.ts b/app/electron/renderer/src/settings-config-view.ts
+index a0f475bd..dd8845bf 100644
+--- a/app/electron/renderer/src/settings-config-view.ts
++++ b/app/electron/renderer/src/settings-config-view.ts
+@@ -88,6 +88,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+   let voiceDownloading: VoiceModelId | null = null;
+   let voiceProgressEl: HTMLElement | null = null;
+   let offVoiceProgress: (() => void) | null = null;
++  let offPetAppearance: (() => void) | null = null;
+   let voiceEnginePoll: ReturnType<typeof setInterval> | null = null;
+   const stopVoiceEnginePoll = (): void => {
+     if (voiceEnginePoll) clearInterval(voiceEnginePoll);
+@@ -415,15 +416,16 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+   // Mini mode (oshi-desk-mini concept): registered PROFILES of idle/active image pairs (no links);
+   // the selected profile is the pet. Stationary, drag-to-move.
+   const renderPetCharacter = (panel: HTMLElement, cfg: AppConfigState): void => {
+-    const current = cfg.config.petCharacter === "mini" ? "mini" : "cat";
+-    const size = cfg.config.petSize ?? (current === "mini" ? cfg.config.petMiniSize : undefined) ?? 130;
++    const skin = petAppearance?.skin?.definition;
++    const current = skin ? "plugin" : cfg.config.petCharacter === "mini" ? "mini" : "cat";
++    const size = petAppearance?.size ?? cfg.config.petSize ?? (current === "mini" ? cfg.config.petMiniSize : undefined) ?? 130;
+     const allProfiles = petProfiles ?? [];
+     const selectedName =
+       current === "mini" ? (allProfiles.find((p) => p.id === cfg.config.petMiniProfileId) ?? allProfiles[0])?.name : null;
+     const g = group(
+       "general-pet",
+       "DAP 모양",
+-      `${current === "mini" ? `커스텀 미니${selectedName ? ` (${selectedName})` : ""}` : "기본 고양이"} · ${size}px`,
++      `${skin?.displayName ?? (current === "mini" ? `커스텀 미니${selectedName ? ` (${selectedName})` : ""}` : "기본 고양이")} · ${size}px`,
+     );
+     const box = g.body;
+     const seg = el("div", "seg-toggle");
+@@ -433,9 +435,18 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+     ] as const;
+     for (const c of CHARACTERS) {
+       const b = el("button", c.value === current ? "active" : "", c.label);
++      b.setAttribute("aria-pressed", String(c.value === current));
+       b.addEventListener("click", () => void savePet({ petCharacter: c.value }));
+       seg.append(b);
+     }
++    if (skin) {
++      const active = el("button", "active", skin.displayName) as HTMLButtonElement;
++      active.type = "button";
++      active.disabled = true;
++      active.setAttribute("aria-label", `현재 스킨: ${skin.displayName}`);
++      active.setAttribute("aria-pressed", "true");
++      seg.append(active);
++    }
+     box.append(field("캐릭터", seg, "커스텀 미니는 등록한 프로필의 이미지로 만든 DAP이에요. 걷지 않고 제자리에 머물러요 (드래그로 이동)."));
+ 
+     if (current === "mini") {
+@@ -851,6 +862,10 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+     render();
+   });
+   if (section === "general") {
++    offPetAppearance = bridge.onPetAppearanceChanged?.((appearance) => {
++      petAppearance = appearance;
++      render();
++    }) ?? null;
+     void loadAppUpdateStatus();
+     void loadPetData();
+   }
+@@ -878,6 +893,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+     destroy(): void {
+       if (statusTimer) clearTimeout(statusTimer);
+       offVoiceProgress?.();
++      offPetAppearance?.();
+       stopVoiceEnginePoll();
+       root.innerHTML = "";
+     },
+diff --git a/app/electron/renderer/test/settings-plugin-skin.test.ts b/app/electron/renderer/test/settings-plugin-skin.test.ts
+new file mode 100644
+index 00000000..d564e346
+--- /dev/null
++++ b/app/electron/renderer/test/settings-plugin-skin.test.ts
+@@ -0,0 +1,45 @@
++import { describe, expect, it, vi } from "vitest";
++import type { AppConfigState, DapBridge, PetAppearance } from "@dap/electron-main";
++import { mountConfigSection } from "../src/settings-config-view.js";
++
++describe("plugin skin in appearance settings", () => {
++  it("shows the applied name, preserves it when resizing and follows live skin changes", async () => {
++    let saved: AppConfigState = { config: { petCharacter: "mini", petMiniProfileId: "saved-mini", petSize: 160 }, autostart: false, effectiveTheme: "light" };
++    const skin = { id: "friends.momonga", imageDataUrl: "data:image/png;base64,AA==", definition: { id: "momonga", displayName: "모몽가", schemaVersion: 1 as const, spritesheetPath: "assets/sheet.png", cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 1 }, animations: { idle: { row: 0, holdsMs: [100] } } } };
++    let appearance: PetAppearance = { character: "cat", size: 160, skin };
++    let listener: ((next: PetAppearance) => void) | undefined;
++    const unsubscribe = vi.fn();
++    const saveConfig = vi.fn(async (patch: { config: AppConfigState["config"] }) => {
++      saved = { ...saved, config: { ...saved.config, ...patch.config } };
++      appearance = { ...appearance, size: saved.config.petSize ?? 130 };
++      if ("petCharacter" in patch.config) appearance = { character: "cat", size: appearance.size };
++      return saved;
++    });
++    const bridge = {
++      getConfig: async () => saved, saveConfig,
++      getPetAppearance: async () => appearance, getPetProfiles: async () => [],
++      getAppUpdateStatus: async () => ({ phase: "unsupported", currentVersion: "test" }),
++      onPetAppearanceChanged: (cb: (next: PetAppearance) => void) => { listener = cb; return unsubscribe; },
++    } as unknown as DapBridge;
++    const root = document.createElement("div");
++    const view = mountConfigSection(root, bridge, "general");
++    const selected = () => root.querySelector<HTMLButtonElement>('[aria-label="현재 스킨: 모몽가"]');
++    await vi.waitFor(() => expect(selected()?.getAttribute("aria-pressed")).toBe("true"));
++    expect(root.textContent).toContain("모몽가 · 160px");
++    const slider = root.querySelector<HTMLInputElement>('input[type="range"]')!;
++    slider.value = "200"; slider.dispatchEvent(new Event("change"));
++    await vi.waitFor(() => expect(root.textContent).toContain("모몽가 · 200px"));
++    expect(saveConfig).toHaveBeenCalledWith({ config: { petSize: 200 } });
++    expect(appearance.skin?.id).toBe(skin.id);
++    appearance = { ...appearance, skin: { ...skin, id: "friends.usagi", definition: { ...skin.definition, id: "usagi", displayName: "우사기" } } };
++    listener!(appearance);
++    expect(root.textContent).toContain("우사기 · 200px");
++    const cat = [...root.querySelectorAll("button")].find(button => button.textContent === "기본 고양이")!;
++    expect(cat.getAttribute("aria-pressed")).toBe("false");
++    cat.click();
++    await vi.waitFor(() => expect(root.textContent).toContain("기본 고양이 · 200px"));
++    expect(saveConfig).toHaveBeenCalledWith({ config: { petCharacter: "cat" } });
++    view.destroy();
++    expect(unsubscribe).toHaveBeenCalledOnce();
++  });
++});

@@ -277,16 +277,16 @@
       "source": "generated"
     },
     "waving": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-momonga-waving",
-      "source": "upstream"
+      "motionId": "momonga-happy",
+      "source": "generated"
     },
     "failed": {
-      "status": "upstream",
+      "status": "ready",
       "production": false,
-      "motionId": "upstream-momonga-failed",
-      "source": "upstream"
+      "motionId": "momonga-idle",
+      "source": "generated"
     },
     "running": {
       "status": "ready",
@@ -325,10 +325,10 @@
       "source": "generated"
     },
     "success": {
-      "status": "upstream",
+      "status": "ready",
       "production": false,
-      "motionId": "upstream-momonga-waving",
-      "source": "upstream"
+      "motionId": "momonga-happy",
+      "source": "generated"
     },
     "dance": {
       "status": "ready",

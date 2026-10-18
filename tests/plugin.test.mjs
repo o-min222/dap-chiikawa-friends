@@ -35,7 +35,8 @@ test('first installation fetches pinned originals once; cached skins restore off
   const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);let stop=await activate(ctx);
   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,false);
   await listener({type:'apply',id:'usagi'});assert.equal(active,null);
-  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,4);
+  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,3);
+  assert.ok(urls.every(url=>!url.includes('momonga')),'Momonga needs no upstream artwork');
   assert.ok(urls.every(url=>url.startsWith('https://raw.githubusercontent.com/heelee912/chiikawa-dots-pets/bb96582f525fbdf88a236b4703433ae92bfd5888/pets/')));
   globalThis.fetch=()=>{throw Error('Cached reload must stay offline');};assert.equal(messages.at(-1).coverage.usagi.idle.status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-right'].status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-left'].status,'ready');assert.equal(messages.at(-1).coverage.usagi.grabbed.status,'ready');assert.equal(messages.at(-1).coverage.usagi.sleep.status,'ready');assert.equal(messages.at(-1).coverage.usagi.dance.status,'ready');
   for(const skin of skins){await listener({type:'apply',id:skin.id});assert.equal(active,`demo.${skin.id}`);assert.equal(persona,active);}
@@ -46,6 +47,6 @@ test('first installation fetches pinned originals once; cached skins restore off
   await listener({type:'apply',id:'momonga'});await stop();assert.equal(listeners.size,0);assert.equal(closed,true);
   stop=await activate(ctx);assert.equal(active,'demo.momonga');await stop();
   values.appliedCharacter='removed-character';stop=await activate(ctx);assert.equal(values.appliedCharacter,'');await stop();
-  assert.equal(requests,4);
+  assert.equal(requests,3);
  }finally{globalThis.fetch=oldFetch;await rm(root,{recursive:true,force:true});}
 });

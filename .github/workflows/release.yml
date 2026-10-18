@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm run build
-      - run: git diff --exit-code -- dap_chiikawa/plugin.mjs assets/catalog.js
+      - run: git diff --exit-code -- dap_chiikawa/plugin.mjs assets/catalog.js assets/atlases assets/atlases.json assets/coverage.json MOTIONS.md
       - run: npm test
       - run: node scripts/check.mjs "$RELEASE_REF"
         env:

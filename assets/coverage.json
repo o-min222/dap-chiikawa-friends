@@ -1,0 +1,266 @@
+{
+  "chiikawa": {
+    "idle": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "running-right": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "running-left": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "waving": {
+      "status": "substitute",
+      "motionId": "success"
+    },
+    "jumping": {
+      "status": "substitute",
+      "motionId": "success"
+    },
+    "failed": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "waiting": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "running": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "review": {
+      "status": "substitute",
+      "motionId": "groom"
+    },
+    "sleep": {
+      "status": "ready",
+      "motionId": "sleep"
+    },
+    "feed_munch": {
+      "status": "ready",
+      "motionId": "eat"
+    },
+    "groom": {
+      "status": "ready",
+      "motionId": "groom"
+    },
+    "grabbed": {
+      "status": "ready",
+      "motionId": "grabbed"
+    },
+    "success": {
+      "status": "ready",
+      "motionId": "success"
+    },
+    "dance": {
+      "status": "ready",
+      "motionId": "dance"
+    },
+    "working_v2": {
+      "status": "substitute",
+      "motionId": "groom"
+    }
+  },
+  "hachiware": {
+    "idle": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "running-right": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "running-left": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "waving": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "jumping": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "failed": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "waiting": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "running": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "review": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "sleep": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "feed_munch": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "groom": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "grabbed": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "success": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    },
+    "dance": {
+      "status": "ready",
+      "motionId": "hachiware-dance"
+    },
+    "working_v2": {
+      "status": "substitute",
+      "motionId": "hachiware-dance"
+    }
+  },
+  "usagi": {
+    "idle": {
+      "status": "review",
+      "motionId": "usagi-idle"
+    },
+    "running-right": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "running-left": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "waving": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "jumping": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "failed": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "waiting": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "running": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "review": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "sleep": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "feed_munch": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "groom": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "grabbed": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "success": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "dance": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    },
+    "working_v2": {
+      "status": "substitute",
+      "motionId": "usagi-idle"
+    }
+  },
+  "momonga": {
+    "idle": {
+      "status": "ready",
+      "motionId": "momonga-idle"
+    },
+    "running-right": {
+      "status": "ready",
+      "motionId": "momonga-move-right"
+    },
+    "running-left": {
+      "status": "ready",
+      "motionId": "momonga-move-left"
+    },
+    "waving": {
+      "status": "substitute",
+      "motionId": "momonga-idle"
+    },
+    "jumping": {
+      "status": "substitute",
+      "motionId": "momonga-idle"
+    },
+    "failed": {
+      "status": "substitute",
+      "motionId": "momonga-idle"
+    },
+    "waiting": {
+      "status": "substitute",
+      "motionId": "momonga-idle"
+    },
+    "running": {
+      "status": "ready",
+      "motionId": "momonga-work-book"
+    },
+    "review": {
+      "status": "substitute",
+      "motionId": "momonga-idle"
+    },
+    "sleep": {
+      "status": "ready",
+      "motionId": "momonga-sleep"
+    },
+    "feed_munch": {
+      "status": "ready",
+      "motionId": "momonga-eat"
+    },
+    "groom": {
+      "status": "ready",
+      "motionId": "momonga-groom"
+    },
+    "grabbed": {
+      "status": "ready",
+      "motionId": "momonga-grabbed"
+    },
+    "success": {
+      "status": "substitute",
+      "motionId": "momonga-idle"
+    },
+    "dance": {
+      "status": "ready",
+      "motionId": "momonga-dance"
+    },
+    "working_v2": {
+      "status": "ready",
+      "motionId": "momonga-work-flyer"
+    }
+  }
+}

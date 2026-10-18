@@ -12,9 +12,10 @@ for(const motion of source.motions){
  if(image.height!==208||image.width!==motion.holdsMs.length*192)throw Error('Unexpected aligned strip dimensions');
  for(let y=0;y<208;y++)image.pixels.copy(pixels,y*1536*4,y*image.width*4,(y+1)*image.width*4);
  const bytes=encodeMotionPng({width:1536,height:208,pixels});
- const characterId=motion.characterId??'chiikawa', key=motion.id.replace(/^(momonga|hachiware)-/,'');
+ const characterId=motion.characterId??'chiikawa', key=motion.id.replace(/^(chiikawa|hachiware|usagi|momonga)-/,'');
  const item={id:motion.id,characterId,motion:aliases[key]??key,file:`assets/generated/${motion.id}.png`,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),holdsMs:motion.holdsMs};
  if(motion.hops)item.hops=motion.hops;
+ if(motion.reviewStatus)item.reviewStatus=motion.reviewStatus;
  await writeFile(new URL(item.file,root),bytes);pack.push(item);
 }
 await writeFile(new URL('assets/motions.json',root),JSON.stringify(pack,null,2)+'\n');

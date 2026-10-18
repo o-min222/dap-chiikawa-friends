@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,17);
+assert.equal(motions.length,18);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
@@ -15,6 +15,13 @@ for(const motion of motions){
  assert.ok(motion.holdsMs.length>=1&&motion.holdsMs.length<=8);
  assert.ok(motion.holdsMs.every(hold=>Number.isInteger(hold)&&hold>=20&&hold<=5000));
  generated.add(url.href);
+}
+const atlases=JSON.parse(await readFile(new URL('assets/atlases.json',base),'utf8'));
+assert.equal(atlases.length,8);
+for(const asset of atlases){
+ const url=new URL(asset.file,base),data=await readFile(url);
+ assert.equal(data.length,asset.bytes);assert.equal(createHash('sha256').update(data).digest('hex'),asset.sha256);
+ assert.ok(data.readUInt32BE(20)<=4096);generated.add(url.href);
 }
 const icon=await readFile(iconUrl);
 assert.ok(icon.length<=512*1024,'radial icon must fit the DAP 512KB limit');
@@ -30,9 +37,11 @@ const tag=process.argv[2];if(tag?.startsWith('v'))assert.equal(tag,`v${metadata.
 const entry=await readFile(new URL('dap_chiikawa/plugin.mjs',base),'utf8');
 for(const match of entry.matchAll(/^import .* from "([^"]+)";/gm))assert.ok(match[1].startsWith('node:'),'only Node built-ins may remain external');
 assert.ok(!entry.includes('__SKINS_JSON__')&&!entry.includes('__SOURCE_JSON__'));
+assert.doesNotMatch(entry,/fetch\(|https?:\/\//,'runtime uses bundled assets without network');
 const catalog=JSON.parse(await readFile(new URL('assets/catalog.json',base),'utf8'));
-const source=JSON.parse(await readFile(new URL('assets/originals.json',base),'utf8'));
-assert.equal(catalog.length,11);assert.deepEqual(catalog.map(s=>s.id),source.assets.map(s=>s.id));
+assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga']);
+assert.ok(motions.every(m=>catalog.some(s=>s.id===m.characterId)));
+await assert.rejects(readFile(new URL('assets/originals.json',base)),{code:'ENOENT'});
 let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
  if(['.git','.github','node_modules','dist','.DS_Store'].includes(item.name))continue;

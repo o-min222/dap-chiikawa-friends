@@ -1,0 +1,42 @@
+[
+  {
+    "file": "assets/atlases/chiikawa-modern.png",
+    "bytes": 1289020,
+    "sha256": "03824a95693643377d9c197172b0522ff19a70c4b71f028da37b841bcd775f4c"
+  },
+  {
+    "file": "assets/atlases/chiikawa-legacy.png",
+    "bytes": 461337,
+    "sha256": "b0e4e11eae16cef2a5663b3b936140a847801af5e5014b79b68d06c2b74bbdd1"
+  },
+  {
+    "file": "assets/atlases/hachiware-modern.png",
+    "bytes": 288855,
+    "sha256": "90d1857b618168d98cea6842686d095cb23afc625e7552962ac41954a2c7c415"
+  },
+  {
+    "file": "assets/atlases/hachiware-legacy.png",
+    "bytes": 288855,
+    "sha256": "90d1857b618168d98cea6842686d095cb23afc625e7552962ac41954a2c7c415"
+  },
+  {
+    "file": "assets/atlases/usagi-modern.png",
+    "bytes": 228517,
+    "sha256": "bdf145d1d5502176405449a495e5bda14ec8986ee61dac2caecf14245c9667ff"
+  },
+  {
+    "file": "assets/atlases/usagi-legacy.png",
+    "bytes": 228517,
+    "sha256": "bdf145d1d5502176405449a495e5bda14ec8986ee61dac2caecf14245c9667ff"
+  },
+  {
+    "file": "assets/atlases/momonga-modern.png",
+    "bytes": 1949680,
+    "sha256": "d434a3c25221266a8619577875aa32441adbbd0300c669472bf914e66e9ac214"
+  },
+  {
+    "file": "assets/atlases/momonga-legacy.png",
+    "bytes": 755298,
+    "sha256": "d149f8ef98d6ed318c30ffe992591f45312e5c3dd40a91683f258867f95ee4c1"
+  }
+]

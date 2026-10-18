@@ -1,7 +1,7 @@
 import { inflateSync, deflateSync } from 'node:zlib';
-import { readFile as readMotionFile, writeFile as writeMotionFile, rename as renameMotionFile } from 'node:fs/promises';
+import { readFile as readMotionFile, writeFile as writeMotionFile } from 'node:fs/promises';
 import { join as motionJoin } from 'node:path';
-import { createHash as motionHash, randomUUID as motionUuid } from 'node:crypto';
+import { createHash as motionHash } from 'node:crypto';
 
 const PNG_HEADER = Buffer.from([137,80,78,71,13,10,26,10]);
 function crc(bytes) {
@@ -48,43 +48,48 @@ export function encodeMotionPng({ width, height, pixels }) {
   for (let y = 0; y < height; y++) pixels.copy(raw, y * (stride + 1) + 1, y * stride, (y + 1) * stride);
   return Buffer.concat([PNG_HEADER, chunk('IHDR', header), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
-export async function prepareMotionSkin(root, skin, pack, extended, workingVariants = false) {
-  const motions = pack.filter(motion => motion.characterId === skin.id && (motion.motion !== 'working_v2' || (extended && workingVariants)));
-  if (!motions.length) return skin;
-  const original = decodeMotionPng(await readMotionFile(motionJoin(root, skin.spritesheetPath)));
-  if (original.width !== 1536 || original.height !== 2288) throw Error('Unexpected original atlas dimensions');
-  const definition = structuredClone(skin), rowBytes = 1536 * 208 * 4;
-  // Reuse replaced canonical rows only when appending would exceed the host's 4096px limit.
-  const compact = extended && (11 + motions.length) * 208 > 4096;
-  const reusesRow = motion => Boolean(skin.animations[motion.motion]);
-  const rows = 11 + (extended ? motions.filter(motion => !compact || !reusesRow(motion)).length : 0);
-  if (rows * 208 > 4096) throw Error('Combined motion atlas exceeds the DAP dimensions');
-  const pixels = Buffer.alloc(rowBytes * rows);
-  let nextRow = 11;
-  original.pixels.copy(pixels);
-  for (let index = 0; index < motions.length; index++) {
-    const motion = motions[index];
+export const LEGACY_MOTIONS = ['idle','running-right','running-left','waving','jumping','failed','waiting','running','review'];
+export const EXTRA_MOTIONS = ['sleep','feed_munch','groom','grabbed','success','dance','working_v2'];
+
+export function planMotions(skin, pack) {
+  const own = pack.filter(motion => motion.characterId === skin.id);
+  const byKey = new Map(own.map(motion => [motion.motion, motion]));
+  const idle = byKey.get('idle') ?? own.find(motion => motion.id === skin.defaultMotionId);
+  if (!idle) throw Error(`No independent base artwork for ${skin.id}`);
+  const choices = Object.fromEntries(LEGACY_MOTIONS.map(key => [key, byKey.get(key) ?? idle]));
+  for (const key of ['waving','jumping']) choices[key] = byKey.get(key) ?? byKey.get('success') ?? idle;
+  for (const key of EXTRA_MOTIONS) choices[key] = byKey.get(key) ?? choices[({success:'waving',dance:'jumping',feed_munch:'running'})[key] ?? 'waiting'];
+  const coverage = Object.fromEntries(Object.entries(choices).map(([key,motion]) => [key, {
+    status: motion.motion !== key ? 'substitute' : motion.reviewStatus === 'awaiting-user-review' ? 'review' : 'ready',
+    motionId: motion.id,
+  }]));
+  return { choices, coverage };
+}
+
+/** Compose our generated strips only, without an original character sheet. */
+export async function prepareMotionSkin(root, skin, pack, extended, workingVariants, outputFile) {
+  if (!/^assets\/atlases\/[a-z-]+\.png$/.test(outputFile)) throw Error('Invalid atlas output path');
+  const {choices} = planMotions(skin, pack);
+  const keys = [...LEGACY_MOTIONS, ...(extended ? EXTRA_MOTIONS.filter(key => (key !== 'working_v2' || workingVariants) && pack.some(m => m.characterId === skin.id && m.motion === key)) : [])];
+  const motions = [...new Map(keys.map(key => [choices[key].id,choices[key]])).values()];
+  const rowBytes = 1536 * 208 * 4, pixels = Buffer.alloc(rowBytes * motions.length);
+  if (!motions.length || motions.length * 208 > 4096) throw Error('Invalid atlas dimensions');
+  for (const [index,motion] of motions.entries()) {
     if (!/^assets\/generated\/[a-z-]+\.png$/.test(motion.file)) throw Error('Invalid generated motion path');
-    const bytes = await readMotionFile(motionJoin(root, motion.file));
+    const bytes = await readMotionFile(motionJoin(root,motion.file));
     if (bytes.length !== motion.bytes || motionHash('sha256').update(bytes).digest('hex') !== motion.sha256) throw Error('Generated motion integrity check failed');
     const strip = decodeMotionPng(bytes);
     if (strip.width !== 1536 || strip.height !== 208) throw Error('Invalid generated strip dimensions');
-    // Older DAP versions retain shared-slot behavior; the extended host gets independent clips.
-    const legacy = ({ dance: 'jumping', success: 'waving' })[motion.motion] ?? motion.motion;
-    if (!extended && !skin.animations[legacy]) continue;
-    const key = extended ? motion.motion : legacy;
-    const row = extended ? compact && reusesRow(motion) ? skin.animations[key].row : nextRow++ : skin.animations[legacy].row;
-    strip.pixels.copy(pixels, row * rowBytes);
-    const clip = { row, holdsMs: motion.holdsMs };
-    if (extended && motion.hops) clip.hops = motion.hops;
-    definition.animations[key] = clip;
+    strip.pixels.copy(pixels,index*rowBytes);
   }
-  definition.grid.rows = rows;
-  const bytes = encodeMotionPng({ width: 1536, height: rows * 208, pixels });
-  if (bytes.length > 8_000_000) throw Error('Combined motion atlas exceeds the DAP limit');
-  const revision = motionHash('sha256').update(bytes).digest('hex').slice(0, 16);
-  definition.spritesheetPath = `assets/${skin.id}-motion-${revision}.png`;
-  const destination = motionJoin(root, definition.spritesheetPath), temporary = `${destination}.${motionUuid()}.part`;
-  await writeMotionFile(temporary, bytes); await renameMotionFile(temporary, destination);
-  return definition;
+  const animations = Object.fromEntries(keys.map(key => {
+    const motion=choices[key], clip={row:motions.findIndex(item=>item.id===motion.id),holdsMs:motion.holdsMs};
+    if (extended && motion.hops) clip.hops=motion.hops;
+    return [key,clip];
+  }));
+  const bytes=encodeMotionPng({width:1536,height:motions.length*208,pixels});
+  if (bytes.length>8_000_000) throw Error('Combined motion atlas exceeds the DAP limit');
+  await writeMotionFile(motionJoin(root,outputFile),bytes);
+  return {id:skin.id,displayName:skin.displayName,schemaVersion:1,spritesheetPath:outputFile,
+    cell:{width:192,height:208},grid:{columns:8,rows:motions.length},animations,persona:skin.persona};
 }

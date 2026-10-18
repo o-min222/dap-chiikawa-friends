@@ -1,0 +1,14 @@
+Use case: illustration-story. Create ONE production sprite sheet for Usagi from Chiikawa, a BASIC IDLE animation only. Exactly 8 chronological frames, 4 columns by 2 rows, equal square cells on transparent background. Landscape sheet aspect 2:1.
+Reference image is our independently generated group icon. Use ONLY the pale yellow rabbit Usagi at the upper-right as the character reference. The other characters must NOT appear. Match our warm dark chocolate thick clean outlines, soft flat cream-yellow fur, long upright ears with pale peach-pink inner ears, pink blushing cheeks with short brown hatch marks, round broad cheeks, two short eyebrow marks, dark oval eyes with a white catchlight, tiny w-shaped mouth, tiny rounded forepaws and short feet. A tiny round cream tail may be visible, no blue features. Preserve Usagi's mischievous calm confident look, not a generic rabbit or Momonga. Body compact and round, long ears unmistakable.
+Pose: full body standing front-facing, forepaws resting low beside belly, feet planted, ears upright and symmetric. Neutral small smile, open eyes.
+8 frames:
+1 resting pose, eyes open.
+2 same pose, very slight chest breathing.
+3 breathing settles, eyes open.
+4 eyelids half closed for blink.
+5 both eyes gently closed for blink.
+6 half open again.
+7 eyes fully open.
+8 returns exactly to frame1 pose.
+Hard invariants: absolutely same head size, ear outline and height, nose position, body width, paw shape, foot centers and baseline, camera scale in all cells. No bouncing or whole body translation. Breathing maximum 2 source pixels on belly; no ear waving, head tilting, arm waving or extra actions. A stable quiet loop only.
+Layout: allow at least 35px empty transparent margin around EVERY sprite; full character including long ears within each cell; maximum sprite height 365px and width 290px in a roughly 448px square cell. No crop or overlap at cell boundaries. Clean alpha with no colored fringing. No props, speech bubbles, background, ground, shadow, text, labels, numbers, captions or watermark. Output only this single idle animation sheet, NOT multiple motion types.

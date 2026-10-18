@@ -306,5 +306,24 @@
       240,
       400
     ]
+  },
+  {
+    "id": "usagi-idle",
+    "characterId": "usagi",
+    "motion": "idle",
+    "file": "assets/generated/usagi-idle.png",
+    "bytes": 228517,
+    "sha256": "bdf145d1d5502176405449a495e5bda14ec8986ee61dac2caecf14245c9667ff",
+    "holdsMs": [
+      1100,
+      380,
+      320,
+      80,
+      100,
+      80,
+      360,
+      800
+    ],
+    "reviewStatus": "awaiting-user-review"
   }
 ]

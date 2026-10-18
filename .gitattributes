@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.png binary
+# Unified diffs keep a space marker on empty context lines.
+*.patch -whitespace

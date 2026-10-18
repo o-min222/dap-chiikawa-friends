@@ -19,7 +19,7 @@ for(const motion of source.motions){
  }
  const bytes=encodeMotionPng({width:1536,height:208,pixels});
  const characterId=motion.characterId??'chiikawa', key=motion.id.replace(/^(chiikawa|hachiware|usagi|momonga)-/,'');
- const item={id:motion.id,characterId,motion:aliases[key]??key,file:`assets/generated/${motion.id}.png`,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),holdsMs:frames.map(f=>f.holdMs)};
+ const item={id:motion.id,characterId,motion:motion.motion??aliases[key]??key,file:`assets/generated/${motion.id}.png`,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),holdsMs:frames.map(f=>f.holdMs)};
  if(motion.hops)item.hops=motion.hops;
  if(motion.reviewStatus)item.reviewStatus=motion.reviewStatus;
  await writeFile(new URL(item.file,root),bytes);pack.push(item);

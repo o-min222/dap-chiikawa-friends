@@ -500,5 +500,36 @@
       400
     ],
     "reviewStatus": "approved"
+  },
+  {
+    "id": "momonga-happy",
+    "characterId": "momonga",
+    "motion": "waving",
+    "file": "assets/generated/momonga-happy.png",
+    "bytes": 187166,
+    "sha256": "24b03e4fa585a910ce502ee332185d08b19a48878f378a3c6e0d61538c567f2f",
+    "holdsMs": [
+      120,
+      180,
+      260,
+      300,
+      260,
+      240,
+      240,
+      400
+    ],
+    "hops": [
+      {
+        "startMs": 180,
+        "durationMs": 640,
+        "heightPx": 6
+      },
+      {
+        "startMs": 950,
+        "durationMs": 450,
+        "heightPx": 3
+      }
+    ],
+    "reviewStatus": "approved"
   }
 ]

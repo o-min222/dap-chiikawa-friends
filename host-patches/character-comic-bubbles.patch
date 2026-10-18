@@ -1,0 +1,121 @@
+diff --git a/app/electron/renderer/pet.html b/app/electron/renderer/pet.html
+index e34ac15d..20462fd8 100644
+--- a/app/electron/renderer/pet.html
++++ b/app/electron/renderer/pet.html
+@@ -276,7 +276,57 @@
+         border: 6px solid transparent;
+         border-top-color: #fff;
+       }
+-      /* Image bubble (cli_claude / cli_codex): the asset IS the bubble, so drop the frame + tail. */
++      /* Character click dialogue follows the artwork's warm ink and soft blush colors. */
++      .dap-pet__bubble--character {
++        --character-paper: #fffdf7;
++        --character-accent: #f3cbd4;
++        padding: 9px 28px 10px 16px;
++        border: 2px solid #73564c;
++        border-radius: 22px 24px 20px 23px / 21px 20px 23px 22px;
++        background: var(--character-paper);
++        color: #594038;
++        box-shadow: 0 3px 0 var(--character-accent), 0 5px 12px rgba(86, 57, 44, 0.12);
++        font-size: 14px;
++        font-weight: 650;
++        line-height: 1.5;
++        letter-spacing: 0.3px;
++      }
++      .dap-pet__bubble--character[data-character="hachiware"] {
++        --character-paper: #f8fcff;
++        --character-accent: #c9e3ef;
++      }
++      .dap-pet__bubble--character[data-character="usagi"] {
++        --character-paper: #fff8df;
++        --character-accent: #efdaa0;
++      }
++      .dap-pet__bubble--character[data-character="momonga"] {
++        --character-paper: #f8fdff;
++        --character-accent: #cde9ef;
++      }
++      .dap-pet__bubble--character::before {
++        content: "";
++        position: absolute;
++        right: 15px;
++        bottom: 12px;
++        width: 3px;
++        height: 7px;
++        border-radius: 3px;
++        background: #eeb7c3;
++        box-shadow: 5px 0 #eeb7c3;
++        transform: rotate(14deg);
++      }
++      .dap-pet__bubble--character::after {
++        top: calc(100% - 6px);
++        width: 12px;
++        height: 12px;
++        border: 0;
++        border-right: 2px solid #73564c;
++        border-bottom: 2px solid #73564c;
++        border-radius: 0 0 5px 0;
++        background: var(--character-paper);
++        transform: translateX(-50%) rotate(45deg);
++      }
++      /* Other image bubbles carry their own frame + tail. */
+       .dap-pet__bubble--image {
+         background: none;
+         border: none;
+diff --git a/app/electron/renderer/src/pet-view.ts b/app/electron/renderer/src/pet-view.ts
+index b932ff8c..3e7c570f 100644
+--- a/app/electron/renderer/src/pet-view.ts
++++ b/app/electron/renderer/src/pet-view.ts
+@@ -356,7 +356,12 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+       }
+       if (node.parentElement !== parent) parent.append(node);
+       const agent = b.style === "work" && (b.image === "cli_codex" || b.image === "cli_claude") ? b.image.slice(4) : null;
+-      const cls = `dap-pet__bubble dap-pet__bubble--${b.style}${agent ? " dap-pet__agent-badge" : b.image ? " dap-pet__bubble--image" : ""}`;
++      const skinId = appearance?.skin?.definition.id ?? "";
++      const character = b.style === "react" && b.reaction === "pet" && !b.image &&
++        ["chiikawa", "hachiware", "usagi", "momonga"].includes(skinId) ? skinId : null;
++      if (character) node.dataset.character = character;
++      else delete node.dataset.character;
++      const cls = `dap-pet__bubble dap-pet__bubble--${b.style}${character ? " dap-pet__bubble--character" : ""}${agent ? " dap-pet__agent-badge" : b.image ? " dap-pet__bubble--image" : ""}`;
+       if (node.className !== cls) node.className = cls;
+       if (!agent && node.dataset.agent) {
+         delete node.dataset.agent;
+diff --git a/app/electron/renderer/test/pet-view.test.ts b/app/electron/renderer/test/pet-view.test.ts
+index c08ee09f..75b6aa6f 100644
+--- a/app/electron/renderer/test/pet-view.test.ts
++++ b/app/electron/renderer/test/pet-view.test.ts
+@@ -227,6 +227,35 @@ describe("mountPetView", () => {
+     expect(root.querySelector(".dap-pet__bubble")).toBeNull();
+   });
+ 
++  it("uses character styling only for character click dialogue and clears it after a skin reset", () => {
++    const { bridge, emit, pushAppearance } = fakeBridge();
++    const model = new PetModel(bridge);
++    const view = mountPetView(root, model, bridge);
++    emit("overlay.bubble.show", { id: "click", text: "야하!", style: "react", reaction: "pet", duration_ms: 3000 });
++    const click = root.querySelector<HTMLElement>('[data-id="click"]')!;
++    expect(click.classList.contains("dap-pet__bubble--character")).toBe(false);
++    for (const id of ["chiikawa", "hachiware", "usagi", "momonga"]) {
++      pushAppearance({ character: "cat", size: 130, skin: {
++        id: `friends.${id}`, imageDataUrl: "data:image/png;base64,AA==",
++        definition: { id, displayName: id, schemaVersion: 1, spritesheetPath: "sheet.png",
++          cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 1 },
++          animations: { idle: { row: 0, holdsMs: [100] } } },
++      } });
++      expect(click.classList.contains("dap-pet__bubble--character")).toBe(true);
++      expect(click.dataset.character).toBe(id);
++      expect(root.querySelector('[data-id="click"]')).toBe(click);
++    }
++    emit("overlay.bubble.show", { id: "reply", text: "답변", style: "speech", duration_ms: 3000 });
++    emit("overlay.bubble.show", { id: "feed", text: "냠냠", style: "react", reaction: "feed", duration_ms: 3000 });
++    emit("overlay.bubble.show", { id: "codex", text: "", style: "work", image: "cli_codex", duration_ms: 0 });
++    expect(root.querySelectorAll(".dap-pet__bubble--character")).toHaveLength(1);
++    expect(root.querySelector('[data-id="codex"]')!.classList.contains("dap-pet__agent-badge")).toBe(true);
++    pushAppearance({ character: "cat", size: 130 });
++    expect(click.classList.contains("dap-pet__bubble--character")).toBe(false);
++    expect(click.dataset.character).toBeUndefined();
++    view.destroy(); model.dispose();
++  });
++
+   it("separates speech from agent badges while preserving keyed nodes across updates", () => {
+     const { bridge, emit } = fakeBridge();
+     const model = new PetModel(bridge);

@@ -209,10 +209,10 @@
       "source": "generated"
     },
     "review": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-usagi-review",
-      "source": "upstream"
+      "motionId": "usagi-review",
+      "source": "generated"
     },
     "sleep": {
       "status": "ready",
@@ -295,10 +295,10 @@
       "source": "generated"
     },
     "review": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-momonga-review",
-      "source": "upstream"
+      "motionId": "momonga-review",
+      "source": "generated"
     },
     "sleep": {
       "status": "ready",

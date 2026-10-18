@@ -8,20 +8,27 @@ import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
 
-test('26 independent strips connect approved Usagi motions',async()=>{
- assert.equal(pack.length,26);assert.equal(new Set(pack.map(m=>m.id)).size,26);
+test('28 strips connect approved character motions, including both chat thinking clips',async()=>{
+ assert.equal(pack.length,28);assert.equal(new Set(pack.map(m=>m.id)).size,28);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
   assert.deepEqual(decodeMotionPng(encodeMotionPng(image)).pixels,image.pixels);
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='ready').length,26);
+ assert.equal(coverage.filter(m=>m.status==='ready').length,28);
  assert.equal(coverage.filter(m=>m.status==='shared').length,3);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,27);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,25);
+ const momonga=planMotions(skins.find(s=>s.id==='momonga'),pack).coverage;
+ assert.equal(momonga.review.motionId,'momonga-review');
+ assert.equal(momonga.review.status,'ready');
+ assert.equal(pack.find(m=>m.id==='momonga-review').holdsMs.reduce((a,b)=>a+b,0),2200);
  const usagi=planMotions(skins.find(s=>s.id==='usagi'),pack).coverage;
+ assert.equal(usagi.review.motionId,'usagi-review');
+ assert.equal(usagi.review.status,'ready');
+ assert.equal(pack.find(m=>m.id==='usagi-review').holdsMs.reduce((a,b)=>a+b,0),2120);
  assert.equal(usagi.idle.status,'ready');
  assert.equal(usagi['running-right'].status,'ready');
  assert.equal(usagi['running-left'].status,'ready');

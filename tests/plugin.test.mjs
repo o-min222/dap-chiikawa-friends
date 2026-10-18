@@ -34,9 +34,16 @@ test('first installation fetches pinned originals once; cached skins restore off
  try{
   const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);let stop=await activate(ctx);
   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,false);
-  await listener({type:'apply',id:'usagi'});assert.equal(active,null);
-  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,3);
-  assert.ok(urls.every(url=>!url.includes('momonga')),'Momonga needs no upstream artwork');
+  assert.deepEqual(messages.at(-1).readySkinIds,['usagi','momonga']);
+  for(const id of ['usagi','momonga']){
+   await listener({type:'apply',id});assert.equal(active,`demo.${id}`);assert.equal(requests,0);
+   await stop();closed=false;stop=await activate(ctx);assert.equal(active,`demo.${id}`);
+   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,false);
+   assert.equal(requests,0,'first apply and saved character restore need no downloads');
+  }
+  await listener({type:'apply',id:'chiikawa'});assert.equal(active,'demo.momonga');
+  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,2);
+  assert.ok(urls.every(url=>!url.includes('momonga')&&!url.includes('usagi')),'both complete characters need no upstream artwork');
   assert.ok(urls.every(url=>url.startsWith('https://raw.githubusercontent.com/heelee912/chiikawa-dots-pets/bb96582f525fbdf88a236b4703433ae92bfd5888/pets/')));
   globalThis.fetch=()=>{throw Error('Cached reload must stay offline');};assert.equal(messages.at(-1).coverage.usagi.idle.status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-right'].status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-left'].status,'ready');assert.equal(messages.at(-1).coverage.usagi.grabbed.status,'ready');assert.equal(messages.at(-1).coverage.usagi.sleep.status,'ready');assert.equal(messages.at(-1).coverage.usagi.dance.status,'ready');
   for(const skin of skins){await listener({type:'apply',id:skin.id});assert.equal(active,`demo.${skin.id}`);assert.equal(persona,active);}
@@ -47,6 +54,6 @@ test('first installation fetches pinned originals once; cached skins restore off
   await listener({type:'apply',id:'momonga'});await stop();assert.equal(listeners.size,0);assert.equal(closed,true);
   stop=await activate(ctx);assert.equal(active,'demo.momonga');await stop();
   values.appliedCharacter='removed-character';stop=await activate(ctx);assert.equal(values.appliedCharacter,'');await stop();
-  assert.equal(requests,3);
+  assert.equal(requests,2);
  }finally{globalThis.fetch=oldFetch;await rm(root,{recursive:true,force:true});}
 });

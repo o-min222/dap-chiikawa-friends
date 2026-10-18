@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,17);
+assert.equal(motions.length,26);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
@@ -30,14 +30,20 @@ const tag=process.argv[2];if(tag?.startsWith('v'))assert.equal(tag,`v${metadata.
 const entry=await readFile(new URL('dap_chiikawa/plugin.mjs',base),'utf8');
 for(const match of entry.matchAll(/^import .* from "([^"]+)";/gm))assert.ok(match[1].startsWith('node:'),'only Node built-ins may remain external');
 assert.ok(!entry.includes('__SKINS_JSON__')&&!entry.includes('__SOURCE_JSON__'));
+assert.match(entry,/downloadOriginalAssets/,'unreplaced motions retain the pinned source downloader');
 const catalog=JSON.parse(await readFile(new URL('assets/catalog.json',base),'utf8'));
+assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga']);
+assert.ok(motions.every(m=>catalog.some(s=>s.id===m.characterId)));
 const source=JSON.parse(await readFile(new URL('assets/originals.json',base),'utf8'));
-assert.equal(catalog.length,11);assert.deepEqual(catalog.map(s=>s.id),source.assets.map(s=>s.id));
+assert.equal(source.repository,'heelee912/chiikawa-dots-pets');
+assert.equal(source.commit,'bb96582f525fbdf88a236b4703433ae92bfd5888');
+assert.deepEqual(source.assets.map(a=>a.id),catalog.map(s=>s.id));
+for(const skin of catalog){const asset=source.assets.find(a=>a.id===skin.id);assert.equal(asset.sha256,skin.originalAsset.sha256);assert.equal(asset.bytes,skin.originalAsset.bytes);}
 let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
  if(['.git','.github','node_modules','dist','.DS_Store'].includes(item.name))continue;
  const file=new URL(encodeURIComponent(item.name)+(item.isDirectory()?'/':''),url);
- if(item.isDirectory())await walk(file);else{assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
+ if(item.isDirectory())await walk(file);else{if(url.href===new URL('assets/',base).href && /\.(png|part)$/.test(item.name))continue;assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
 }}
 await walk(base);assert.ok(files<=200&&bytes<=20*1024*1024);
 console.log(`OK: ${files} installable files, ${bytes} bytes, ${motions.length} verified generated motions; version ${metadata.version}`);

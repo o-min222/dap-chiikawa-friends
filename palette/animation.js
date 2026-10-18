@@ -9,11 +9,6 @@
     }
     return holds.length - 1;
   }
-  function lookCell(dx, dy) {
-    const angle = (Math.atan2(dx, -dy) + Math.PI * 2) % (Math.PI * 2);
-    const direction = Math.round(angle / (Math.PI / 8)) % 16;
-    return { row: 9 + Math.floor(direction / 8), column: direction % 8 };
-  }
   function hopOffset(clip, elapsedMs) {
     const time = Math.max(0, elapsedMs) % clip.holdsMs.reduce((sum, hold) => sum + hold, 0);
     for (const hop of clip.hops ?? []) {
@@ -22,5 +17,5 @@
     }
     return 0;
   }
-  window.ChiikawaAnimation = { columnAt, lookCell, hopOffset };
+  window.ChiikawaAnimation = { columnAt, hopOffset };
 })();

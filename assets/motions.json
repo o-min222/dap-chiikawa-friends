@@ -306,5 +306,161 @@
       240,
       400
     ]
+  },
+  {
+    "id": "usagi-idle",
+    "characterId": "usagi",
+    "motion": "idle",
+    "file": "assets/generated/usagi-idle.png",
+    "bytes": 208289,
+    "sha256": "ac95e332249e9f87e0aad05b8d8747a5ac5dcc263cafc45eda2f86bc3ad2137f",
+    "holdsMs": [
+      1100,
+      380,
+      320,
+      80,
+      100,
+      80,
+      360,
+      800
+    ]
+  },
+  {
+    "id": "usagi-move-right",
+    "characterId": "usagi",
+    "motion": "running-right",
+    "file": "assets/generated/usagi-move-right.png",
+    "bytes": 208238,
+    "sha256": "9be9cf1215f6e0d6b35008e797954117e7fd2c630d6b3af26a4573d620887988",
+    "holdsMs": [
+      90,
+      60,
+      60,
+      100,
+      90,
+      60,
+      60,
+      100
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-move-left",
+    "characterId": "usagi",
+    "motion": "running-left",
+    "file": "assets/generated/usagi-move-left.png",
+    "bytes": 208644,
+    "sha256": "b5f7dcf4f464f37a4409ba3163ffc5c6f370753385ddff0df0f136163130b8da",
+    "holdsMs": [
+      90,
+      60,
+      60,
+      100,
+      90,
+      60,
+      60,
+      100
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-grabbed",
+    "characterId": "usagi",
+    "motion": "grabbed",
+    "file": "assets/generated/usagi-grabbed.png",
+    "bytes": 114080,
+    "sha256": "5413a8e33bdf2570bc9ea9d3158dc077f9b77a283c5d18e6cc3a34818d7fddaa",
+    "holdsMs": [
+      180,
+      140,
+      180,
+      180,
+      140,
+      180
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-dance",
+    "characterId": "usagi",
+    "motion": "dance",
+    "file": "assets/generated/usagi-dance.png",
+    "bytes": 101397,
+    "sha256": "1f5b120b09fc783f79457d05f4cd6fb2b5dbc2359672c1e13d5ab3157ae290db",
+    "holdsMs": [
+      100,
+      66,
+      100,
+      100,
+      34
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-eat",
+    "characterId": "usagi",
+    "motion": "feed_munch",
+    "file": "assets/generated/usagi-eat.png",
+    "bytes": 203480,
+    "sha256": "92068db059eb8b112f60b1703539cffa4332547396734be988a07634f44a8561",
+    "holdsMs": [
+      220,
+      140,
+      120,
+      160,
+      200,
+      180,
+      180,
+      240
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-work",
+    "characterId": "usagi",
+    "motion": "running",
+    "file": "assets/generated/usagi-work.png",
+    "bytes": 98132,
+    "sha256": "e4f64c2e5cf924b1bfbefae68e9e22d60cb508f7be67245dba12bfb38e518c85",
+    "holdsMs": [
+      80,
+      80,
+      80,
+      80
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-sleep",
+    "characterId": "usagi",
+    "motion": "sleep",
+    "file": "assets/generated/usagi-sleep.png",
+    "bytes": 180363,
+    "sha256": "bf1439d6bd234a5d4a9b69c8047e9ae7de80b5f793d5d008d87662066a679f29",
+    "holdsMs": [
+      500,
+      500,
+      500,
+      500,
+      500,
+      500
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "usagi-groom",
+    "characterId": "usagi",
+    "motion": "groom",
+    "file": "assets/generated/usagi-groom.png",
+    "bytes": 86375,
+    "sha256": "4634d07b321485be4b12c22d0340816faef0d199ae08d020de8ca04b687ec4bd",
+    "holdsMs": [
+      320,
+      140,
+      520,
+      140,
+      480
+    ],
+    "reviewStatus": "approved"
   }
 ]

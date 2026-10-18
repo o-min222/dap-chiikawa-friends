@@ -1,0 +1,19 @@
+Use case: illustration-story, character sprite animation.
+Create ONE Usagi GROOMING / playful self-presentation motion, exactly EIGHT complete hand-drawn poses arranged 4 columns by 2 rows in chronological order.
+INPUT ROLES:
+Image1 = approved character MODEL AND STYLE. Match broad round head, compact cream-yellow body, tiny feet, small glossy black eyes, pink cheeks/inner ears, near-black outline thickness and facial drawing style.
+Image2 = expression/head-tilt acting reference. Use ONLY the head tilt toward VIEWER LEFT and quizzical open "Haa?" mouth, tiny pink tongue, forepaws folded at belly. Never tilt toward viewer RIGHT.
+Image3 = the NEW essential FULL-BOW reference pose. Reproduce its recognizable silhouette: big rounded cream RUMP/BACK raised at the TOP, small WHITE tail tuft at the top-center, the round FACE clearly UPSIDE DOWN below the raised body, with the long pink-lined EARS pointing DOWN and outward near the bottom corners. This is a deep forward bend showing the upside-down face beneath the body, not simply rotating the whole standing sprite. Draw it as a coherent natural complete character.
+Action: one-sided "Haa?" head tilt, then fold forward into the funny upside-down bow of Image3, pause in that pose, and return upright.
+8 poses:
+1. upright Usagi with folded tiny forepaws, questioning slightly open mouth and tiny tongue.
+2. head/face/ears tilted together toward viewer LEFT about 18 degrees, torso nearly upright, paws still folded.
+3. slightly deeper LEFT tilt about 28 degrees, the same "Haa?" expression; no opposite-side tilt.
+4. transitional FORWARD BEND: upper body folds down, rounded rump begins lifting, ears hang downward, face is turning toward the upside-down bow. Clearly a transition to pose5, not a standing lean.
+5. FULL DEEP BOW as Image3: rump dominates top half, small white tail tuft upper center, upside-down face under the round back, two long pink ears pointing down/out near bottom. No extra limbs.
+6. same FULL DEEP BOW, keep its size and silhouette almost identical, tiny natural settling only, tail stays upper center.
+7. halfway straightening out of that bow back toward standing; ears and face rise together, coherent crouched body.
+8. upright neutral again, folded paws and querying mouth, same shape as pose1 for looping.
+All eight must look like the SAME approved character artist. Draw whole continuous characters, not disconnected puppet parts. Identical line weight and cream color throughout. Fixed per-cell scale: round HEAD DIAMETER stays the same across poses, while the inverted bow is naturally lower/wider; do not arbitrarily enlarge poses5/6.
+Tail drawing: small white tuft with a few separated short dark fur tick strokes and open gaps, matching the reference's tuft; NO heavy closed circle or scalloped pompom border. In standing poses, the tail is only the small separated dark strokes behind the lower right body like Image1.
+No text, Japanese lettering, sound effects, speech bubbles, question marks, yellow motion symbols, props, washing or cheek rubbing, costume, ground shadow or glow. Genuinely transparent background. Complete ears/body/feet in each cell, generous clear margins and gaps, no grid lines or cropped sprites.

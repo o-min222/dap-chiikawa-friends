@@ -1,0 +1,13 @@
+Use case: illustration-story, sprite animation.
+Asset: Usagi grooming motion for a desktop pet, exactly EIGHT whole-character frames in a FOUR columns by TWO rows grid, reading left to right then next row.
+Image 1 is the APPROVED character and drawing style master. Keep this exact Usagi model in every cell: broad round head, compact cream-yellow body, tall narrow ears with pink insides, small glossy black eyes with white highlights and the same eye spacing, tiny w-shaped mouth, oval pink cheeks with three dark strokes, thick clean near-black organic outlines. Preserve the master's proportions, head width and ear length. Tail must match the master's short separated dark fur strokes behind the lower RIGHT flank, with open gaps and no enclosing circle, no white outlined pompom.
+Action is ONE cheek-grooming cycle, an energetic little face rub. Both tiny forepaws rub the cheeks briskly UP and DOWN, then lower back to the tummy with a satisfied tiny smile. Grounded short feet remain in the same place. Head, face placement, torso size, and ear silhouette remain steady across all 8 frames. Draw complete coherent poses, not separated puppet pieces.
+Frame 1: neutral baseline, both tiny forepaws curled together in front of the tummy, eyes open like master.
+Frame 2: both forepaws raised to the lower edges of their respective cheeks, elbows tucked, eyes open.
+Frame 3: paws slide upward across the cheeks to just BELOW eye level; eyes become happy closed arcs, cheeks slightly squished. Paws do not cover eyes.
+Frame 4: both paws rub downward to the lower cheeks, eyes closed, tiny short vertical rubbing marks immediately outside the paws.
+Frame 5: paws rub up again to the upper cheek positions, eyes closed. Same face/ear size as frame 3.
+Frame 6: paws rub down again to lower cheeks, eyes reopening, tiny vertical rubbing marks.
+Frame 7: paws lowering toward the tummy, satisfied w mouth, eyes open.
+Frame 8: return to the exact neutral whole-body stance of frame1, paws together at tummy. Smooth loop.
+Keep hands visually distinct from pink cheek patches and only TWO forepaws total. No waving, no dance, no licking, no human arms, no accessories, no soap, no brush, no text, no symbols or hearts. No head tilt, no stretched body, no enlarged hands. Generous transparent empty margin around every complete sprite and between cells; identical consistent per-cell scale and framing. Flat clean pastel illustration matching the reference, no gradients, no glow, no shadows, no white background: genuinely transparent outside the characters.

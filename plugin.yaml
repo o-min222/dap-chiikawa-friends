@@ -1,9 +1,9 @@
 id: io.github.o-min222.chiikawa_friends
 name: Chiikawa Friends
-version: 1.5.0
+version: 2.0.0
 manifest_version: 2
 entry: dap_chiikawa.plugin:activate
-description: 11개 캐릭터 외형·말투와 새 모션 17개. DAP 1.6.7부터 수면·먹기·그루밍·잡힘·성공·춤을 개별 재생합니다.
+description: 치이카와·하치와레·우사기·모몽가의 외형과 말투를 적용합니다. 우사기 주요 모션과 모몽가 꼬리 춤·책 및 전단지 읽기 등 승인된 자체 모션을 제공하며, 미교체 동작은 기존 원본을 유지합니다.
 author: o-min222
 min_app_version: "1.6.1"
 surface: user

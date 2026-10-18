@@ -1,6 +1,7 @@
 "use strict";
 let skins = window.CHIIKAWA_SKINS;
 let skin = skins[0];
+let coverage = window.CHIIKAWA_COVERAGE ?? {};
 const character = document.getElementById("character");
 for (const item of skins) {
   const option = document.createElement("option"); option.value = item.id; option.textContent = item.displayName; character.append(option);
@@ -10,12 +11,13 @@ let statusReceived = false;
 const canvas = document.getElementById("pet");
 const drawing = canvas.getContext("2d");
 const motion = document.getElementById("motion");
-const motionLabels = {idle:"쉬기", "running-right":"오른쪽 이동", "running-left":"왼쪽 이동", waving:"인사", jumping:"점프", failed:"실패", waiting:"기다림", running:"작업 중", review:"검토", sleep:"수면", feed_munch:"먹기", groom:"그루밍", grabbed:"잡힘", success:"성공", dance:"춤"};
+const motionLabels = {idle:"쉬기", "running-right":"오른쪽 이동", "running-left":"왼쪽 이동", waving:"쓰다듬기·기쁨 반응", failed:"실패·오류", running:"작업 중", review:"생각 중", sleep:"수면", feed_munch:"먹기", groom:"그루밍", grabbed:"잡힘", success:"성공", dance:"춤"};
 const pause = document.getElementById("pause");
 motionLabels.working_v2 = "작업 중 · 전단지 읽기";
 const status = document.getElementById("status");
 const apply = document.getElementById("apply");
 const reset = document.getElementById("reset");
+const download = document.getElementById("download-assets");
 const personaToggle = document.getElementById("persona-enabled");
 document.getElementById("persona-traits").textContent = skin.persona.traits.join(" · ");
 document.getElementById("persona-example").textContent = skin.persona.examples.greeting;
@@ -24,21 +26,19 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let paused = reducedMotion.matches;
 let elapsed = 0;
 let previousTime = null;
-let direction = { row: 9, column: 0 };
 let animationId = 0;
 let stopped = false;
 let loaded = false;
 let available = false;
 let assetsReady = false;
 let assetRevision = 0;
-const downloadButton = document.getElementById("download-assets");
 let busy = false;
 const image = new Image();
 function buttons() {
+  download.hidden = assetsReady;
+  download.disabled = !available || busy;
   apply.disabled = !available || !assetsReady || busy || activeId === skin.id;
   character.disabled = busy;
-  downloadButton.disabled = !bridge || !available || busy;
-  document.getElementById("assets-setup").hidden = assetsReady;
   reset.disabled = !available || busy || !activeId;
   personaToggle.disabled = !bridge || busy;
   pause.textContent = paused ? "재생" : "일시정지";
@@ -47,7 +47,7 @@ function buttons() {
 function render() {
   if (!loaded) return;
   const clip = skin.animations[motion.value];
-  const cell = motion.value === "look" ? direction : {
+  const cell = {
     row: clip.row, column: window.ChiikawaAnimation.columnAt(clip.holdsMs, elapsed),
   };
   drawing.clearRect(0, 0, 192, 208);
@@ -71,18 +71,26 @@ image.onload = () => {
   animationId = requestAnimationFrame(tick);
 };
 image.onerror = () => { status.textContent = "스프라이트 이미지를 불러오지 못했습니다. assets 폴더를 확인해 주세요."; };
+function motionTitle(key) {
+  const item=coverage[skin.id]?.[key];
+  return (motionLabels[key] ?? key)+(item?.status==='upstream'?' · 원본 유지':item?.status==='shared'?' · 일하기 공유':'');
+}
 function selectCharacter() {
   skin = skins.find(item => item.id === character.value) ?? skins[0];
   const previousMotion = motion.value;
   if (motion.replaceChildren) {
     motion.replaceChildren();
-    for (const key of [...Object.keys(skin.animations), ...(skin.look ? ["look"] : [])]) {
-      const option = document.createElement("option"); option.value = key; option.textContent = motionLabels[key] ?? "시선 따라가기"; motion.append(option);
+    for (const key of Object.keys(skin.animations).filter(key => !["jumping","waiting"].includes(key) && coverage[skin.id]?.[key]?.production !== false && coverage[skin.id]?.[key]?.status !== "shared")) {
+      const option = document.createElement("option"); option.value = key; option.textContent = motionTitle(key); motion.append(option);
     }
-    motion.value = skin.animations[previousMotion] || previousMotion === "look" && skin.look ? previousMotion : "idle";
+    motion.value = skin.animations[previousMotion] && !["jumping","waiting"].includes(previousMotion) && coverage[skin.id]?.[previousMotion]?.production !== false && coverage[skin.id]?.[previousMotion]?.status !== "shared" ? previousMotion : "idle";
   }
   elapsed = 0; loaded = false;
-  document.getElementById("motion-name").textContent = motionLabels[motion.value] ?? "시선 따라가기";
+  document.getElementById("motion-name").textContent = motionTitle(motion.value);
+  const info=coverage[skin.id] ?? {};
+  const pending=Object.values(info).filter(item=>item.production!==false && item.status==='upstream').length;
+  const review=Object.values(info).filter(item=>item.status==='review').length;
+  document.getElementById("coverage-note").textContent = `원본 유지 ${pending}개 · 검토 중 ${review}개. 승인된 동작만 자체 모션으로 교체합니다.`;
   document.getElementById("persona-title").textContent = `${skin.displayName}의 성격`;
   document.getElementById("persona-traits").textContent = skin.persona.traits.join(" · ");
   document.getElementById("persona-example").textContent = skin.persona.examples.greeting;
@@ -100,15 +108,7 @@ motion.addEventListener("change", () => {
   elapsed = 0;
   document.getElementById("motion-name").textContent = motion.selectedOptions[0].textContent;
   canvas.setAttribute("aria-label", `${skin.displayName} ${motion.selectedOptions[0].textContent}`);
-  document.getElementById("hint").textContent = motion.value === "look"
-    ? "미리보기 위에서 커서를 움직이면 16방향으로 바라봐요."
-    : "모션별 프레임 속도로 재생해요.";
-  render();
-});
-canvas.addEventListener("pointermove", (event) => {
-  if (paused) return;
-  const bounds = canvas.getBoundingClientRect();
-  direction = window.ChiikawaAnimation.lookCell(event.clientX - bounds.left - bounds.width / 2, event.clientY - bounds.top - bounds.height / 2);
+  document.getElementById("hint").textContent = coverage[skin.id]?.[motion.value]?.status==='upstream' ? "아직 교체하지 않은 동작은 기존 패키지의 원본 모션으로 재생합니다." : "모션별 프레임 속도로 재생해요.";
   render();
 });
 pause.addEventListener("click", () => { paused = !paused; previousTime = null; buttons(); });
@@ -122,7 +122,6 @@ document.getElementById("close").addEventListener("click", () => {
 function send(type) { if (bridge && available && !busy) { busy = true; buttons(); bridge.postMessage({ type, id: skin.id }); } }
 apply.addEventListener("click", () => send("apply"));
 reset.addEventListener("click", () => send("reset"));
-downloadButton.addEventListener("click", () => send("download-assets"));
 personaToggle.addEventListener("change", () => {
   if (!bridge || busy) return;
   busy = true;
@@ -134,6 +133,7 @@ if (bridge) {
   offMessage = bridge.onMessage((message) => {
     if (!message || message.type !== "status") return;
     available = message.available === true;
+    if (message.coverage) coverage = message.coverage;
     const catalogChanged = Array.isArray(message.skins) && JSON.stringify(message.skins) !== JSON.stringify(skins);
     if (catalogChanged) skins = message.skins;
     activeId = typeof message.activeId === "string" ? message.activeId : null;
@@ -161,3 +161,5 @@ window.addEventListener("pagehide", () => {
   offMessage?.();
   reducedMotion.removeEventListener("change", onReducedMotion);
 }, { once: true });
+
+download.addEventListener("click", () => bridge?.postMessage({type:"download-assets"}));

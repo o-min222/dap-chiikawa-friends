@@ -1,0 +1,346 @@
+{
+  "chiikawa": {
+    "idle": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-idle",
+      "source": "upstream"
+    },
+    "running-right": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-running-right",
+      "source": "upstream"
+    },
+    "running-left": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-running-left",
+      "source": "upstream"
+    },
+    "waving": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-waving",
+      "source": "upstream"
+    },
+    "failed": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-chiikawa-failed",
+      "source": "upstream"
+    },
+    "running": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-running",
+      "source": "upstream"
+    },
+    "review": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-chiikawa-review",
+      "source": "upstream"
+    },
+    "sleep": {
+      "status": "ready",
+      "production": true,
+      "motionId": "sleep",
+      "source": "generated"
+    },
+    "feed_munch": {
+      "status": "ready",
+      "production": true,
+      "motionId": "eat",
+      "source": "generated"
+    },
+    "groom": {
+      "status": "ready",
+      "production": true,
+      "motionId": "groom",
+      "source": "generated"
+    },
+    "grabbed": {
+      "status": "ready",
+      "production": true,
+      "motionId": "grabbed",
+      "source": "generated"
+    },
+    "success": {
+      "status": "ready",
+      "production": false,
+      "motionId": "success",
+      "source": "generated"
+    },
+    "dance": {
+      "status": "ready",
+      "production": true,
+      "motionId": "dance",
+      "source": "generated"
+    },
+    "working_v2": {
+      "status": "shared",
+      "production": true,
+      "motionId": "upstream-chiikawa-running",
+      "source": "upstream"
+    }
+  },
+  "hachiware": {
+    "idle": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-idle",
+      "source": "upstream"
+    },
+    "running-right": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running-right",
+      "source": "upstream"
+    },
+    "running-left": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running-left",
+      "source": "upstream"
+    },
+    "waving": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waving",
+      "source": "upstream"
+    },
+    "failed": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-hachiware-failed",
+      "source": "upstream"
+    },
+    "running": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running",
+      "source": "upstream"
+    },
+    "review": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-review",
+      "source": "upstream"
+    },
+    "sleep": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waiting",
+      "source": "upstream"
+    },
+    "feed_munch": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-running",
+      "source": "upstream"
+    },
+    "groom": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waiting",
+      "source": "upstream"
+    },
+    "grabbed": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-hachiware-waiting",
+      "source": "upstream"
+    },
+    "success": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-hachiware-waving",
+      "source": "upstream"
+    },
+    "dance": {
+      "status": "ready",
+      "production": true,
+      "motionId": "hachiware-dance",
+      "source": "generated"
+    },
+    "working_v2": {
+      "status": "shared",
+      "production": true,
+      "motionId": "upstream-hachiware-running",
+      "source": "upstream"
+    }
+  },
+  "usagi": {
+    "idle": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-idle",
+      "source": "generated"
+    },
+    "running-right": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-move-right",
+      "source": "generated"
+    },
+    "running-left": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-move-left",
+      "source": "generated"
+    },
+    "waving": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-usagi-waving",
+      "source": "upstream"
+    },
+    "failed": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-usagi-failed",
+      "source": "upstream"
+    },
+    "running": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-work",
+      "source": "generated"
+    },
+    "review": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-usagi-review",
+      "source": "upstream"
+    },
+    "sleep": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-sleep",
+      "source": "generated"
+    },
+    "feed_munch": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-eat",
+      "source": "generated"
+    },
+    "groom": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-groom",
+      "source": "generated"
+    },
+    "grabbed": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-grabbed",
+      "source": "generated"
+    },
+    "success": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-usagi-waving",
+      "source": "upstream"
+    },
+    "dance": {
+      "status": "ready",
+      "production": true,
+      "motionId": "usagi-dance",
+      "source": "generated"
+    },
+    "working_v2": {
+      "status": "shared",
+      "production": true,
+      "motionId": "usagi-work",
+      "source": "generated"
+    }
+  },
+  "momonga": {
+    "idle": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-idle",
+      "source": "generated"
+    },
+    "running-right": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-move-right",
+      "source": "generated"
+    },
+    "running-left": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-move-left",
+      "source": "generated"
+    },
+    "waving": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-momonga-waving",
+      "source": "upstream"
+    },
+    "failed": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-momonga-failed",
+      "source": "upstream"
+    },
+    "running": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-work-book",
+      "source": "generated"
+    },
+    "review": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-momonga-review",
+      "source": "upstream"
+    },
+    "sleep": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-sleep",
+      "source": "generated"
+    },
+    "feed_munch": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-eat",
+      "source": "generated"
+    },
+    "groom": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-groom",
+      "source": "generated"
+    },
+    "grabbed": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-grabbed",
+      "source": "generated"
+    },
+    "success": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-momonga-waving",
+      "source": "upstream"
+    },
+    "dance": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-dance",
+      "source": "generated"
+    },
+    "working_v2": {
+      "status": "ready",
+      "production": true,
+      "motionId": "momonga-work-flyer",
+      "source": "generated"
+    }
+  }
+}

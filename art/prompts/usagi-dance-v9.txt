@@ -1,0 +1,19 @@
+Edit IMAGE1's four-frame natural Usagi dance into ONE improved EIGHT-frame animation sheet,4columns2rows. Keep its natural unclothed character identity, broad round face, short rounded torso, tiny crossed toe nubs, pale cream-yellow fur, pink real inner ears/cheeks, small w mouth and simple dark brown outlines. Images2-3 are the ORIGINAL GIF's neutral and accent pose. Use their actual body rhythm and subtle face orientation, never their costume: no hood ring, no buttons, no clothes.
+
+Two specific corrections:
+1 The previous four poses tip the WHOLE FACE far too much. In the original GIF the EYE LINE IS ALMOST LEVEL, with only about0-4degrees variation. Keep the same head shape and near-level eye line across all8frames. The long ears may BEND LEFT independently about10-15degrees on the accent; do not rotate the entire head15-25degrees just to bend the ears. No giant nod or face spin.
+2 Add genuine small in-between poses along the ONE-SIDED hip/forepaw cycle. Eight frames must form a continuous progression, not8new unrelated poses. No neutral freeze or duplicated hold drawings.
+
+Movement: same tiny support toe stays on one spot, same other toe stays lightly crossed in front throughout. The same LEFT forepaw stays curled low at waist in allframes. The RIGHT forepaw rapidly circles in a SHORT HORIZONTAL OVAL right beside the waist, as the GIF shows; in fast passing poses it becomes a little flattened oval loop with two short curved wrist streaks. It is not a big pointing or punching arm, not waving up/down. Right hip pushes gently but visibly right (max about8-10percent head width), head counterbalances slightly left while face stays nearly level. Hip recovers to neutral, never pushes to left of neutral, no mirrored left step. The ears flex with slight lag. Body keeps its short round volume, no long torso or long legs.
+
+8 successive phases, identical camera/scale and smooth neighboring changes:
+1 Near-neutral: hips centered, right paw curled beside waist, ears nearly upright, tiny w smile.
+2 Begin right hip twitch, right paw opens into upper part of small circle; eye line nearly level.
+3 More right hip displacement, right paw goes forward/out on its very short ellipse; ears beginning to bend left; small open w-mouth with tiny pink tongue allowed.
+4 Peak right hip, right paw appears as a small FLAT OVAL SWEEP near waist (reference image3), 2local thin curved motion marks. Face still almost level; ears bend left more than head.
+5 Early recovery, hip still to right, hand moves along lower side of the oval, ears lag slightly. No sudden pose reversal.
+6 Hip returns halfway, right paw curls back in from below; face nearly level; ears straighten gradually.
+7 Almost neutral, right paw completes inward/up part of circle; tiny toe settles on SAME side.
+8 Near-neutral just before1, ears and hand return smoothly; no mirrored stance.
+
+Keep head width, facial landmark spacing, torso height and tiny toe lengths CONSISTENT in all8cells. Forepaw reach at most12percent head width past waist, not a long limb. Lower torso remains short and broad as image1, never elongates for motion. Render flat cream colors with pink hatching, no gradient or shine. Only one Usagi per cell, full ears and feet visible with generous transparent margins for ear bend. No costume, extra limbs, full duplicate afterimage body, floor/shadow, grass, music notes, props, text, arrows, labels or borders. Real transparent alpha. Deliver only this one4x2 sheet with eight smooth phases of the original GIF's SAME right-sided dance.

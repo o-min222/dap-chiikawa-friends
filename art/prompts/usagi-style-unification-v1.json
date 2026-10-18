@@ -1,0 +1,75 @@
+{
+  "mode": "built-in image_gen",
+  "master": "dist/chiikawa-motion-v3/usagi-style-master.png",
+  "common": "Use case: style-transfer, consistent character model sheet.\nImage1 is the POSE AND ACTION source to redraw. Image2 is the APPROVED MASTER CHARACTER MODEL and the only style reference.\nRedraw image1 to look drawn by the SAME artist as image2: identical broad round Usagi face proportions, small glossy black eyes with the master's white highlights, same spacing of eyes relative to face width, tiny w mouth (adapt its opening to the source expression), same pink oval cheeks with three short dark hatch strokes, pale cream-yellow body and pink ear interiors. Match the master's clean near-black uniform organic outline thickness relative to head size. Avoid brown/red/gray contours, gradients, glow and orange shading. All frames must have the same head size and eye spacing, with no per-frame redesign.\nPreserve every ACTION POSE of image1, including arm/hand placement and overlap, foot directions, ear bend/droop, body lean, tail hatch marks and motion marks. Do not invent actions or turn a small motion into a jump, wave, head tilt or left-right dance. The source action has already been reviewed. Only harmonize facial drawing, line style and palette. Natural Usagi silhouette and short compact body, no generic elongated rabbit.\nKeep the source frame count, grid order and per-cell framing. Generous transparent margins around every complete sprite. Same head position across cells; whole frames, no separated puppet pieces. Truly transparent outside sprites, including gaps between ears and limbs. No background, shadows, glow, labels, text, borders, watermarks or extra props.",
+  "motions": [
+    {
+      "id": "usagi-work",
+      "source": "usagi-work-v6.png",
+      "out": "usagi-work-style-v5.png",
+      "columns": 2,
+      "rows": 2,
+      "instructions": "Exactly FOUR frames in a2x2 grid. Preserve the four exact fast arm-rolling poses: two short forearms cross in front of the belly, trading upper/lower positions; tiny vertical wrist swooshes in the passing poses. Do not change these arms into hands waving sideways. Keep the open singing mouth and small tongue from the source. Match the master face and line weight; replace the source reddish brown contour with the master near-black outline. Match the master idle tail: short separated dark fur strokes with open gaps, no enclosing round or scalloped outline and no cotton-ball silhouette.",
+      "additionalCorrectionPrompt": "usagi-style-work-eye-spacing-v1.txt",
+      "tailCorrectionPrompt": "usagi-style-work-white-tail-v1.txt",
+      "tailLineCorrectionPrompt": "usagi-style-work-clean-tail-v1.txt",
+      "finalTailShapePrompt": "usagi-style-work-open-tail-v1.txt"
+    },
+    {
+      "id": "usagi-grabbed",
+      "source": "usagi-grabbed-v4.png",
+      "out": "usagi-grabbed-style-v1.png",
+      "columns": 3,
+      "rows": 2,
+      "instructions": "Exactly SIX frames in a3x2 grid. Preserve floppy ears hanging sideways/down under gravity, broad round face, curled empty forepaws, small hanging lower belly and tiny dangling feet. The head-top stays stationary while feet gently wiggle. Face and eye shapes should match the master, rather than the larger oval eyes of the source. No rotor, clamp, stick, clothes or floor."
+    },
+    {
+      "id": "usagi-sleep",
+      "source": "usagi-sleep-v2.png",
+      "out": "usagi-sleep-style-v1.png",
+      "columns": 3,
+      "rows": 2,
+      "instructions": "Exactly SIX frames in a3x2 grid. Preserve the front-facing pose with sideways drooping ears, blue vertically striped nightcap and sleeve cuffs, and solid pale pink duvet hiding the lower body. Eyes remain CLOSED arcs in all6 frames. Match master cheek shape, round face, w mouth and near-black line weight. Do not open the eyes or remove the striped cap/duvet. Tiny duvet breathing remains, bottom baseline fixed. Remove no garment; preserve blue and pink prop colors."
+    },
+    {
+      "id": "usagi-dance",
+      "source": "usagi-tone-dance-keyposes.png",
+      "out": "usagi-dance-style-v1.png",
+      "columns": 2,
+      "rows": 2,
+      "instructions": "Exactly FOUR keyposes in a2x2 grid, retain their order and specific shapes. Neutral tucked right forepaw; anticipation with ear flex; one-sided accent with a thin flattened right forepaw sweep and compressed/leaning torso plus tiny crossed toes; recovery with tucked paw. Only the accent at bottom-left sweeps outward. No mirrored opposite-side motion, no new steps, no costume. Tail is short dark hatch strokes, not a filled white fan."
+    },
+    {
+      "id": "usagi-eat",
+      "source": "usagi-eat-v1.png",
+      "out": "usagi-eat-style-v1.png",
+      "columns": 4,
+      "rows": 2,
+      "instructions": "Exactly EIGHT frames in a4x2 grid. Preserve all eight eating poses in order: holding rice bowl and spoon, spoon toward open mouth with long pink tongue, bite, spoon withdrawal, little chewing cheeks and swallowing. Keep the white bowl/rice/spoon visible. Match master face proportions, eye spacing and outline; preserve mouth and spoon movement."
+    },
+    {
+      "id": "usagi-move-right",
+      "source": "usagi-move-right-v3.png",
+      "out": "usagi-move-right-style-v1.png",
+      "columns": 4,
+      "rows": 2,
+      "instructions": "Exactly EIGHT frames in a4x2 grid. Preserve the approved lively run toward viewer-RIGHT, both forepaws spread sideways, tiny feet cycling, ears and tail trailing LEFT and the same cheerful open mouth. Keep all eight footstep/airborne/landing poses as source. Do not reverse direction or change the run style."
+    },
+    {
+      "id": "usagi-move-left",
+      "source": "usagi-move-left-v1.png",
+      "out": "usagi-move-left-style-v1.png",
+      "columns": 4,
+      "rows": 2,
+      "instructions": "Exactly EIGHT frames in a4x2 grid. Preserve the approved lively run toward viewer-LEFT, both forepaws spread sideways, tiny feet cycling, ears and tail trailing RIGHT and the same cheerful open mouth. Keep all eight footstep/airborne/landing poses as source. Do not reverse direction or change the run style."
+    },
+    {
+      "id": "usagi-dance-step",
+      "source": "usagi-dance-step-v1.png",
+      "out": "usagi-dance-step-style-v1.png",
+      "columns": 4,
+      "rows": 2,
+      "instructions": "Exactly EIGHT frames in a4x2 grid. Preserve the small stationary toe steps, arms curled beside belly and compact round body in every source pose. Keep the little changes in overlapping feet and same closed w mouth. Match the master face, small eye shapes, cheek hatch marks and outline thickness. Do not add wide side-to-side travel."
+    }
+  ]
+}

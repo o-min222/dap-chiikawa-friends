@@ -1,0 +1,171 @@
+diff --git a/app/electron/main/src/proactive-speech.ts b/app/electron/main/src/proactive-speech.ts
+index 61a4b984..d6bd8856 100644
+--- a/app/electron/main/src/proactive-speech.ts
++++ b/app/electron/main/src/proactive-speech.ts
+@@ -82,9 +82,9 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+     env,
+     prefsReader: () => {
+       const prefs = opts.prefs?.() ?? {};
+-      // Keep the existing off/DND/busy gates and occasional cadence for all four characters.
++      // Short bubble-only lines may appear while typing/working, without interrupting chat.
+       return hasCharacterBubble() ? {
+-        ...prefs, proactive_input_idle_minutes: 2, proactive_cooldown_minutes: 15,
++        ...prefs, proactive_cooldown_minutes: prefs.proactive_quiet_profile === "balanced" ? 5 : 15,
+         proactive_ambient_enabled: false,
+       } : prefs;
+     },
+@@ -95,6 +95,7 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+     onBubble: opts.onBubble,
+     memoryRecall: (t) => hasCharacterBubble() ? null : recall.idleFollowupHint(t),
+     characterHint: () => hasCharacterBubble() ? CHARACTER_BUBBLE : null,
++    allowDuringActivity: hasCharacterBubble,
+     clock: now,
+     rng: opts.rng,
+   });
+diff --git a/app/electron/main/test/momonga-proactive.test.ts b/app/electron/main/test/momonga-proactive.test.ts
+index 4e858a19..3e859f07 100644
+--- a/app/electron/main/test/momonga-proactive.test.ts
++++ b/app/electron/main/test/momonga-proactive.test.ts
+@@ -23,9 +23,9 @@ function speech(over: Partial<ProactiveSpeechOptions> = {}) {
+ }
+ 
+ describe("Character bubbles without chat turns", () => {
+-  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("speaks for %s after a pause without reading memories or calling AI", async (id) => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("speaks for %s while working/typing without reading memories or calling AI", async (id) => {
+     const recent = vi.fn(() => []);
+-    const { service, calls, bubbles } = speech({ characterId: () => id, idleSeconds: () => 120,
++    const { service, calls, bubbles } = speech({ characterId: () => id, idleSeconds: () => 0, currentStateKind: () => "working",
+       memory: { recent }, lastInteractionAt: () => NOON - 7 * 3600,
+       prefs: () => ({ proactive_quiet_profile: "balanced" }),
+     });
+@@ -33,8 +33,8 @@ describe("Character bubbles without chat turns", () => {
+     await vi.waitFor(() => expect(bubbles).toEqual([characterBubbleLine(id, () => 0)]));
+     expect(calls).toEqual([]);
+     expect(recent).not.toHaveBeenCalled();
+-    service.tick(NOON + 899); expect(bubbles).toHaveLength(1);
+-    service.tick(NOON + 900); await vi.waitFor(() => expect(bubbles).toHaveLength(2));
++    service.tick(NOON + 299); expect(bubbles).toHaveLength(1);
++    service.tick(NOON + 300); await vi.waitFor(() => expect(bubbles).toHaveLength(2));
+     expect(calls).toEqual([]);
+   });
+ 
+@@ -45,11 +45,11 @@ describe("Character bubbles without chat turns", () => {
+     for (const id of [null, "cat", "other", "constructor", "__proto__"]) expect(characterBubbleLine(id)).toBeNull();
+   });
+ 
+-  it("keeps busy, hidden, recent-input, muted-state, off and nighttime gates", () => {
++  it("keeps chat-busy, hidden, thinking/error, off and nighttime gates", () => {
+     for (const over of [
+-      { isBusy: () => true }, { petVisible: () => false }, { idleSeconds: () => 60 },
++      { isBusy: () => true }, { petVisible: () => false },
+       { currentStateKind: () => "thinking" }, { prefs: () => ({ proactive_quiet_profile: "off" }) },
+-      { currentStateKind: () => "working" }, { now: () => NOON + 12 * 3600 },
++      { currentStateKind: () => "error" }, { now: () => NOON + 12 * 3600 },
+     ]) {
+       const { service, calls, bubbles } = speech(over); service.tick();
+       expect(calls).toHaveLength(0); expect(bubbles).toHaveLength(0);
+diff --git a/app/electron/main/test/proactive-speech.test.ts b/app/electron/main/test/proactive-speech.test.ts
+index d2538b97..ad929143 100644
+--- a/app/electron/main/test/proactive-speech.test.ts
++++ b/app/electron/main/test/proactive-speech.test.ts
+@@ -44,6 +44,7 @@ describe("proactive speech wiring (RP4)", () => {
+       { isBusy: () => true },
+       { petVisible: () => false },
+       { currentStateKind: () => "thinking" },
++      { currentStateKind: () => "working" },
+       { idleSeconds: () => 60 },
+       { prefs: () => ({ proactive_quiet_profile: "off" }) }, // the settings "끄기" choice
+     ];
+diff --git a/app/electron/renderer/src/settings-config-view.ts b/app/electron/renderer/src/settings-config-view.ts
+index eefcfc14..e8e66f5f 100644
+--- a/app/electron/renderer/src/settings-config-view.ts
++++ b/app/electron/renderer/src/settings-config-view.ts
+@@ -272,7 +272,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+       b.addEventListener("click", () => void save({ config: { proactive: p.value } }));
+       seg.append(b);
+     }
+-    look.body.append(field("먼저 말 걸기", seg, "한동안 입력이 없으면 펫이 먼저 한 마디 건네요. 치이카와 친구들의 대사는 말풍선에만 표시돼요. (밤 11시~아침 7시는 항상 조용)"));
++    look.body.append(field("먼저 말 걸기", seg, "치이카와 친구들은 작업·입력 중에도 말풍선으로 짧게 말해요. 자주는 약 5분, 가끔은 약 15분 간격이며 채팅 기록에는 남지 않아요. (밤 11시~아침 7시는 항상 조용)"));
+ 
+     // A3: daily briefing. Opt-in (unprompted speech), and the time picker only appears once it is
+     // on — a disabled clock is noise. Native <input type="time"> instead of a custom picker.
+diff --git a/app/packages/core/src/services/proactive-speech-service.ts b/app/packages/core/src/services/proactive-speech-service.ts
+index d34224a9..7621e955 100644
+--- a/app/packages/core/src/services/proactive-speech-service.ts
++++ b/app/packages/core/src/services/proactive-speech-service.ts
+@@ -71,6 +71,8 @@ export interface ProactiveSpeechDeps {
+   memoryRecall?: (now: number) => string | null;
+   /** Optional current-character topic, subject to the same quietness and busy gates. */
+   characterHint?: () => string | null;
++  /** Bubble-only character chatter may run during typing/working; chat/DND/off gates still apply. */
++  allowDuringActivity?: () => boolean;
+   clock?: () => number;
+   rng?: () => number;
+   idleThresholdSec?: number | null;
+@@ -160,23 +162,28 @@ export class ProactiveSpeechService {
+     } catch {
+       kind = null;
+     }
+-    if (kind !== null && PROACTIVE_MUTE_KINDS.has(kind)) {
++    const duringActivity = this.safeCall(() => this.d.allowDuringActivity?.() ?? false) === true;
++    if (kind !== null && PROACTIVE_MUTE_KINDS.has(kind) && !(duringActivity && kind === "working")) {
+       this.suppress("pet_state");
+       return false;
+     }
+-    const availability = this.readAvailability(policy, now);
+-    this.lastAvailability = availability;
+-    if (!(availability.state === "away" || availability.state === "available")) {
+-      this.suppress(availability.reason);
+-      return false;
+-    }
+-    const idleSec =
+-      this.lastActivitySnapshot !== null ? effectiveIdleSec(this.lastActivitySnapshot) : null;
+-    const idleThreshold =
+-      this.d.idleThresholdSec != null ? this.d.idleThresholdSec : policy.inputIdleThresholdSec;
+-    if (idleSec === null || idleSec < idleThreshold) {
+-      this.suppress("recent_input");
+-      return false;
++    this.lastAvailability = null;
++    this.lastActivitySnapshot = null;
++    if (!duringActivity) {
++      const availability = this.readAvailability(policy, now);
++      this.lastAvailability = availability;
++      if (!(availability.state === "away" || availability.state === "available")) {
++        this.suppress(availability.reason);
++        return false;
++      }
++      const idleSec =
++        this.lastActivitySnapshot !== null ? effectiveIdleSec(this.lastActivitySnapshot) : null;
++      const idleThreshold =
++        this.d.idleThresholdSec != null ? this.d.idleThresholdSec : policy.inputIdleThresholdSec;
++      if (idleSec === null || idleSec < idleThreshold) {
++        this.suppress("recent_input");
++        return false;
++      }
+     }
+     const cooldown =
+       this.d.serviceCooldownSec != null ? this.d.serviceCooldownSec : policy.cooldownSec;
+diff --git a/app/packages/core/test/proactive-speech-service.test.ts b/app/packages/core/test/proactive-speech-service.test.ts
+index 1b023922..b2496887 100644
+--- a/app/packages/core/test/proactive-speech-service.test.ts
++++ b/app/packages/core/test/proactive-speech-service.test.ts
+@@ -52,6 +52,19 @@ function makeDeps(over: Partial<ProactiveSpeechDeps> = {}): {
+ }
+ 
+ describe("ProactiveSpeechService gates", () => {
++  it("allows opted-in bubble chatter during work without polling idle/focus data", () => {
++    const { deps, turns } = makeDeps({
++      allowDuringActivity: () => true,
++      currentStateKindReader: () => "working",
++      idleSecondsReader: () => { throw new Error("Idle input must not be required"); },
++      activitySnapshotReader: () => { throw new Error("Focus data must not be required"); },
++    });
++    const svc = new ProactiveSpeechService(deps);
++    svc.tick(NOON);
++    expect(turns).toHaveLength(1);
++    expect(svc.suppressionReason).toBeNull();
++  });
++
+   it("speaks when all gates pass (idle, away, not busy, not muted, ambient)", () => {
+     const { deps, bubbles, turns } = makeDeps();
+     new ProactiveSpeechService(deps).tick(NOON);

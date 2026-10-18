@@ -1,0 +1,15 @@
+Use case: precise-object-edit.
+Edit target image1: a traced natural Usagi animation sheet (4x3 cells). Reference image2: original chronological animation for choreography ONLY (costume forbidden).
+Create ONE 4x4 animation sheet of SIXTEEN ordered drawings, row-major, with genuine hand-drawn in-betweens. This fixes a choppy four-keypose animation. Do not output held duplicate drawings: each neighboring drawing must make a small coherent pose change.
+Preserve EXACT Usagi identity/style of image1: broad round pale cream-yellow head, short tapered rounded body, tiny crossed toes, pink inner ears/cheeks, small glossy black eyes and small singing mouth, fine dark brown outlines. Keep head width and eye spacing IDENTICAL across all16, level eye line, same small face. Whole drawings, no puppet parts.
+Trace image1 keyposes and connect them:
+Frames1-4: neutral singing -> ears progressively flex a little toward viewer-left; tucked right forepaw begins to turn outward, torso follows with a very small compress, tiny toes pivot, four gradually different drawings.
+Frame5: anticipation matching image1 row2 col1.
+Frames6-7: right forepaw unfolds along a SHORT horizontal curved sweep beside right hip, one intermediate small round loop then a flatter fast sweep; right side torso tilts/compresses slightly, feet shift overlap a little.
+Frame8: exact accent pose from image1 row2 col2, right forepaw a thin fast oval/smear next to waist, tilted short torso, tiny crossed toes, ear flex.
+Frames9-11: reverse recovery from SAME right-side accent toward waist: sweep shortens continuously, forepaw bends back into small C. No opposite-side sweep. No long punching arm.
+Frame12: recovered tucked-paw pose matching image1 row3 col1; ears have a small follow-through toward viewer-right.
+Frames13-16: ears gradually settle upright and the torso/toes return toward frame1. Frame16 and frame1 must be nearly identical for a seamless loop, with no sudden body or ear jump.
+Tail fur is ONLY a few dark short hatch strokes behind the right hip, shifting slightly with movement. Transparent between the strokes. No filled white fan, no fluffy tail ball.
+Framing: 4 columns by4 rows, equal square cells, one complete character per cell. Same eye center location and same head size in EVERY cell; only drawn relative torso/ear/paw/toe posture changes. Leave margin on all sides. NO arbitrary cell placement drift. The external render will add the original small whole-character translation.
+All sixteen cells genuinely transparent outside the character. No scenery, shadows, oval hood seam, costume, buttons, music symbols, text, cell outlines, overlays, or translucent ghosts. Subtle original compact Usagi motion, no new choreography, no mirrored back-and-forth sway, no whole-head rocking.

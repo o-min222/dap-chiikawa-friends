@@ -2,7 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
-const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
+const catalog={window:{}};runInNewContext(await readFile(new URL('../assets/catalog.js',import.meta.url),'utf8'),catalog);
+const skins=JSON.parse(JSON.stringify(catalog.window.CHIIKAWA_SKINS));
 const source=await readFile(new URL('../palette/preview.js',import.meta.url),'utf8');
 test('reopened palette selects active character once and preserves later preview selections',()=>{
  const elements=new Map();let receive;

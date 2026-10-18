@@ -1,0 +1,156 @@
+diff --git a/app/electron/renderer/pet.html b/app/electron/renderer/pet.html
+index 0101a172..e34ac15d 100644
+--- a/app/electron/renderer/pet.html
++++ b/app/electron/renderer/pet.html
+@@ -292,6 +292,53 @@
+         width: calc(120px * var(--pet-scale, 1));
+         height: auto;
+       }
++      /* Agent activity is a small status badge, visually separate from dialogue. */
++      .dap-pet__agent-badge {
++        --agent-color: #28664c;
++        --agent-tint: #eaf4ee;
++        display: inline-flex;
++        align-items: center;
++        gap: 7px;
++        flex: 0 0 auto;
++        padding: 5px 9px 5px 6px;
++        margin-bottom: 0;
++        border-radius: 999px;
++        border: 1px solid #dce3df;
++        background: #fff;
++        color: #35423b;
++        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
++        font: 600 clamp(10px, calc(12px * var(--pet-scale, 1)), 13px)/1.2 system-ui, sans-serif;
++        white-space: nowrap;
++      }
++      .dap-pet__agent-badge[data-agent="claude"] {
++        --agent-color: #ad583e;
++        --agent-tint: #fbefe9;
++        border-color: #eaded7;
++        color: #544039;
++      }
++      .dap-pet__agent-badge::after { display: none; }
++      .dap-pet__agent-icon {
++        display: grid;
++        place-items: center;
++        width: 1.65em;
++        height: 1.65em;
++        border-radius: 50%;
++        background: var(--agent-tint);
++        color: var(--agent-color);
++        font-family: ui-monospace, Consolas, monospace;
++        font-weight: 700;
++      }
++      .dap-pet__agent-dot {
++        width: 5px;
++        height: 5px;
++        border-radius: 50%;
++        background: var(--agent-color);
++        animation: dap-agent-pulse 1.8s ease-in-out infinite;
++      }
++      @keyframes dap-agent-pulse { 50% { opacity: 0.35; } }
++      @media (prefers-reduced-motion: reduce) {
++        .dap-pet__agent-dot { animation: none; }
++      }
+       /* Thinking/waiting: the glass family (voice pill / choice bubble) — dark translucent
+          capsule, upright text, no tail. Korean italic renders poorly; never italicize. */
+       .dap-pet__bubble--think {
+diff --git a/app/electron/renderer/src/pet-view.ts b/app/electron/renderer/src/pet-view.ts
+index 7e742332..b932ff8c 100644
+--- a/app/electron/renderer/src/pet-view.ts
++++ b/app/electron/renderer/src/pet-view.ts
+@@ -355,9 +355,33 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+         node.dataset.id = b.id;
+       }
+       if (node.parentElement !== parent) parent.append(node);
+-      const cls = `dap-pet__bubble dap-pet__bubble--${b.style}${b.image ? " dap-pet__bubble--image" : ""}`;
++      const agent = b.style === "work" && (b.image === "cli_codex" || b.image === "cli_claude") ? b.image.slice(4) : null;
++      const cls = `dap-pet__bubble dap-pet__bubble--${b.style}${agent ? " dap-pet__agent-badge" : b.image ? " dap-pet__bubble--image" : ""}`;
+       if (node.className !== cls) node.className = cls;
+-      if (b.image) {
++      if (!agent && node.dataset.agent) {
++        delete node.dataset.agent;
++        delete node.dataset.text;
++        delete node.dataset.dots;
++        node.removeAttribute("aria-label");
++        node.replaceChildren();
++      }
++      if (agent) {
++        if (node.dataset.agent !== agent) {
++          const name = agent === "codex" ? "Codex" : "Claude";
++          const icon = document.createElement("span");
++          icon.className = "dap-pet__agent-icon";
++          icon.setAttribute("aria-hidden", "true");
++          icon.textContent = agent === "codex" ? ">_" : "✳";
++          const label = document.createElement("span");
++          label.textContent = name;
++          const dot = document.createElement("span");
++          dot.className = "dap-pet__agent-dot";
++          dot.setAttribute("aria-hidden", "true");
++          node.replaceChildren(icon, label, dot);
++          node.dataset.agent = agent;
++          node.setAttribute("aria-label", `${name} 작동 중`);
++        }
++      } else if (b.image) {
+         const src = bubbleAssets.get(b.image) ?? "";
+         let img = node.querySelector("img");
+         if (!img) {
+diff --git a/app/electron/renderer/test/pet-view.test.ts b/app/electron/renderer/test/pet-view.test.ts
+index 62278c98..c08ee09f 100644
+--- a/app/electron/renderer/test/pet-view.test.ts
++++ b/app/electron/renderer/test/pet-view.test.ts
+@@ -238,15 +238,20 @@ describe("mountPetView", () => {
+     const work = root.querySelector(".dap-pet__bubbles--work")!;
+     expect(speech.textContent).toBe("야하!");
+     expect(speech.querySelectorAll("img")).toHaveLength(0);
+-    expect(work.querySelectorAll("img")).toHaveLength(2);
++    expect(work.querySelectorAll(".dap-pet__agent-badge")).toHaveLength(2);
++    expect(work.querySelectorAll("img")).toHaveLength(0);
+     const codex = work.querySelector('[data-id="codex"]')!;
+-    const image = codex.querySelector("img");
++    const icon = codex.querySelector(".dap-pet__agent-icon");
++    expect(codex.getAttribute("aria-label")).toBe("Codex 작동 중");
++    expect(icon?.textContent).toBe(">_");
+     emit("pet.position_set", { position: { x: 300, y: 300 } });
+     expect(work.querySelector('[data-id="codex"]')).toBe(codex);
+-    expect(codex.querySelector("img")).toBe(image);
++    expect(codex.querySelector(".dap-pet__agent-icon")).toBe(icon);
+     emit("overlay.bubble.show", { id: "codex", text: "완료", style: "speech", duration_ms: 3000 });
+     expect(speech.querySelector('[data-id="codex"]')).toBe(codex);
+-    expect(work.querySelectorAll("img")).toHaveLength(1);
++    expect(codex.textContent).toBe("완료");
++    expect(codex.hasAttribute("aria-label")).toBe(false);
++    expect(work.querySelectorAll(".dap-pet__agent-badge")).toHaveLength(1);
+     emit("overlay.bubble.dismiss", { id: "claude" });
+     expect(work.children).toHaveLength(0);
+     view.destroy(); model.dispose();
+@@ -709,8 +714,8 @@ describe("mountPetView", () => {
+     const view = mountPetView(root, model, bridge);
+     emit("overlay.bubble.show", { id: "claude", text: "", style: "work", duration_ms: 0, image: "cli_claude" });
+     emit("overlay.bubble.show", { id: "codex", text: "", style: "work", duration_ms: 0, image: "cli_codex" });
+-    const agentImages = [...root.querySelectorAll<HTMLImageElement>(".dap-pet__bubble-img")];
+-    expect(agentImages.map((img) => img.src)).toEqual([expect.stringContaining("cli_claude"), expect.stringContaining("cli_codex")]);
++    const agentBadges = [...root.querySelectorAll<HTMLElement>(".dap-pet__agent-badge")];
++    expect(agentBadges.map((badge) => badge.dataset.agent)).toEqual(["claude", "codex"]);
+     pushAppearance({ character: "cat", size: 130, skin: {
+       id: "demo.friend", imageDataUrl: "data:image/png;base64,example",
+       definition: { id: "friend", displayName: "Friend", schemaVersion: 1, spritesheetPath: "sheet.png",
+@@ -726,14 +731,14 @@ describe("mountPetView", () => {
+     expect(canvas.dataset.motion).toBe("running-left");
+     expect(canvas.style.transform).toBe("");
+     expect(root.querySelector<HTMLElement>(".pet-anchor")!.style.width).toBe("130px");
+-    expect([...root.querySelectorAll(".dap-pet__bubble-img")]).toEqual(agentImages);
++    expect([...root.querySelectorAll(".dap-pet__agent-badge")]).toEqual(agentBadges);
+     pushAppearance({ character: "mini", size: 90, idleDataUrl: "data:image/png;base64,mini" });
+     expect(canvas.style.display).toBe("none");
+     expect(root.querySelector<HTMLImageElement>(".dap-pet__sprite")!.style.display).toBe("");
+     expect(root.querySelector<HTMLElement>(".pet-anchor")!.style.width).toBe("90px");
+-    expect([...root.querySelectorAll(".dap-pet__bubble-img")]).toEqual(agentImages);
++    expect([...root.querySelectorAll(".dap-pet__agent-badge")]).toEqual(agentBadges);
+     emit("overlay.bubble.dismiss", { id: "codex" });
+-    expect([...root.querySelectorAll(".dap-pet__bubble-img")]).toEqual([agentImages[0]]);
++    expect([...root.querySelectorAll(".dap-pet__agent-badge")]).toEqual([agentBadges[0]]);
+     view.destroy(); model.dispose();
+   });
+ 

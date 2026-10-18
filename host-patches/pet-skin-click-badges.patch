@@ -1,0 +1,972 @@
+diff --git a/app/electron/main/src/app.ts b/app/electron/main/src/app.ts
+index 507f4af2..5a085e0a 100644
+--- a/app/electron/main/src/app.ts
++++ b/app/electron/main/src/app.ts
+@@ -381,6 +381,7 @@ export class ElectronDapApp {
+   private hotkeysChangedCb: (() => void) | null = null;
+   private petAppearanceCb: (() => void) | null = null;
+   private pluginSkinProvider: (() => import("@dap/plugins").ResolvedPetSkin | null) | null = null;
++  private pluginSkinReset: (() => void) | null = null;
+   private characterPersonaProvider: (() => import("@dap/plugins").CharacterPersona | null) | null = null;
+   private readonly onboarding: OnboardingMarkerStore;
+   private readonly persona: JsonPersonaStore;
+@@ -529,9 +530,10 @@ export class ElectronDapApp {
+     this.petAppearanceCb = cb;
+   }
+ 
+-  attachPluginSkin(provider: () => import("@dap/plugins").ResolvedPetSkin | null, persona?: () => import("@dap/plugins").CharacterPersona | null): void {
++  attachPluginSkin(provider: () => import("@dap/plugins").ResolvedPetSkin | null, persona?: () => import("@dap/plugins").CharacterPersona | null, reset?: () => void): void {
+     this.pluginSkinProvider = provider;
+     this.characterPersonaProvider = persona ?? null;
++    this.pluginSkinReset = reset ?? null;
+   }
+ 
+   refreshPetAppearance(): void {
+@@ -1657,6 +1659,7 @@ export class ElectronDapApp {
+       // apply live (no restart).
+       const PET_KEYS = ["petCharacter", "petMiniProfileId", "petMiniSize", "petSize"] as const;
+       if (patch.config && PET_KEYS.some((k) => k in patch.config!)) {
++        if ("petCharacter" in patch.config || "petMiniProfileId" in patch.config) this.pluginSkinReset?.();
+         this.petAppearanceCb?.();
+         this.broadcastPetAppearance();
+       }
+diff --git a/app/electron/main/src/main.ts b/app/electron/main/src/main.ts
+index eab9e3cb..154130d7 100644
+--- a/app/electron/main/src/main.ts
++++ b/app/electron/main/src/main.ts
+@@ -84,7 +84,7 @@ import { PermissionStore } from "./permission-store.js";
+ import { createEpisodeLog } from "./episode-log.js";
+ import { GovernanceRuntime } from "./governance-runtime.js";
+ import { createProjectActivity } from "./project-activity.js";
+-import { createProactiveSpeech } from "./proactive-speech.js";
++import { createProactiveSpeech, characterBubbleLine } from "./proactive-speech.js";
+ import { createPluginRuntime } from "./plugin-runtime.js";
+ import { createPluginMeetingManager } from "./plugin-meeting.js";
+ import { createWhisperMeetingBackend } from "./whisper-meeting-backend.js";
+@@ -787,7 +787,9 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+   });
+ 
+   // R4: pet reactions — behavior events -> overlay speech bubbles (pushed to the pet overlay window).
+-  const reactions = new PetReactions(new DeskSurfacePush((type, payload) => backend.broadcast(type, payload)));
++  const reactions = new PetReactions(new DeskSurfacePush((type, payload) => backend.broadcast(type, payload)), {
++    petLine: () => characterBubbleLine(petSkins.getSkin()?.definition.id ?? null),
++  });
+   behaviorBus.on((event) => reactions.handle(event));
+   // 처리 중 is a PET STATE, not just a bubble: chat/agentic turns tilt the pet into thinking
+   // (head-tilt sprite via petStatePayload) and settle back on done/error. Dance is never cut —
+@@ -1604,7 +1606,7 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+       return [...core, ...plugin];
+     },
+   });
+-  dapApp.attachPluginSkin(() => petSkins.getSkin(), () => petSkins.getPersona());
++  dapApp.attachPluginSkin(() => petSkins.getSkin(), () => petSkins.getPersona(), () => petSkins.clear());
+   void pluginRuntime.start();
+ 
+   // R2.2 first-run gate: until the wizard completes, the pet stays paused + hidden (computed once;
+@@ -2143,8 +2145,7 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+     // Mini appearance saved in settings → re-resolve and apply to the engine live (app.ts pushes
+     // the petAppearanceChanged event to the overlay/settings renderers itself).
+     dapApp.attachPetAppearanceChanged(() => {
+-      petSkins.clear();
+-      const a = resolvePetAppearance(new ConfigStore(userDataDir).read());
++      const a = resolvePetAppearance(new ConfigStore(userDataDir).read(), petSkins.getSkin());
+       petEngine?.setPetSize(a.size);
+       petEngine?.setMiniMode(a.character === "mini");
+     });
+@@ -2636,17 +2637,11 @@ export async function bootstrap(): Promise<ElectronDapApp> {
+ 
+     // RP4: proactive speech — 60s tick through the ported gate chain (enabled/dnd/busy/pet-state/
+     // idle/cooldown; quiet-profile defaults: 90min idle, 120min cooldown). Speaks via the pet
+-    // bubble; the turn persists to chat history with proactive metadata. Hidden/fullscreen-ducked
+-    // pet and in-flight chat turns are suppressed via isBusy/petVisible.
++    // bubble. Character catchphrases bypass chat/history; the default pet retains AI proactive
++    // turns. Hidden/fullscreen-ducked pet and in-flight chat are suppressed via isBusy/petVisible.
+     const proactive = createProactiveSpeech({
+-      runTurn: (hint) => {
+-        const characterId = petSkins.getPersona()?.id;
+-        return chat.runProactiveTurn(hint, {
+-          publishToChat: characterId === "momonga",
+-          characterId: characterId === "momonga" ? characterId : undefined,
+-        });
+-      },
+-      characterId: () => petSkins.getPersona()?.id ?? null,
++      runTurn: (hint) => chat.runProactiveTurn(hint),
++      characterId: () => petSkins.getSkin()?.definition.id ?? null,
+       isBusy: () => chat.isBusy(),
+       petVisible: () => !overlayWin.isDestroyed() && overlayWin.isVisible(),
+       idleSeconds: () => powerMonitor.getSystemIdleTime(),
+diff --git a/app/electron/main/src/pet-reactions.ts b/app/electron/main/src/pet-reactions.ts
+index 934de709..f278a818 100644
+--- a/app/electron/main/src/pet-reactions.ts
++++ b/app/electron/main/src/pet-reactions.ts
+@@ -21,6 +21,8 @@ export interface PetReactionsOptions {
+   setTimer?: (fn: () => void, ms: number) => TimerHandle;
+   clearTimer?: (h: TimerHandle) => void;
+   now?: () => number;
++  /** Current skin's click reaction; null keeps the default pet response. */
++  petLine?: () => string | null;
+ }
+ 
+ /** A bubble that persists until the matching DONE/ERROR event dismisses it (no auto-timer). */
+@@ -31,6 +33,7 @@ export class PetReactions {
+   private readonly setTimer: (fn: () => void, ms: number) => TimerHandle;
+   private readonly clearTimer: (h: TimerHandle) => void;
+   private readonly now: () => number;
++  private readonly petLine: (() => string | null) | undefined;
+   private readonly timers = new Map<string, TimerHandle>();
+   /** The single bubble currently shown (null when none) — enforces one-at-a-time. */
+   private current: string | null = null;
+@@ -43,6 +46,7 @@ export class PetReactions {
+     this.setTimer = opts.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
+     this.clearTimer = opts.clearTimer ?? ((h) => clearTimeout(h));
+     this.now = opts.now ?? (() => Date.now());
++    this.petLine = opts.petLine;
+   }
+ 
+   /** Route a behavior event to a bubble. Unknown events are ignored. */
+@@ -59,9 +63,11 @@ export class PetReactions {
+       case BE.AI_REQUEST_ERROR:
+         this.showTimed("으, 문제가 생겼어", "error", 2500);
+         break;
+-      case BE.USER_PET:
+-        this.showTimed("헤헤", "react", 1500, "pet");
++      case BE.USER_PET: {
++        const line = this.petLine?.();
++        this.showTimed(line ?? "헤헤", "react", line ? 3000 : 1500, "pet");
+         break;
++      }
+       case BE.USER_FEED:
+         this.showTimed("냠냠 고마워!", "react", 1800, "feed");
+         break;
+diff --git a/app/electron/main/src/proactive-speech.ts b/app/electron/main/src/proactive-speech.ts
+index f45e376d..2005380e 100644
+--- a/app/electron/main/src/proactive-speech.ts
++++ b/app/electron/main/src/proactive-speech.ts
+@@ -2,7 +2,8 @@
+  * RP4: proactive speech wiring — the cat occasionally speaks first (legacy
+  * ProactiveSpeechService parity). Pure composition: builds the ported core service from
+  * main-process signals (idle time, pet state/visibility, chat busy) and the pipeline's
+- * serialized proactive turn. Electron-FREE (all inputs injected) so it tests headlessly.
++ * serialized proactive turn. The four character skins speak on clicks instead of this timer.
++ * Electron-FREE (all inputs injected) so it tests headlessly.
+  *
+  * Environment context is minimal for now: no weather source is wired (weather slot is a
+  * deferred peripheral), so hints come from memory recall (RecallTrigger, 6h idle / 24h
+@@ -37,19 +38,21 @@ export interface ProactiveSpeechOptions {
+   prefs?: () => Record<string, unknown>;
+   now?: () => number;
+   rng?: () => number;
+-  /** Active persona id, not the skin-only selection (persona-off stays silent). */
++  /** Selected skin's character id; click-only characters stay silent on this timer. */
+   characterId?: () => string | null;
+ }
+ 
+-export function momongaProactiveHint(characterId: string | null, rng: () => number = Math.random): string | null {
+-  if (characterId !== "momonga") return null;
+-  const topics = [
+-    "귀여운 나를 칭찬해 보라고 능청스럽게 요구해.",
+-    "오늘도 내가 귀엽다고 짧게 자랑해.",
+-    "사용자에게 가벼운 질문을 하며 먼저 말을 걸어.",
+-  ];
+-  const topic = topics[Math.min(topics.length - 1, Math.max(0, Math.floor(rng() * topics.length)))]!;
+-  return `[모몽가 먼저 말걸기] ${topic} 기존 말투로 1~2문장만 말해. 보지 못한 사용자 행동을 꾸미거나 답을 재촉하지 마.`;
++const CHARACTER_LINES: Readonly<Record<string, readonly string[]>> = {
++  chiikawa: ["와아…!", "에헤헤…", "응…!"],
++  hachiware: ["와아!", "헤헤, 좋다!", "어라…?"],
++  usagi: ["야하!", "우럇!", "푸루루루!", "하아?!"],
++  momonga: ["이 귀여운 나를 봐!", "칭찬해 봐!", "오늘도 귀엽지?", "더 귀여워해 줘!"],
++};
++
++export function characterBubbleLine(characterId: string | null, rng: () => number = Math.random): string | null {
++  const lines = characterId && Object.hasOwn(CHARACTER_LINES, characterId) ? CHARACTER_LINES[characterId] : null;
++  if (!lines) return null;
++  return lines[Math.min(lines.length - 1, Math.max(0, Math.floor(rng() * lines.length)))]!;
+ }
+ 
+ /** Local-clock time-of-day bucket (ambient hint context only — no env service is wired). */
+@@ -62,6 +65,7 @@ export function timeOfDayBucket(hour: number): string {
+ 
+ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSpeechService {
+   const now = opts.now ?? (() => Date.now() / 1000);
++  const hasCharacterBubble = () => Object.hasOwn(CHARACTER_LINES, opts.characterId?.() ?? "");
+   const env: EnvContextPort = {
+     currentWeather: () => null,
+     currentTimeOfDay: () => timeOfDayBucket(new Date(now() * 1000).getHours()),
+@@ -72,21 +76,13 @@ export function createProactiveSpeech(opts: ProactiveSpeechOptions): ProactiveSp
+   return new ProactiveSpeechService({
+     chatTurn: { execute: (_msg, o) => opts.runTurn(o.proactiveHint) },
+     env,
+-    prefsReader: () => {
+-      const prefs = opts.prefs?.() ?? {};
+-      // Momonga waits for a short input pause, while all shared off/DND/busy gates remain intact.
+-      return opts.characterId?.() === "momonga" ? {
+-        ...prefs, proactive_input_idle_minutes: 2, proactive_cooldown_minutes: 15,
+-        proactive_ambient_enabled: false,
+-      } : prefs;
+-    },
++    prefsReader: () => opts.prefs?.() ?? {},
+     idleSecondsReader: opts.idleSeconds,
+     currentStateKindReader: opts.currentStateKind,
+-    isBusyCheck: () => opts.isBusy() || !opts.petVisible(),
++    isBusyCheck: () => hasCharacterBubble() || opts.isBusy() || !opts.petVisible(),
+     sessionIdProvider: () => opts.sessionId,
+     onBubble: opts.onBubble,
+     memoryRecall: (t) => recall.idleFollowupHint(t),
+-    characterHint: () => momongaProactiveHint(opts.characterId?.() ?? null, opts.rng),
+     clock: now,
+     rng: opts.rng,
+   });
+diff --git a/app/electron/main/test/app.test.ts b/app/electron/main/test/app.test.ts
+index 6f50b4c7..0a16e681 100644
+--- a/app/electron/main/test/app.test.ts
++++ b/app/electron/main/test/app.test.ts
+@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
+ import { mkdtempSync } from "node:fs";
+ import { join } from "node:path";
+ import { tmpdir } from "node:os";
+-import type { CharacterPersona } from "@dap/plugins";
++import type { CharacterPersona, ResolvedPetSkin } from "@dap/plugins";
+ 
+ /**
+  * Headless test of ElectronDapApp wiring: the `electron` module is mocked (no runtime binary),
+@@ -153,6 +153,31 @@ function fakeBackend() {
+ }
+ 
+ describe("ElectronDapApp", () => {
++  it("preserves the plugin skin and persona on resize, resetting only on explicit character/profile selection", async () => {
++    const fb = fakeBackend();
++    const dapApp = new ElectronDapApp({ backend: fb.backend as never, preloadPath: "/p", pushTypes: [], userDataDir: mkdtempSync(join(tmpdir(), "dap-skin-size-")) });
++    const persona: CharacterPersona = { id: "momonga", displayName: "모몽가", interpretation: "해석", traits: ["성격"], speakingStyle: "말투", contextHint: "맥락", examples: { greeting: "인사", encourage: "응원", task: "작업", failed: "실패" } };
++    const skin: ResolvedPetSkin = { id: "friends.momonga", imageDataUrl: "data:image/png;base64,AA==", definition: { id: "momonga", displayName: "모몽가", schemaVersion: 1, spritesheetPath: "assets/sheet.png", cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 1 }, animations: { idle: { row: 0, holdsMs: [100] } }, persona } };
++    let selected: ResolvedPetSkin | null = skin;
++    const reset = vi.fn(() => { selected = null; });
++    dapApp.attachPluginSkin(() => selected, () => selected?.definition.persona ?? null, reset);
++    await dapApp.whenReady();
++    const identity = ipcHandlers.get(IPC.getPersona)!({});
++    for (const size of [60, 180, 240]) {
++      await ipcHandlers.get(IPC.saveConfig)!({}, { config: { petSize: size } });
++      expect(ipcHandlers.get(IPC.petAppearance)!({})).toMatchObject({ character: "cat", size, skin });
++      expect(ipcHandlers.get(IPC.getPersona)!({})).toEqual(identity);
++    }
++    expect(reset).not.toHaveBeenCalled();
++    for (const selection of [{ petCharacter: "cat" }, { petCharacter: "mini" }, { petMiniProfileId: "chosen" }]) {
++      selected = skin;
++      await ipcHandlers.get(IPC.saveConfig)!({}, { config: selection });
++      expect(selected).toBeNull();
++      expect(ipcHandlers.get(IPC.petAppearance)!({})).not.toHaveProperty("skin");
++    }
++    expect(reset).toHaveBeenCalledTimes(3);
++  });
++
+   it("collects background reports without opening windows and replays only the selected task", async () => {
+     const fb = fakeBackend();
+     const dapApp = new ElectronDapApp({ backend: fb.backend as never, preloadPath: "/p", pushTypes: [], userDataDir: "/tmp/dap-test" });
+diff --git a/app/electron/main/test/momonga-proactive.test.ts b/app/electron/main/test/momonga-proactive.test.ts
+index 9f1307d5..326516b3 100644
+--- a/app/electron/main/test/momonga-proactive.test.ts
++++ b/app/electron/main/test/momonga-proactive.test.ts
+@@ -3,8 +3,11 @@ import { mkdtempSync, rmSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { JsonlChatSessionStore } from "@dap/storage";
++import { BehaviorEvent } from "@dap/core";
++import { DeskSurfacePush } from "@dap/workspace-server";
++import { PetReactions } from "../src/pet-reactions.js";
+ import { createChatPipeline } from "../src/chat-pipeline.js";
+-import { createProactiveSpeech, momongaProactiveHint, type ProactiveSpeechOptions } from "../src/proactive-speech.js";
++import { createProactiveSpeech, characterBubbleLine, type ProactiveSpeechOptions } from "../src/proactive-speech.js";
+ 
+ const NOON = Date.parse("2026-10-18T12:00:00") / 1000;
+ const dirs: string[] = [];
+@@ -22,66 +25,72 @@ function speech(over: Partial<ProactiveSpeechOptions> = {}) {
+   return { service, calls, bubbles };
+ }
+ 
+-describe("Momonga spontaneous chat", () => {
+-  it("speaks after a two-minute pause, waits fifteen minutes, and leaves other characters quiet", async () => {
+-    const {service,calls,bubbles}=speech({idleSeconds:()=>120});
+-    service.tick(); await vi.waitFor(()=>expect(bubbles).toHaveLength(1));
+-    service.tick(NOON+899); expect(calls).toHaveLength(1);
+-    service.tick(NOON+900); await vi.waitFor(()=>expect(bubbles).toHaveLength(2));
+-    const other=speech({characterId:()=>"hachiware",idleSeconds:()=>120});
+-    other.service.tick(); expect(other.calls).toHaveLength(0);
+-    const disabled=speech({idleSeconds:()=>120,prefs:()=>({proactive_quiet_profile:"off"})});
+-    disabled.service.tick(); expect(disabled.service.suppressionReason).toBe("profile_off");
+-  });
+-  it("offers praise, self-praise and a question only for Momonga", () => {
+-    expect(momongaProactiveHint("momonga", () => 0)).toContain("칭찬");
+-    expect(momongaProactiveHint("momonga", () => 0.4)).toContain("자랑");
+-    expect(momongaProactiveHint("momonga", () => 0.9)).toContain("질문");
+-    for (const id of [null, "chiikawa", "hachiware", "usagi", "rakko", "shisa", "kurimanju", "siren", "furuhonya", "anoko", "dekatsuyo"]) {
+-      expect(momongaProactiveHint(id)).toBeNull();
+-      const { service, calls } = speech({ characterId: () => id }); service.tick(); expect(calls).toHaveLength(0);
+-    }
++describe("Click-only character bubbles without chat turns", () => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("never speaks automatically for %s, even after long idle/cooldown", (id) => {
++    const recent = vi.fn(() => []);
++    const { service, calls, bubbles } = speech({ characterId: () => id, idleSeconds: () => 0, currentStateKind: () => "working",
++      memory: { recent }, lastInteractionAt: () => NOON - 7 * 3600,
++      prefs: () => ({ proactive_quiet_profile: "balanced" }),
++    });
++    service.tick();
++    service.tick(NOON + 6 * 3600);
++    expect(bubbles).toEqual([]);
++    expect(calls).toEqual([]);
++    expect(recent).not.toHaveBeenCalled();
++    const idle = speech({ characterId: () => id });
++    idle.service.tick();
++    expect(idle.bubbles).toEqual([]); expect(idle.calls).toEqual([]);
+   });
+ 
+-  it("keeps busy, hidden, recent-input, muted-state and off gates", () => {
+-    for (const over of [
+-      { isBusy: () => true }, { petVisible: () => false }, { idleSeconds: () => 60 },
+-      { currentStateKind: () => "thinking" }, { prefs: () => ({ proactive_quiet_profile: "off" }) },
+-    ]) {
+-      const { service, calls } = speech(over); service.tick(); expect(calls).toHaveLength(0);
+-    }
++  it("includes Usagi's short sounds and Momonga's praise requests", () => {
++    expect(characterBubbleLine("usagi", () => 0)).toBe("야하!");
++    expect(characterBubbleLine("usagi", () => 0.3)).toBe("우럇!");
++    expect(characterBubbleLine("momonga", () => 0.3)).toContain("칭찬");
++    for (const id of [null, "cat", "other", "constructor", "__proto__"]) expect(characterBubbleLine(id)).toBeNull();
+   });
+ 
+-  it("honors cooldown and stops supplying the topic when the character changes", async () => {
+-    let id = "momonga";
+-    const { service, calls, bubbles } = speech({ characterId: () => id });
+-    service.tick(); await vi.waitFor(() => expect(bubbles).toHaveLength(1));
+-    service.tick(NOON + 60); expect(calls).toHaveLength(1);
+-    id = "hachiware"; service.tick(NOON + 3 * 3600); expect(calls).toHaveLength(1);
++  it("uses the current skin on every click, and falls back after skin reset", () => {
++    let id: string | null = "momonga";
++    const pushes: Array<{type:string; payload:Record<string,unknown>}> = [];
++    const reactions = new PetReactions(new DeskSurfacePush((type,payload) => pushes.push({type,payload})), {
++      petLine: () => characterBubbleLine(id, () => 0),
++    });
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload.text).toBe(characterBubbleLine("momonga", () => 0));
++    id = "usagi";
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload.text).toBe("야하!");
++    id = null;
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload.text).toBe("헤헤");
+   });
+ 
+-  it("one generated reply reaches bubble, live chat and persisted history with one stable id", async () => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("%s bubbles never enter live chat, persisted history or the next user turn", async (id) => {
+     const dir = mkdtempSync(join(tmpdir(), "dap-momonga-")); dirs.push(dir);
+     const pushes: Array<{ type: string; payload: Record<string, unknown> }> = [];
+-    let id = "momonga";
+     const reply = "귀여운 나를 칭찬해 봐! 오늘도 귀엽지?";
+     const llm = { generate: async () => "", summarizeText: async () => "", classifyIntent: async () => "chat_local", chatReply: vi.fn(async (_user: string, _history?: string[] | null) => reply) };
+     const chat = createChatPipeline({ userDataDir: dir, broadcast: (type, payload) => pushes.push({ type, payload }), llm,
+-      characterPersona: () => ({ id, displayName: "모몽가", traits: [], speakingStyle: "귀여움을 자랑하는 모몽가", contextHint: "짧게 말해" }), logAppend: () => {}, });
+-    const { service, bubbles } = speech({ sessionId: chat.sessionId, runTurn: hint => chat.runProactiveTurn(hint, { publishToChat: true, characterId: "momonga" }) });
+-    service.tick(); await vi.waitFor(() => expect(bubbles).toEqual([reply]));
++      logAppend: () => {}, });
++    const runTurn = vi.fn((hint: string) => chat.runProactiveTurn(hint));
++    const { service, bubbles } = speech({ characterId: () => id, sessionId: chat.sessionId, runTurn });
++    service.tick(); expect(bubbles).toEqual([]);
++    const clickedLine = characterBubbleLine(id, () => 0);
++    const reactions = new PetReactions(new DeskSurfacePush((type,payload) => pushes.push({type,payload})), {
++      petLine: () => clickedLine,
++    });
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.filter(p => p.type === "overlay.bubble.show").at(-1)?.payload.text).toBe(clickedLine);
+     const rows = new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId);
+-    expect(rows).toHaveLength(1); expect(rows[0]).toMatchObject({ role: "assistant", text: reply, metadata: { proactive: true } });
+-    const live = pushes.filter(p => p.type === "message.appended");
+-    expect(live).toHaveLength(1); expect(live[0]!.payload["message"]).toMatchObject({ message_id: rows[0]!.id, speaker: "모몽가", text: reply });
+-    expect(llm.chatReply).toHaveBeenCalledTimes(1);
++    expect(rows).toEqual([]);
++    expect(pushes.filter(p => p.type === "message.appended")).toEqual([]);
++    expect(runTurn).not.toHaveBeenCalled();
++    expect(llm.chatReply).not.toHaveBeenCalled();
+     pushes.length = 0; chat.replayOnReady();
+-    expect(pushes.filter(p => p.type === "message.appended")[0]!.payload["message"]).toMatchObject({ message_id: rows[0]!.id });
+-    chat.handler({ utterance: "귀엽네, 칭찬해줄게." }); await chat.whenIdle();
+-    expect(llm.chatReply.mock.calls[1]?.[1]?.some(line => line.includes(reply))).toBe(true);
+-    expect(new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId)).toHaveLength(3);
+-    id = "hachiware";
+-    expect(await chat.runProactiveTurn("이전 모몽가 요청", { publishToChat: true, characterId: "momonga" })).toBeNull();
+-    expect(llm.chatReply).toHaveBeenCalledTimes(2);
++    expect(pushes.filter(p => p.type === "message.appended")).toEqual([]);
++    chat.handler({ utterance: "안녕" }); await chat.whenIdle();
++    expect(llm.chatReply).toHaveBeenCalledTimes(1);
++    expect(llm.chatReply.mock.calls[0]?.[1]?.some(line => line.includes(clickedLine!))).toBeFalsy();
++    expect(new JsonlChatSessionStore(join(dir, "chat_sessions")).getMessages(chat.sessionId)).toHaveLength(2);
+   });
+ });
+diff --git a/app/electron/main/test/pet-reactions.test.ts b/app/electron/main/test/pet-reactions.test.ts
+index eabd9ca0..c9103da5 100644
+--- a/app/electron/main/test/pet-reactions.test.ts
++++ b/app/electron/main/test/pet-reactions.test.ts
+@@ -6,13 +6,14 @@ import { PetReactions } from "../src/pet-reactions.js";
+ type Push = { type: string; payload: Record<string, unknown> };
+ 
+ /** Build PetReactions over a spy broadcast + a manual timer queue. `clock` drives now(). */
+-function setup() {
++function setup(petLine?: () => string | null) {
+   const pushes: Push[] = [];
+   const timers: Array<{ fn: () => void; ms: number; cleared: boolean }> = [];
+   const clock = { t: 0 };
+   let n = 0;
+   const reactions = new PetReactions(new DeskSurfacePush((type, payload) => pushes.push({ type, payload })), {
+     newId: () => `id${++n}`,
++    petLine,
+     now: () => clock.t,
+     setTimer: (fn, ms) => {
+       timers.push({ fn, ms, cleared: false });
+@@ -27,6 +28,16 @@ function setup() {
+ }
+ 
+ describe("PetReactions", () => {
++  it("uses a skin click line for three seconds and dismisses the previous click bubble", () => {
++    const { reactions, pushes, timers } = setup(() => "우럇!");
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.at(-1)?.payload).toMatchObject({text:"우럇!",style:"react",duration_ms:3000,reaction:"pet"});
++    reactions.handle(BehaviorEvent.USER_PET);
++    expect(pushes.map(p => p.type)).toEqual(["overlay.bubble.show","overlay.bubble.dismiss","overlay.bubble.show"]);
++    expect(timers[0].cleared).toBe(true);
++    timers.at(-1)!.fn();
++    expect(pushes.at(-1)?.type).toBe("overlay.bubble.dismiss");
++  });
+   it("shows brief task notices and dismisses them after 2.5 seconds", () => {
+     const { reactions, pushes, timers } = setup();
+     for (const status of ["done", "error", "approval"] as const) reactions.notifyTask(status);
+diff --git a/app/electron/main/test/proactive-speech.test.ts b/app/electron/main/test/proactive-speech.test.ts
+index d2538b97..ad929143 100644
+--- a/app/electron/main/test/proactive-speech.test.ts
++++ b/app/electron/main/test/proactive-speech.test.ts
+@@ -44,6 +44,7 @@ describe("proactive speech wiring (RP4)", () => {
+       { isBusy: () => true },
+       { petVisible: () => false },
+       { currentStateKind: () => "thinking" },
++      { currentStateKind: () => "working" },
+       { idleSeconds: () => 60 },
+       { prefs: () => ({ proactive_quiet_profile: "off" }) }, // the settings "끄기" choice
+     ];
+diff --git a/app/electron/renderer/pet.html b/app/electron/renderer/pet.html
+index 8d7677cc..e34ac15d 100644
+--- a/app/electron/renderer/pet.html
++++ b/app/electron/renderer/pet.html
+@@ -219,7 +219,22 @@
+          positioned container otherwise clamps to its containing block, forcing one word per line. */
+       .dap-pet__bubbles {
+         width: max-content;
+-        max-width: 300px;
++        max-width: min(300px, calc(100vw - 16px));
++        flex-direction: column;
++        flex-wrap: nowrap;
++      }
++      .dap-pet__bubbles--work {
++        bottom: auto;
++        top: 100%;
++        flex-direction: row;
++        align-items: flex-start;
++      }
++      .dap-pet__bubbles--work .dap-pet__bubble--image {
++        min-width: 0;
++        flex: 0 1 auto;
++      }
++      .dap-pet__bubbles--work .dap-pet__bubble-img {
++        max-width: 100%;
+       }
+       .dap-pet__toasts {
+         bottom: auto;
+@@ -256,7 +271,7 @@
+         content: "";
+         position: absolute;
+         top: 100%;
+-        left: 50%;
++        left: var(--bubble-tail-x, 50%);
+         transform: translateX(-50%);
+         border: 6px solid transparent;
+         border-top-color: #fff;
+@@ -277,6 +292,53 @@
+         width: calc(120px * var(--pet-scale, 1));
+         height: auto;
+       }
++      /* Agent activity is a small status badge, visually separate from dialogue. */
++      .dap-pet__agent-badge {
++        --agent-color: #28664c;
++        --agent-tint: #eaf4ee;
++        display: inline-flex;
++        align-items: center;
++        gap: 7px;
++        flex: 0 0 auto;
++        padding: 5px 9px 5px 6px;
++        margin-bottom: 0;
++        border-radius: 999px;
++        border: 1px solid #dce3df;
++        background: #fff;
++        color: #35423b;
++        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
++        font: 600 clamp(10px, calc(12px * var(--pet-scale, 1)), 13px)/1.2 system-ui, sans-serif;
++        white-space: nowrap;
++      }
++      .dap-pet__agent-badge[data-agent="claude"] {
++        --agent-color: #ad583e;
++        --agent-tint: #fbefe9;
++        border-color: #eaded7;
++        color: #544039;
++      }
++      .dap-pet__agent-badge::after { display: none; }
++      .dap-pet__agent-icon {
++        display: grid;
++        place-items: center;
++        width: 1.65em;
++        height: 1.65em;
++        border-radius: 50%;
++        background: var(--agent-tint);
++        color: var(--agent-color);
++        font-family: ui-monospace, Consolas, monospace;
++        font-weight: 700;
++      }
++      .dap-pet__agent-dot {
++        width: 5px;
++        height: 5px;
++        border-radius: 50%;
++        background: var(--agent-color);
++        animation: dap-agent-pulse 1.8s ease-in-out infinite;
++      }
++      @keyframes dap-agent-pulse { 50% { opacity: 0.35; } }
++      @media (prefers-reduced-motion: reduce) {
++        .dap-pet__agent-dot { animation: none; }
++      }
+       /* Thinking/waiting: the glass family (voice pill / choice bubble) — dark translucent
+          capsule, upright text, no tail. Korean italic renders poorly; never italicize. */
+       .dap-pet__bubble--think {
+diff --git a/app/electron/renderer/src/pet-view.ts b/app/electron/renderer/src/pet-view.ts
+index 827505a1..b932ff8c 100644
+--- a/app/electron/renderer/src/pet-view.ts
++++ b/app/electron/renderer/src/pet-view.ts
+@@ -32,10 +32,6 @@ const ACTIVE_SPRITE_SETS: ReadonlySet<string> = new Set([
+ // barrel into the renderer bundle drags in node:crypto/node:fs and breaks the browser build.
+ const SPRITE_FOOT_FROM_WIDGET_BOTTOM = 50;
+ 
+-// When the pet box top is within this many px of the overlay top, an upward speech bubble would
+-// clip off-screen — flip it below the pet instead. Sized for a typical few-line bubble.
+-const BUBBLE_FLIP_TOP_PX = 170;
+-
+ // Per-motion frame schedules — mirror of @dap/core motion-schedules.ts, inlined for the same reason
+ // as SPRITE_FOOT above (the renderer can't pull in the core barrel without breaking the browser
+ // build). Variable-duration motions resolve their frame from elapsed-ms instead of the flat-fps
+@@ -300,9 +296,11 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+   // appended to root they sat unpositioned at the window origin, never above the cat.
+   const bubbles = document.createElement("div");
+   bubbles.className = "dap-pet__bubbles";
++  const workBubbles = document.createElement("div");
++  workBubbles.className = "dap-pet__bubbles dap-pet__bubbles--work";
+   const toasts = document.createElement("div");
+   toasts.className = "dap-pet__toasts";
+-  anchor.append(bubbles, toasts);
++  anchor.append(bubbles, workBubbles, toasts);
+   root.append(anchor);
+ 
+   // Mini mode: null / "cat" → the sprite-frame path below; "mini" → the user's idle/active image
+@@ -347,23 +345,50 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+   // working bubble FLICKERING. Persisting ids keep their DOM node; only content deltas apply.
+   const renderBubbles = (): void => {
+     const seen = new Set<string>();
++    const nodes = new Map([...bubbles.children, ...workBubbles.children].map(node => [(node as HTMLElement).dataset.id, node as HTMLDivElement]));
+     for (const b of model.bubbles.values()) {
+       seen.add(b.id);
+-      let node = [...bubbles.children].find((c) => (c as HTMLElement).dataset.id === b.id) as HTMLDivElement | undefined;
++      const parent = b.style === "work" && b.image ? workBubbles : bubbles;
++      let node = nodes.get(b.id);
+       if (!node) {
+         node = document.createElement("div");
+         node.dataset.id = b.id;
+-        bubbles.append(node);
+       }
+-      const cls = `dap-pet__bubble dap-pet__bubble--${b.style}${b.image ? " dap-pet__bubble--image" : ""}`;
++      if (node.parentElement !== parent) parent.append(node);
++      const agent = b.style === "work" && (b.image === "cli_codex" || b.image === "cli_claude") ? b.image.slice(4) : null;
++      const cls = `dap-pet__bubble dap-pet__bubble--${b.style}${agent ? " dap-pet__agent-badge" : b.image ? " dap-pet__bubble--image" : ""}`;
+       if (node.className !== cls) node.className = cls;
+-      if (b.image) {
++      if (!agent && node.dataset.agent) {
++        delete node.dataset.agent;
++        delete node.dataset.text;
++        delete node.dataset.dots;
++        node.removeAttribute("aria-label");
++        node.replaceChildren();
++      }
++      if (agent) {
++        if (node.dataset.agent !== agent) {
++          const name = agent === "codex" ? "Codex" : "Claude";
++          const icon = document.createElement("span");
++          icon.className = "dap-pet__agent-icon";
++          icon.setAttribute("aria-hidden", "true");
++          icon.textContent = agent === "codex" ? ">_" : "✳";
++          const label = document.createElement("span");
++          label.textContent = name;
++          const dot = document.createElement("span");
++          dot.className = "dap-pet__agent-dot";
++          dot.setAttribute("aria-hidden", "true");
++          node.replaceChildren(icon, label, dot);
++          node.dataset.agent = agent;
++          node.setAttribute("aria-label", `${name} 작동 중`);
++        }
++      } else if (b.image) {
+         const src = bubbleAssets.get(b.image) ?? "";
+         let img = node.querySelector("img");
+         if (!img) {
+           node.textContent = "";
+           img = document.createElement("img");
+           img.className = "dap-pet__bubble-img";
++          img.addEventListener("load", positionBubbles);
+           node.append(img);
+         }
+         if (!img.src.endsWith(src)) img.src = src;
+@@ -381,11 +406,38 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+         }
+       }
+     }
+-    for (const child of [...bubbles.children]) {
++    for (const child of [...bubbles.children, ...workBubbles.children]) {
+       const id = (child as HTMLElement).dataset.id;
+       if (!id || !seen.has(id)) child.remove();
+     }
+   };
++  const positionBubbles = (): void => {
++    const pet = anchor.getBoundingClientRect();
++    const speech = bubbles.getBoundingClientRect();
++    const work = workBubbles.getBoundingClientRect();
++    const pad = 8, gap = 8;
++    const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(value, Math.max(low, high)));
++    let speechY = clamp(pet.top - speech.height - gap, pad, window.innerHeight - speech.height - pad);
++    let workY = clamp(pet.bottom + gap, pad, window.innerHeight - work.height - pad);
++    if (speech.height && work.height && workY < speechY + speech.height + gap) {
++      workY = Math.min(window.innerHeight - work.height - pad, speechY + speech.height + gap);
++      speechY = Math.max(pad, Math.min(speechY, workY - speech.height - gap));
++    }
++    for (const [container, box, y] of [[bubbles, speech, speechY], [workBubbles, work, workY]] as const) {
++      let x = clamp(pet.left + pet.width / 2 - box.width / 2, pad, window.innerWidth - box.width - pad);
++      // At a screen edge, use the available side rather than cover the pet's face.
++      if (box.height && y < pet.bottom + gap && y + box.height > pet.top - gap) {
++        if (pet.right + gap + box.width <= window.innerWidth - pad) x = pet.right + gap;
++        else if (pet.left - gap - box.width >= pad) x = pet.left - gap - box.width;
++      }
++      container.style.left = `${x - pet.left}px`;
++      container.style.top = `${y - pet.top}px`;
++      container.style.bottom = "auto";
++      container.style.transform = "none";
++      container.style.setProperty("--bubble-tail-x", `${clamp(pet.left + pet.width / 2 - x, 12, box.width - 12)}px`);
++    }
++  };
++  window.addEventListener("resize", positionBubbles);
+   const renderToasts = (): void => {
+     toasts.innerHTML = "";
+     for (const t of model.toasts.values()) {
+@@ -429,11 +481,9 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+       const top = p.y - originY() - SPRITE_FOOT_FROM_WIDGET_BOTTOM;
+       anchor.style.left = `${p.x - originX()}px`;
+       anchor.style.top = `${top}px`;
+-      // Speech bubbles grow upward from the pet; near the screen top there's no room, so flip the
+-      // stack below the pet (CSS --below moves it + its tail). Threshold ~ a few-line bubble.
+-      bubbles.classList.toggle("dap-pet__bubbles--below", top < BUBBLE_FLIP_TOP_PX);
+     }
+     renderBubbles();
++    positionBubbles();
+     renderToasts();
+   };
+ 
+@@ -766,10 +816,8 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+   window.addEventListener("mousemove", onWindowMove);
+   const activatePet = (offsetX: number, offsetY: number): void => {
+     const links = radialLinks.filter((l) => l.enabled);
+-    if (links.length === 0) {
+-      model.interact(offsetX, offsetY);
+-      return;
+-    }
++    model.interact(offsetX, offsetY);
++    if (links.length === 0) return;
+     if (radialEl) closeRadial();
+     else openRadial(links.map(linkToRadialItem), "quick");
+   };
+@@ -817,9 +865,8 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+       activatePet(e.offsetX, e.offsetY);
+     }
+   };
+-  // A genuine left-click (no drag) opens the radial quick-menu; a click synthesized right after a drag
+-  // is swallowed. With no menu items configured, fall back to the pet reaction so a click still does
+-  // something (and the user can add items via the "환경설정" context-menu entry).
++  // A genuine click reacts and also opens configured quick-menu items. A click synthesized
++  // right after a drag is swallowed.
+   const onClick = (e: MouseEvent): void => {
+     if (suppressClick) {
+       suppressClick = false;
+@@ -967,6 +1014,7 @@ export function mountPetView(root: HTMLElement, model: PetModel, bridge: DapBrid
+   return {
+     tick,
+     destroy(): void {
++      window.removeEventListener("resize", positionBubbles);
+       unsubscribe();
+       offLinksChanged();
+       offAppearance();
+diff --git a/app/electron/renderer/src/settings-config-view.ts b/app/electron/renderer/src/settings-config-view.ts
+index a0f475bd..5b63e5c7 100644
+--- a/app/electron/renderer/src/settings-config-view.ts
++++ b/app/electron/renderer/src/settings-config-view.ts
+@@ -88,6 +88,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+   let voiceDownloading: VoiceModelId | null = null;
+   let voiceProgressEl: HTMLElement | null = null;
+   let offVoiceProgress: (() => void) | null = null;
++  let offPetAppearance: (() => void) | null = null;
+   let voiceEnginePoll: ReturnType<typeof setInterval> | null = null;
+   const stopVoiceEnginePoll = (): void => {
+     if (voiceEnginePoll) clearInterval(voiceEnginePoll);
+@@ -271,7 +272,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+       b.addEventListener("click", () => void save({ config: { proactive: p.value } }));
+       seg.append(b);
+     }
+-    look.body.append(field("먼저 말 걸기", seg, "한동안 자리를 비웠다 오면 고양이가 먼저 한 마디 건네요. (밤 11시~아침 7시는 항상 조용)"));
++    look.body.append(field("먼저 말 걸기", seg, "이 설정은 기본 펫의 자동 말 걸기에 적용돼요. 치이카와 친구들은 클릭할 때만 말풍선으로 짧게 답하고 채팅 기록에는 남지 않아요."));
+ 
+     // A3: daily briefing. Opt-in (unprompted speech), and the time picker only appears once it is
+     // on — a disabled clock is noise. Native <input type="time"> instead of a custom picker.
+@@ -415,15 +416,16 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+   // Mini mode (oshi-desk-mini concept): registered PROFILES of idle/active image pairs (no links);
+   // the selected profile is the pet. Stationary, drag-to-move.
+   const renderPetCharacter = (panel: HTMLElement, cfg: AppConfigState): void => {
+-    const current = cfg.config.petCharacter === "mini" ? "mini" : "cat";
+-    const size = cfg.config.petSize ?? (current === "mini" ? cfg.config.petMiniSize : undefined) ?? 130;
++    const skin = petAppearance?.skin?.definition;
++    const current = skin ? "plugin" : cfg.config.petCharacter === "mini" ? "mini" : "cat";
++    const size = petAppearance?.size ?? cfg.config.petSize ?? (current === "mini" ? cfg.config.petMiniSize : undefined) ?? 130;
+     const allProfiles = petProfiles ?? [];
+     const selectedName =
+       current === "mini" ? (allProfiles.find((p) => p.id === cfg.config.petMiniProfileId) ?? allProfiles[0])?.name : null;
+     const g = group(
+       "general-pet",
+       "DAP 모양",
+-      `${current === "mini" ? `커스텀 미니${selectedName ? ` (${selectedName})` : ""}` : "기본 고양이"} · ${size}px`,
++      `${skin?.displayName ?? (current === "mini" ? `커스텀 미니${selectedName ? ` (${selectedName})` : ""}` : "기본 고양이")} · ${size}px`,
+     );
+     const box = g.body;
+     const seg = el("div", "seg-toggle");
+@@ -433,9 +435,18 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+     ] as const;
+     for (const c of CHARACTERS) {
+       const b = el("button", c.value === current ? "active" : "", c.label);
++      b.setAttribute("aria-pressed", String(c.value === current));
+       b.addEventListener("click", () => void savePet({ petCharacter: c.value }));
+       seg.append(b);
+     }
++    if (skin) {
++      const active = el("button", "active", skin.displayName) as HTMLButtonElement;
++      active.type = "button";
++      active.disabled = true;
++      active.setAttribute("aria-label", `현재 스킨: ${skin.displayName}`);
++      active.setAttribute("aria-pressed", "true");
++      seg.append(active);
++    }
+     box.append(field("캐릭터", seg, "커스텀 미니는 등록한 프로필의 이미지로 만든 DAP이에요. 걷지 않고 제자리에 머물러요 (드래그로 이동)."));
+ 
+     if (current === "mini") {
+@@ -851,6 +862,10 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+     render();
+   });
+   if (section === "general") {
++    offPetAppearance = bridge.onPetAppearanceChanged?.((appearance) => {
++      petAppearance = appearance;
++      render();
++    }) ?? null;
+     void loadAppUpdateStatus();
+     void loadPetData();
+   }
+@@ -878,6 +893,7 @@ export function mountConfigSection(root: HTMLElement, bridge: DapBridge, section
+     destroy(): void {
+       if (statusTimer) clearTimeout(statusTimer);
+       offVoiceProgress?.();
++      offPetAppearance?.();
+       stopVoiceEnginePoll();
+       root.innerHTML = "";
+     },
+diff --git a/app/electron/renderer/test/pet-view.test.ts b/app/electron/renderer/test/pet-view.test.ts
+index 4ea4ac93..c08ee09f 100644
+--- a/app/electron/renderer/test/pet-view.test.ts
++++ b/app/electron/renderer/test/pet-view.test.ts
+@@ -227,6 +227,73 @@ describe("mountPetView", () => {
+     expect(root.querySelector(".dap-pet__bubble")).toBeNull();
+   });
+ 
++  it("separates speech from agent badges while preserving keyed nodes across updates", () => {
++    const { bridge, emit } = fakeBridge();
++    const model = new PetModel(bridge);
++    const view = mountPetView(root, model, bridge);
++    emit("overlay.bubble.show", { id: "speech", text: "야하!", style: "react", duration_ms: 3000 });
++    emit("overlay.bubble.show", { id: "codex", text: "", style: "work", duration_ms: 0, image: "cli_codex" });
++    emit("overlay.bubble.show", { id: "claude", text: "", style: "work", duration_ms: 0, image: "cli_claude" });
++    const speech = root.querySelector(".dap-pet__bubbles:not(.dap-pet__bubbles--work)")!;
++    const work = root.querySelector(".dap-pet__bubbles--work")!;
++    expect(speech.textContent).toBe("야하!");
++    expect(speech.querySelectorAll("img")).toHaveLength(0);
++    expect(work.querySelectorAll(".dap-pet__agent-badge")).toHaveLength(2);
++    expect(work.querySelectorAll("img")).toHaveLength(0);
++    const codex = work.querySelector('[data-id="codex"]')!;
++    const icon = codex.querySelector(".dap-pet__agent-icon");
++    expect(codex.getAttribute("aria-label")).toBe("Codex 작동 중");
++    expect(icon?.textContent).toBe(">_");
++    emit("pet.position_set", { position: { x: 300, y: 300 } });
++    expect(work.querySelector('[data-id="codex"]')).toBe(codex);
++    expect(codex.querySelector(".dap-pet__agent-icon")).toBe(icon);
++    emit("overlay.bubble.show", { id: "codex", text: "완료", style: "speech", duration_ms: 3000 });
++    expect(speech.querySelector('[data-id="codex"]')).toBe(codex);
++    expect(codex.textContent).toBe("완료");
++    expect(codex.hasAttribute("aria-label")).toBe(false);
++    expect(work.querySelectorAll(".dap-pet__agent-badge")).toHaveLength(1);
++    emit("overlay.bubble.dismiss", { id: "claude" });
++    expect(work.children).toHaveLength(0);
++    view.destroy(); model.dispose();
++  });
++
++  it.each(["middle", "top-left", "bottom-right"])("keeps both bubble layers visible and separate at %s", (position) => {
++    const { bridge, emit } = fakeBridge();
++    const model = new PetModel(bridge);
++    const view = mountPetView(root, model, bridge);
++    const x = position === "top-left" ? 0 : position === "bottom-right" ? window.innerWidth - 130 : 250;
++    const y = position === "top-left" ? 0 : position === "bottom-right" ? window.innerHeight - 130 : 250;
++    const anchor = root.querySelector<HTMLElement>(".pet-anchor")!;
++    const speech = root.querySelector<HTMLElement>(".dap-pet__bubbles:not(.dap-pet__bubbles--work)")!;
++    const work = root.querySelector<HTMLElement>(".dap-pet__bubbles--work")!;
++    vi.spyOn(anchor, "getBoundingClientRect").mockReturnValue(new DOMRect(x, y, 130, 130));
++    vi.spyOn(speech, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 180, 50));
++    vi.spyOn(work, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 220, 30));
++    emit("overlay.bubble.show", { id: "speech", text: "우럇!", style: "react", duration_ms: 3000 });
++    emit("overlay.bubble.show", { id: "agent", text: "", style: "work", duration_ms: 0, image: "cli_codex" });
++    const speechTop = y + parseFloat(speech.style.top);
++    const workTop = y + parseFloat(work.style.top);
++    expect(speechTop).toBeGreaterThanOrEqual(8);
++    expect(workTop + 30).toBeLessThanOrEqual(window.innerHeight - 8);
++    expect(speechTop + 50 + 8).toBeLessThanOrEqual(workTop);
++    for (const [box, width] of [[speech, 180], [work, 220]] as const) {
++      const left = x + parseFloat(box.style.left);
++      expect(left).toBeGreaterThanOrEqual(8);
++      expect(left + width).toBeLessThanOrEqual(window.innerWidth - 8);
++    }
++    if (position === "middle") {
++      expect(speechTop + 50).toBeLessThan(y);
++      expect(workTop).toBeGreaterThan(y + 130);
++    } else if (position === "top-left") {
++      expect(x + parseFloat(speech.style.left)).toBeGreaterThanOrEqual(x + 130 + 8);
++    } else {
++      expect(x + parseFloat(work.style.left) + 220).toBeLessThanOrEqual(x - 8);
++    }
++    window.dispatchEvent(new Event("resize"));
++    expect(y + parseFloat(work.style.top)).toBe(workTop);
++    view.destroy(); model.dispose();
++  });
++
+   // NOTE: cursor-over-pet hit-testing now lives in MAIN (a global-cursor poll, no mousemove race), not
+   // the renderer. The renderer only forces overlay-interactivity for the context menu (tested below).
+ 
+@@ -559,7 +626,7 @@ describe("mountPetView", () => {
+   });
+ 
+   it("pet click toggles the radial open AND closed; main's radial:close push collapses it (oshi form)", async () => {
+-    const { bridge, emit, setRadialMenu, fireRadialClose } = fakeBridge();
++    const { bridge, emit, notify, setRadialMenu, fireRadialClose } = fakeBridge();
+     vi.mocked(bridge.getRadialItems).mockResolvedValue([
+       { id: "l1", label: "Web", kind: "url", url: "https://example.com", enabled: true, order: 0 },
+     ]);
+@@ -577,6 +644,7 @@ describe("mountPetView", () => {
+     const openRing = () => root.querySelector(".dap-pet__radial.open");
+ 
+     petClick();
++    expect(notify.mock.calls.filter(call => call[0] === "pet.command" && call[1]?.action === "interact")).toHaveLength(1);
+     expect(openRing()).not.toBeNull();
+     expect(openRing()!.classList.contains("dap-pet__radial--quick")).toBe(true);
+     // Opening arms main's cursor-leave watcher (center + reach>0).
+@@ -591,6 +659,7 @@ describe("mountPetView", () => {
+     // Second pet click must DISMISS the ring (regression: pointerdown pre-close re-opened it) —
+     // items collapse back into the pet and the watcher is disarmed.
+     petClick();
++    expect(notify.mock.calls.filter(call => call[0] === "pet.command" && call[1]?.action === "interact")).toHaveLength(2);
+     expect(openRing()).toBeNull();
+     expect(setRadialMenu).toHaveBeenLastCalledWith(false, 0, 0, 0);
+     expect(item.style.transform).toBe("translate(0px, 0px) scale(0.2)");
+@@ -645,8 +714,8 @@ describe("mountPetView", () => {
+     const view = mountPetView(root, model, bridge);
+     emit("overlay.bubble.show", { id: "claude", text: "", style: "work", duration_ms: 0, image: "cli_claude" });
+     emit("overlay.bubble.show", { id: "codex", text: "", style: "work", duration_ms: 0, image: "cli_codex" });
+-    const agentImages = [...root.querySelectorAll<HTMLImageElement>(".dap-pet__bubble-img")];
+-    expect(agentImages.map((img) => img.src)).toEqual([expect.stringContaining("cli_claude"), expect.stringContaining("cli_codex")]);
++    const agentBadges = [...root.querySelectorAll<HTMLElement>(".dap-pet__agent-badge")];
++    expect(agentBadges.map((badge) => badge.dataset.agent)).toEqual(["claude", "codex"]);
+     pushAppearance({ character: "cat", size: 130, skin: {
+       id: "demo.friend", imageDataUrl: "data:image/png;base64,example",
+       definition: { id: "friend", displayName: "Friend", schemaVersion: 1, spritesheetPath: "sheet.png",
+@@ -662,14 +731,14 @@ describe("mountPetView", () => {
+     expect(canvas.dataset.motion).toBe("running-left");
+     expect(canvas.style.transform).toBe("");
+     expect(root.querySelector<HTMLElement>(".pet-anchor")!.style.width).toBe("130px");
+-    expect([...root.querySelectorAll(".dap-pet__bubble-img")]).toEqual(agentImages);
++    expect([...root.querySelectorAll(".dap-pet__agent-badge")]).toEqual(agentBadges);
+     pushAppearance({ character: "mini", size: 90, idleDataUrl: "data:image/png;base64,mini" });
+     expect(canvas.style.display).toBe("none");
+     expect(root.querySelector<HTMLImageElement>(".dap-pet__sprite")!.style.display).toBe("");
+     expect(root.querySelector<HTMLElement>(".pet-anchor")!.style.width).toBe("90px");
+-    expect([...root.querySelectorAll(".dap-pet__bubble-img")]).toEqual(agentImages);
++    expect([...root.querySelectorAll(".dap-pet__agent-badge")]).toEqual(agentBadges);
+     emit("overlay.bubble.dismiss", { id: "codex" });
+-    expect([...root.querySelectorAll(".dap-pet__bubble-img")]).toEqual([agentImages[0]]);
++    expect([...root.querySelectorAll(".dap-pet__agent-badge")]).toEqual([agentBadges[0]]);
+     view.destroy(); model.dispose();
+   });
+ 
+diff --git a/app/electron/renderer/test/settings-plugin-skin.test.ts b/app/electron/renderer/test/settings-plugin-skin.test.ts
+new file mode 100644
+index 00000000..d564e346
+--- /dev/null
++++ b/app/electron/renderer/test/settings-plugin-skin.test.ts
+@@ -0,0 +1,45 @@
++import { describe, expect, it, vi } from "vitest";
++import type { AppConfigState, DapBridge, PetAppearance } from "@dap/electron-main";
++import { mountConfigSection } from "../src/settings-config-view.js";
++
++describe("plugin skin in appearance settings", () => {
++  it("shows the applied name, preserves it when resizing and follows live skin changes", async () => {
++    let saved: AppConfigState = { config: { petCharacter: "mini", petMiniProfileId: "saved-mini", petSize: 160 }, autostart: false, effectiveTheme: "light" };
++    const skin = { id: "friends.momonga", imageDataUrl: "data:image/png;base64,AA==", definition: { id: "momonga", displayName: "모몽가", schemaVersion: 1 as const, spritesheetPath: "assets/sheet.png", cell: { width: 192, height: 208 }, grid: { columns: 8, rows: 1 }, animations: { idle: { row: 0, holdsMs: [100] } } } };
++    let appearance: PetAppearance = { character: "cat", size: 160, skin };
++    let listener: ((next: PetAppearance) => void) | undefined;
++    const unsubscribe = vi.fn();
++    const saveConfig = vi.fn(async (patch: { config: AppConfigState["config"] }) => {
++      saved = { ...saved, config: { ...saved.config, ...patch.config } };
++      appearance = { ...appearance, size: saved.config.petSize ?? 130 };
++      if ("petCharacter" in patch.config) appearance = { character: "cat", size: appearance.size };
++      return saved;
++    });
++    const bridge = {
++      getConfig: async () => saved, saveConfig,
++      getPetAppearance: async () => appearance, getPetProfiles: async () => [],
++      getAppUpdateStatus: async () => ({ phase: "unsupported", currentVersion: "test" }),
++      onPetAppearanceChanged: (cb: (next: PetAppearance) => void) => { listener = cb; return unsubscribe; },
++    } as unknown as DapBridge;
++    const root = document.createElement("div");
++    const view = mountConfigSection(root, bridge, "general");
++    const selected = () => root.querySelector<HTMLButtonElement>('[aria-label="현재 스킨: 모몽가"]');
++    await vi.waitFor(() => expect(selected()?.getAttribute("aria-pressed")).toBe("true"));
++    expect(root.textContent).toContain("모몽가 · 160px");
++    const slider = root.querySelector<HTMLInputElement>('input[type="range"]')!;
++    slider.value = "200"; slider.dispatchEvent(new Event("change"));
++    await vi.waitFor(() => expect(root.textContent).toContain("모몽가 · 200px"));
++    expect(saveConfig).toHaveBeenCalledWith({ config: { petSize: 200 } });
++    expect(appearance.skin?.id).toBe(skin.id);
++    appearance = { ...appearance, skin: { ...skin, id: "friends.usagi", definition: { ...skin.definition, id: "usagi", displayName: "우사기" } } };
++    listener!(appearance);
++    expect(root.textContent).toContain("우사기 · 200px");
++    const cat = [...root.querySelectorAll("button")].find(button => button.textContent === "기본 고양이")!;
++    expect(cat.getAttribute("aria-pressed")).toBe("false");
++    cat.click();
++    await vi.waitFor(() => expect(root.textContent).toContain("기본 고양이 · 200px"));
++    expect(saveConfig).toHaveBeenCalledWith({ config: { petCharacter: "cat" } });
++    view.destroy();
++    expect(unsubscribe).toHaveBeenCalledOnce();
++  });
++});

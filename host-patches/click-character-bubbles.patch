@@ -150,7 +150,7 @@ index 3e859f07..af68a369 100644
 -describe("Character bubbles without chat turns", () => {
 -  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("speaks for %s while working/typing without reading memories or calling AI", async (id) => {
 +describe("Click-only character bubbles without chat turns", () => {
-+  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("never speaks automatically for %s, even after long idle/cooldown", () => {
++  it.each(["chiikawa", "hachiware", "usagi", "momonga"])("never speaks automatically for %s, even after long idle/cooldown", (id) => {
      const recent = vi.fn(() => []);
      const { service, calls, bubbles } = speech({ characterId: () => id, idleSeconds: () => 0, currentStateKind: () => "working",
        memory: { recent }, lastInteractionAt: () => NOON - 7 * 3600,

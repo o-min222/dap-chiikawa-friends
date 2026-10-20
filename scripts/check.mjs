@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,30);
+assert.equal(motions.length,35);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
@@ -41,7 +41,7 @@ assert.deepEqual(source.assets.map(a=>a.id),catalog.map(s=>s.id));
 for(const skin of catalog){const asset=source.assets.find(a=>a.id===skin.id);assert.equal(asset.sha256,skin.originalAsset.sha256);assert.equal(asset.bytes,skin.originalAsset.bytes);}
 let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
- if(['.git','.github','node_modules','dist','.DS_Store'].includes(item.name))continue;
+ if(['.git','.github','node_modules','dist','outputs','.DS_Store'].includes(item.name))continue;
  const file=new URL(encodeURIComponent(item.name)+(item.isDirectory()?'/':''),url);
  if(item.isDirectory())await walk(file);else{if(url.href===new URL('assets/',base).href && /\.(png|part)$/.test(item.name))continue;assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
 }}

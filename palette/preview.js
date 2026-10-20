@@ -13,7 +13,7 @@ const drawing = canvas.getContext("2d");
 const motion = document.getElementById("motion");
 const motionLabels = {idle:"쉬기", "running-right":"오른쪽 이동", "running-left":"왼쪽 이동", waving:"쓰다듬기·기쁨 반응", failed:"실패·오류", running:"작업 중", review:"생각 중", sleep:"수면", feed_munch:"먹기", groom:"그루밍", grabbed:"잡힘", success:"성공", dance:"춤"};
 const pause = document.getElementById("pause");
-motionLabels.working_v2 = "작업 중 · 전단지 읽기";
+const workingVariantLabels = {chiikawa:"작업 중 · 책상 공부", momonga:"작업 중 · 전단지 읽기"};
 const status = document.getElementById("status");
 const apply = document.getElementById("apply");
 const reset = document.getElementById("reset");
@@ -74,7 +74,8 @@ image.onload = () => {
 image.onerror = () => { status.textContent = "스프라이트 이미지를 불러오지 못했습니다. assets 폴더를 확인해 주세요."; };
 function motionTitle(key) {
   const item=coverage[skin.id]?.[key];
-  return (motionLabels[key] ?? key)+(item?.status==='upstream'?' · 원본 유지':item?.status==='shared'?' · 일하기 공유':'');
+  const label=key==='working_v2'?(workingVariantLabels[skin.id]??"작업 중 · 다른 동작"):(motionLabels[key]??key);
+  return label+(item?.status==='upstream'?' · 원본 유지':item?.status==='shared'?' · 일하기 공유':'');
 }
 function selectCharacter() {
   skin = skins.find(item => item.id === character.value) ?? skins[0];

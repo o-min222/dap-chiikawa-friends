@@ -2,4 +2,5 @@ assets/*.png
 assets/*.part
 dist/
 node_modules/
+outputs/
 .DS_Store

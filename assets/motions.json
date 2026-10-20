@@ -1,5 +1,89 @@
 [
   {
+    "id": "chiikawa-idle",
+    "characterId": "chiikawa",
+    "motion": "idle",
+    "file": "assets/generated/chiikawa-idle.png",
+    "bytes": 59376,
+    "sha256": "eabb77513e879896b7a1309c778b9d7e7c4d515372dd4d6f5a2cfae7e29f9a46",
+    "holdsMs": [
+      700,
+      220,
+      220,
+      220,
+      90,
+      90,
+      300,
+      500
+    ]
+  },
+  {
+    "id": "chiikawa-waving",
+    "characterId": "chiikawa",
+    "motion": "waving",
+    "file": "assets/generated/chiikawa-waving.png",
+    "bytes": 117975,
+    "sha256": "9a79e30ca64d2b27a559ffb106ca1d5f9a04d922983d06f7322d1d93ea7f0be3",
+    "holdsMs": [
+      200,
+      110,
+      110,
+      170,
+      110,
+      170,
+      110,
+      300
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "chiikawa-work",
+    "characterId": "chiikawa",
+    "motion": "running",
+    "file": "assets/generated/chiikawa-work.png",
+    "bytes": 205260,
+    "sha256": "077b1ae186156600e25ecac85de030aeec3b2a22f7468fe24c80de81f6de274b",
+    "holdsMs": [
+      260,
+      110,
+      180,
+      120,
+      190
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "chiikawa-review",
+    "characterId": "chiikawa",
+    "motion": "review",
+    "file": "assets/generated/chiikawa-review.png",
+    "bytes": 159284,
+    "sha256": "b05a28f638a29169be37adf2d3e271ef2b774577a55e6f537d8d2d53aa63cdf8",
+    "holdsMs": [
+      150,
+      150,
+      150,
+      150,
+      150,
+      280
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "chiikawa-study",
+    "characterId": "chiikawa",
+    "motion": "working_v2",
+    "file": "assets/generated/chiikawa-study.png",
+    "bytes": 44680,
+    "sha256": "361f552e0409f4c7826d203cb799e1cd58ca1d5966e3ef343c0df6198c3cf2f2",
+    "holdsMs": [
+      300,
+      220,
+      100
+    ],
+    "reviewStatus": "approved"
+  },
+  {
     "id": "sleep",
     "characterId": "chiikawa",
     "motion": "sleep",

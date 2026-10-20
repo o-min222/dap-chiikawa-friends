@@ -1,10 +1,10 @@
 {
   "chiikawa": {
     "idle": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-chiikawa-idle",
-      "source": "upstream"
+      "motionId": "chiikawa-idle",
+      "source": "generated"
     },
     "running-right": {
       "status": "upstream",
@@ -19,10 +19,10 @@
       "source": "upstream"
     },
     "waving": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-chiikawa-waving",
-      "source": "upstream"
+      "motionId": "chiikawa-waving",
+      "source": "generated"
     },
     "failed": {
       "status": "upstream",
@@ -31,16 +31,16 @@
       "source": "upstream"
     },
     "running": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-chiikawa-running",
-      "source": "upstream"
+      "motionId": "chiikawa-work",
+      "source": "generated"
     },
     "review": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-chiikawa-review",
-      "source": "upstream"
+      "motionId": "chiikawa-review",
+      "source": "generated"
     },
     "sleep": {
       "status": "ready",
@@ -79,10 +79,10 @@
       "source": "generated"
     },
     "working_v2": {
-      "status": "shared",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-chiikawa-running",
-      "source": "upstream"
+      "motionId": "chiikawa-study",
+      "source": "generated"
     }
   },
   "hachiware": {

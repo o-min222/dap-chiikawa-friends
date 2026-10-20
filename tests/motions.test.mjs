@@ -3,24 +3,67 @@ import assert from 'node:assert/strict';
 import {readFile,mkdtemp,mkdir,cp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions,PRODUCTION_MOTIONS} from '../src/motions.mjs';
+import {addChiikawaOuterRing,decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions,PRODUCTION_MOTIONS} from '../src/motions.mjs';
 import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
+const outlinedChiikawaMotions=new Set(['upstream-chiikawa-running-right','upstream-chiikawa-running-left']);
 
-test('30 strips connect approved character motions, including both click reactions',async()=>{
- assert.equal(pack.length,30);assert.equal(new Set(pack.map(m=>m.id)).size,30);
+test('Chiikawa outer ring changes only exterior RGB within three pixels',()=>{
+ const width=26,height=13,frameWidth=13,pixels=Buffer.alloc(width*height*4);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const offset=(y*width+x)*4;
+  pixels[offset]=(x*11+y)%256;pixels[offset+1]=(x+y*7)%256;pixels[offset+2]=(x*3+y*5)%256;
+  pixels[offset+3]=x===3&&y===6?127:0;
+ }
+ for(let y=4;y<=8;y++)for(let x=4;x<=8;x++)if(x===4||x===8||y===4||y===8){
+  const offset=(y*width+x)*4;pixels[offset+3]=(x+y)%2?128:255;
+ }
+ const original=Buffer.from(pixels),outlined=addChiikawaOuterRing(pixels,width,height,frameWidth);
+ assert.deepEqual(pixels,original,'the helper must not mutate its source');
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const offset=(y*width+x)*4,source=original.subarray(offset,offset+4),actual=outlined.subarray(offset,offset+4);
+  assert.equal(actual[3],source[3],'alpha is preserved');
+  const opaque=source[3]>=128;
+  const enclosedHole=x>4&&x<8&&y>4&&y<8;
+  let distance=Infinity;
+  if(x<frameWidth)for(let oy=4;oy<=8;oy++)for(let ox=4;ox<=8;ox++)if(ox===4||ox===8||oy===4||oy===8)distance=Math.min(distance,Math.max(Math.abs(x-ox),Math.abs(y-oy)));
+  const shouldChange=x<frameWidth&&!opaque&&!enclosedHole&&distance>=1&&distance<=3;
+  if(shouldChange)assert.deepEqual([...actual],[55,25,22,source[3]]);
+  else assert.deepEqual(actual,source,`unexpected change at ${x},${y}`);
+ }
+});
+
+test('35 strips connect all approved Chiikawa motions and both click reactions',async()=>{
+ assert.equal(pack.length,35);assert.equal(new Set(pack.map(m=>m.id)).size,35);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
   assert.deepEqual(decodeMotionPng(encodeMotionPng(image)).pixels,image.pixels);
+  for(let frame=motion.holdsMs.length;frame<8;frame++)for(let y=0;y<208;y++)for(let x=0;x<192;x++){
+   assert.equal(image.pixels[(y*1536+frame*192+x)*4+3],0,`${motion.id} padded cell ${frame} must stay transparent`);
+  }
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='ready').length,34);
- assert.equal(coverage.filter(m=>m.status==='shared').length,3);
+ assert.equal(coverage.filter(m=>m.status==='ready').length,39);
+ assert.equal(coverage.filter(m=>m.status==='shared').length,2);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,19);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,15);
+ const chiikawa=planMotions(skins.find(s=>s.id==='chiikawa'),pack).coverage;
+ assert.equal(chiikawa.idle.motionId,'chiikawa-idle');
+ assert.equal(chiikawa.idle.status,'ready');
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-idle').holdsMs,[700,220,220,220,90,90,300,500]);
+ assert.equal(chiikawa.waving.motionId,'chiikawa-waving');
+ assert.equal(chiikawa.running.motionId,'chiikawa-work');
+ assert.equal(chiikawa.review.motionId,'chiikawa-review');
+ assert.equal(chiikawa.working_v2.motionId,'chiikawa-study');
+ assert.ok(['running-right','running-left'].every(key=>chiikawa[key].status==='upstream'));
+ assert.ok(['idle','waving','running','review','sleep','feed_munch','groom','grabbed','dance','working_v2'].every(key=>chiikawa[key].status==='ready'));
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-waving').holdsMs,[200,110,110,170,110,170,110,300]);
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-work').holdsMs,[260,110,180,120,190]);
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-review').holdsMs,[150,150,150,150,150,280]);
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-study').holdsMs,[300,220,100]);
  const momonga=planMotions(skins.find(s=>s.id==='momonga'),pack).coverage;
  assert.equal(momonga.review.motionId,'momonga-review');
  assert.equal(momonga.review.status,'ready');
@@ -62,7 +105,7 @@ test('30 strips connect approved character motions, including both click reactio
  assert.deepEqual(pack.find(m=>m.id==='usagi-move-left').holdsMs,pack.find(m=>m.id==='usagi-move-right').holdsMs);
 });
 
-test('unreplaced rows retain original pixels and holds; approved rows replace only their own actions',async()=>{
+test('upstream rows stay exact except Chiikawa left and right RGB rings; approved rows replace only their actions',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-independent-'));
  try{
   await mkdir(join(root,'assets/atlases'),{recursive:true});
@@ -75,8 +118,14 @@ test('unreplaced rows retain original pixels and holds; approved rows replace on
    for(const [key,clip] of Object.entries(result.animations)){
     const strip=decodeMotionPng(await readFile(join(root,choices[key].file)));
     const rowBytes=1536*208*4;
-    const expected=choices[key].source==='upstream'?strip.pixels.subarray(choices[key].sourceRow*rowBytes,(choices[key].sourceRow+1)*rowBytes):strip.pixels;
+    const source=choices[key].source==='upstream'?strip.pixels.subarray(choices[key].sourceRow*rowBytes,(choices[key].sourceRow+1)*rowBytes):strip.pixels;
+    const expected=outlinedChiikawaMotions.has(choices[key].id)?addChiikawaOuterRing(source,1536,208,192):source;
     assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),expected);
+    if(outlinedChiikawaMotions.has(choices[key].id)){
+     const actual=image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes);
+     assert.notDeepEqual(actual,source,'the selected runtime row receives its outer ring');
+     for(let pixel=3;pixel<actual.length;pixel+=4)assert.equal(actual[pixel],source[pixel],'runtime outline must preserve source alpha');
+    }
     assert.deepEqual(clip.holdsMs,choices[key].holdsMs);
    }
    if(!modern)assert.equal(Object.keys(result.animations).length,9);

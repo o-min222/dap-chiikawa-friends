@@ -34,7 +34,7 @@ export async function activate(ctx) {
     const active = [...registrations.values()].find(reg => reg.id === activeId);
     palette.postMessage({ type: "status", available, busy, assetsReady, readySkinIds, assetRevision, skins: preparedSkins, coverage: COVERAGE, extendedMotions, activeId: active ? active.id.split(".").at(-1) : null,
       personaEnabled: personaWanted(), personaActive: available && api.getActivePersona() === activeId && Boolean(active),
-      message: message ?? (available ? active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : !assetsReady ? "준비된 캐릭터는 바로 적용할 수 있어요. 나머지 캐릭터는 이미지 준비를 눌러 주세요." : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.1 이상이 필요해요.") });
+      message: message ?? (available ? active ? `현재 ${SKINS.find(skin => skin.id === activeId.split(".").at(-1))?.displayName ?? "선택한 캐릭터"}를 사용하고 있어요.` : !assetsReady ? "준비된 캐릭터는 바로 적용할 수 있어요. 나머지 캐릭터는 이미지 준비를 눌러 주세요." : "캐릭터를 고른 뒤 적용해 주세요." : "캐릭터 적용에는 DAP 1.6.14 이상이 필요해요.") });
   }
   async function register(id) {
     const skin = preparedSkins.find(item => item.id === id);
@@ -51,7 +51,7 @@ export async function activate(ctx) {
       let resultMessage;
       try {
         if (message.type === "download-assets") {
-          if (!available) { resultMessage = "DAP 1.6.1 이상이 필요해요."; return; }
+          if (!available) { resultMessage = "DAP 1.6.14 이상이 필요해요."; return; }
           await downloadOriginalAssets(ROOT, requiredSource, { signal: downloads.signal,
             onProgress: (count, total) => push(`원본 이미지를 준비하고 있어요. ${count}/${total}`),
           });

@@ -12,29 +12,44 @@
 </head>
 <body>
   <main>
-    <header><div><p class="eyebrow">CHIIKAWA FRIENDS</p><h1>오늘은 누구와 함께할까?</h1></div><button id="close" class="icon" aria-label="창 닫기">×</button></header>
-    <p class="intro">치이카와 · 하치와레 · 우사기 · 모몽가, 네 친구와 함께.</p>
-    <button id="download-assets" type="button">기존 패키지 이미지 준비</button>
-    <p id="coverage-note" class="hint">전용 모션을 하나씩 확인하며 제작하고 있어요.</p>
-    <label for="character">캐릭터</label><select id="character" aria-label="캐릭터 선택"></select>
-    <section class="stage" aria-label="치이카와 모션 미리보기">
-      <span id="character-badge" class="badge">CHIIKAWA</span>
-      <canvas id="pet" width="192" height="208" role="img" aria-label="쉬고 있는 치이카와"></canvas>
-      <span id="motion-name" class="motion-name">쉬기</span>
+    <header class="window-bar">
+      <div><p class="eyebrow">CHIIKAWA FRIENDS</p><h1>오늘은 누구와 함께할까?</h1></div>
+      <button id="close" class="icon" aria-label="창 닫기">×</button>
+    </header>
+    <section class="character-layout" aria-label="캐릭터 선택과 설명">
+      <div class="character-picker">
+        <div class="section-heading"><h2>캐릭터</h2><span>친구를 선택해요</span></div>
+        <div id="character-list" class="character-list" role="listbox" aria-label="캐릭터 선택"></div>
+      </div>
+      <section class="character-details" aria-labelledby="persona-title">
+        <p class="eyebrow">SELECTED FRIEND</p>
+        <h2 id="persona-title">치이카와</h2>
+        <p id="character-description" class="character-description"></p>
+        <p id="persona-traits" class="traits"></p>
+        <blockquote id="persona-example"></blockquote>
+      </section>
     </section>
-    <div class="controls"><label for="motion">모션</label><select id="motion">
-      <option value="idle">쉬기</option><option value="running-right">오른쪽 달리기</option><option value="running-left">왼쪽 달리기</option><option value="waving">쓰다듬기·기쁨 반응</option><option value="failed">실패</option><option value="running">작업 중</option><option value="review">생각 중</option>
-    </select><button id="pause" aria-pressed="false">일시정지</button></div>
-    <p id="hint" class="hint">모션별 프레임 속도로 재생해요.</p>
-    <section class="persona" aria-labelledby="persona-title">
-      <h2 id="persona-title">치이카와의 성격</h2>
-      <p id="persona-traits"></p><blockquote id="persona-example"></blockquote>
-      <label class="persona-toggle"><input id="persona-enabled" type="checkbox" disabled> 캐릭터 이름·말투·호칭 사용</label>
-      <p id="persona-note" class="hint">대화용 말투 제안 · 실제 답변은 상황과 사용자 설정에 따라 달라져요.</p>
+    <section class="preview-layout">
+      <section class="stage" aria-label="치이카와 모션 미리보기">
+        <span id="character-badge" class="badge">CHIIKAWA</span>
+        <canvas id="pet" width="192" height="208" role="img" aria-label="쉬고 있는 치이카와"></canvas>
+        <span id="motion-name" class="motion-name">쉬기</span>
+      </section>
+      <div class="preview-settings">
+        <label for="motion">모션 미리보기</label>
+        <select id="motion">
+          <option value="idle">쉬기</option><option value="running-right">오른쪽 달리기</option><option value="running-left">왼쪽 달리기</option><option value="waving">쓰다듬기·기쁨 반응</option><option value="failed">실패</option><option value="running">작업 중</option><option value="review">생각 중</option>
+        </select>
+        <p id="hint" class="hint">모션별 프레임 속도로 재생해요.</p>
+        <label class="persona-toggle"><input id="persona-enabled" type="checkbox" disabled> 캐릭터 이름·말투·호칭 사용</label>
+        <p id="persona-note" class="hint">선택한 친구의 말투와 호칭을 함께 적용해요.</p>
+        <button id="download-assets" type="button">기존 패키지 이미지 준비</button>
+        <p id="coverage-note" class="coverage-note">전용 모션을 확인하고 있어요.</p>
+      </div>
     </section>
     <div class="actions"><button id="apply" class="primary" disabled>선택한 캐릭터 적용</button><button id="reset" disabled>기본 외형으로</button></div>
     <p id="status" class="status" role="status" aria-live="polite">연결 상태를 확인하고 있어요.</p>
-    <footer>비공식 팬 제작물 · 승인된 자체 모션 + 미교체 원본 유지<br>캐릭터 권리: 나가노 및 각 권리자</footer>
+    <footer>비공식 팬 제작물 · 캐릭터 권리: 나가노 및 각 권리자</footer>
   </main>
 </body>
 </html>

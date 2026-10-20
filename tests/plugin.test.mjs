@@ -24,6 +24,10 @@ test('only the four requested characters and their bounded persona profiles rema
   for(const example of Object.values(persona.examples))assert.ok(persona.contextHint.includes(example));
   assert.equal(persona.contextHint.slice(persona.contextHint.indexOf('[호칭]')),exactAddressInstructions[id]);
  }
+ const momonga=skins.find(({id})=>id==='momonga').persona;
+ assert.deepEqual(momonga.traits,['남의 몫도 자기 것처럼 탐냄','귀찮은 일은 뻔뻔하게 시킴','공은 가로채고 잘못은 남 탓함']);
+ assert.match(momonga.speakingStyle,/남의 몫도 탐내고 귀찮은 일은 시키며.*자기 공.*남 탓/);
+ assert.match(momonga.speakingStyle,/혐오·위협·가혹한 모욕·실제 도움 거부는 하지 마/);
 });
 
 test('voice scenarios cover character-local address overrides and isolation',()=>{

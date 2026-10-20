@@ -86,7 +86,7 @@ export async function activate(ctx) {
     if (disposed) return;
     if (palette && !palette.isDestroyed()) { palette.toggle(); push(); return; }
     offPalette?.();
-    palette = ctx.host.windows.openPalette({ page: "palette/index.html", width: 480, height: 900, frame: false });
+    palette = ctx.host.windows.openPalette({ page: "palette/index.html", width: 600, height: 650, frame: false, resizable: true });
     offPalette = palette.onMessage(message => {
       if (!message || typeof message !== "object" || disposed) return;
       if (message.type === "ready") push();

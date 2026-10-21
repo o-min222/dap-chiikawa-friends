@@ -18,6 +18,44 @@
     ]
   },
   {
+    "id": "chiikawa-move-right",
+    "characterId": "chiikawa",
+    "motion": "running-right",
+    "file": "assets/generated/chiikawa-move-right.png",
+    "bytes": 200779,
+    "sha256": "c1849222ea8dc74e5c23d3bb26055ee17018870e3f7940cd8b26a6b41a784851",
+    "holdsMs": [
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      220
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "chiikawa-move-left",
+    "characterId": "chiikawa",
+    "motion": "running-left",
+    "file": "assets/generated/chiikawa-move-left.png",
+    "bytes": 200873,
+    "sha256": "e1c63c26e7c534a6c0a8c094e65ea8dbcc98eba75ded29a5dfc5f9dad9e06c90",
+    "holdsMs": [
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      220
+    ],
+    "reviewStatus": "approved"
+  },
+  {
     "id": "chiikawa-waving",
     "characterId": "chiikawa",
     "motion": "waving",
@@ -198,6 +236,165 @@
       140,
       120
     ]
+  },
+  {
+    "id": "hachiware-idle",
+    "characterId": "hachiware",
+    "motion": "idle",
+    "file": "assets/generated/hachiware-idle.png",
+    "bytes": 34892,
+    "sha256": "a3967f69885541d197b4fd18f62ee6c2809ff1396bf758dd69f60ba4c83d5ef9",
+    "holdsMs": [
+      700,
+      260,
+      90,
+      120,
+      90,
+      500
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-move-right",
+    "characterId": "hachiware",
+    "motion": "running-right",
+    "file": "assets/generated/hachiware-move-right.png",
+    "bytes": 154363,
+    "sha256": "60c703e785848d3b2a80c71052a0884ccb7241b0fc87b0add577b5ebf73a96ce",
+    "holdsMs": [
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      120
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-move-left",
+    "characterId": "hachiware",
+    "motion": "running-left",
+    "file": "assets/generated/hachiware-move-left.png",
+    "bytes": 155131,
+    "sha256": "d1152f114c2d2f9b7afa4043ba08f223d655e25eaf5473f7c7986b8fb1508c0f",
+    "holdsMs": [
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      120,
+      120
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-waving",
+    "characterId": "hachiware",
+    "motion": "waving",
+    "file": "assets/generated/hachiware-waving.png",
+    "bytes": 134258,
+    "sha256": "65819ac3cbd89000c4fabba86ee0d6700ba90edb541f56822a63268bb0ed5e07",
+    "holdsMs": [
+      180,
+      120,
+      140,
+      180,
+      140,
+      180,
+      120,
+      400
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-weeding",
+    "characterId": "hachiware",
+    "motion": "running",
+    "file": "assets/generated/hachiware-weeding.png",
+    "bytes": 166347,
+    "sha256": "3a9817067680bfb40a438c89d3b54d7141f213be8ca642602c88740b8925342a",
+    "holdsMs": [
+      260,
+      110,
+      180,
+      120,
+      190
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-sleep",
+    "characterId": "hachiware",
+    "motion": "sleep",
+    "file": "assets/generated/hachiware-sleep.png",
+    "bytes": 43231,
+    "sha256": "3b0a26eebc657511be5d4b7168124476679067679205c5f093178282a438c987",
+    "holdsMs": [
+      350,
+      350,
+      400,
+      450,
+      400,
+      350
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-eat",
+    "characterId": "hachiware",
+    "motion": "feed_munch",
+    "file": "assets/generated/hachiware-eat.png",
+    "bytes": 111354,
+    "sha256": "d61ef41591618e69bd9163ed169a6587a0e74505cf9c6ff2c7c72b96e87500c0",
+    "holdsMs": [
+      160,
+      120,
+      180,
+      120,
+      160,
+      120,
+      180,
+      120
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-groom",
+    "characterId": "hachiware",
+    "motion": "groom",
+    "file": "assets/generated/hachiware-groom.png",
+    "bytes": 112381,
+    "sha256": "332c66ff66bd1bb04cb9eefa15d4cfdb1a2e8685ca7402e0f0cc2d770f967fd9",
+    "holdsMs": [
+      130,
+      110,
+      110,
+      110,
+      160,
+      110,
+      110,
+      110
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-study",
+    "characterId": "hachiware",
+    "motion": "working_v2",
+    "file": "assets/generated/hachiware-study.png",
+    "bytes": 49613,
+    "sha256": "cf3ea0485afce82a4e67ee0f31742bdd09c7ff081dcaeef8e7b3805488b92596",
+    "holdsMs": [
+      300,
+      220,
+      100
+    ],
+    "reviewStatus": "approved"
   },
   {
     "id": "hachiware-dance",

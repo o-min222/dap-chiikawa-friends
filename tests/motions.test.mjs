@@ -3,39 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile,mkdtemp,mkdir,cp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {addChiikawaOuterRing,decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions,PRODUCTION_MOTIONS} from '../src/motions.mjs';
+import {decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions} from '../src/motions.mjs';
 import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
-const outlinedChiikawaMotions=new Set(['upstream-chiikawa-running-right','upstream-chiikawa-running-left']);
-
-test('Chiikawa outer ring changes only exterior RGB within three pixels',()=>{
- const width=26,height=13,frameWidth=13,pixels=Buffer.alloc(width*height*4);
- for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  const offset=(y*width+x)*4;
-  pixels[offset]=(x*11+y)%256;pixels[offset+1]=(x+y*7)%256;pixels[offset+2]=(x*3+y*5)%256;
-  pixels[offset+3]=x===3&&y===6?127:0;
- }
- for(let y=4;y<=8;y++)for(let x=4;x<=8;x++)if(x===4||x===8||y===4||y===8){
-  const offset=(y*width+x)*4;pixels[offset+3]=(x+y)%2?128:255;
- }
- const original=Buffer.from(pixels),outlined=addChiikawaOuterRing(pixels,width,height,frameWidth);
- assert.deepEqual(pixels,original,'the helper must not mutate its source');
- for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-  const offset=(y*width+x)*4,source=original.subarray(offset,offset+4),actual=outlined.subarray(offset,offset+4);
-  assert.equal(actual[3],source[3],'alpha is preserved');
-  const opaque=source[3]>=128;
-  const enclosedHole=x>4&&x<8&&y>4&&y<8;
-  let distance=Infinity;
-  if(x<frameWidth)for(let oy=4;oy<=8;oy++)for(let ox=4;ox<=8;ox++)if(ox===4||ox===8||oy===4||oy===8)distance=Math.min(distance,Math.max(Math.abs(x-ox),Math.abs(y-oy)));
-  const shouldChange=x<frameWidth&&!opaque&&!enclosedHole&&distance>=1&&distance<=3;
-  if(shouldChange)assert.deepEqual([...actual],[55,25,22,source[3]]);
-  else assert.deepEqual(actual,source,`unexpected change at ${x},${y}`);
- }
-});
-
-test('35 strips connect all approved Chiikawa motions and both click reactions',async()=>{
- assert.equal(pack.length,35);assert.equal(new Set(pack.map(m=>m.id)).size,35);
+test('46 strips connect every approved Chiikawa and Hachiware motion plus both click reactions',async()=>{
+ assert.equal(pack.length,46);assert.equal(new Set(pack.map(m=>m.id)).size,46);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
@@ -45,11 +18,11 @@ test('35 strips connect all approved Chiikawa motions and both click reactions',
   }
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='ready').length,39);
- assert.equal(coverage.filter(m=>m.status==='shared').length,2);
+ assert.equal(coverage.filter(m=>m.status==='ready').length,52);
+ assert.equal(coverage.filter(m=>m.status==='shared').length,1);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,15);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,3);
  const chiikawa=planMotions(skins.find(s=>s.id==='chiikawa'),pack).coverage;
  assert.equal(chiikawa.idle.motionId,'chiikawa-idle');
  assert.equal(chiikawa.idle.status,'ready');
@@ -58,12 +31,16 @@ test('35 strips connect all approved Chiikawa motions and both click reactions',
  assert.equal(chiikawa.running.motionId,'chiikawa-work');
  assert.equal(chiikawa.review.motionId,'chiikawa-review');
  assert.equal(chiikawa.working_v2.motionId,'chiikawa-study');
- assert.ok(['running-right','running-left'].every(key=>chiikawa[key].status==='upstream'));
+ assert.equal(chiikawa['running-right'].motionId,'chiikawa-move-right');
+ assert.equal(chiikawa['running-left'].motionId,'chiikawa-move-left');
+ assert.ok(Object.values(chiikawa).every(m=>m.source!=='upstream'));
  assert.ok(['idle','waving','running','review','sleep','feed_munch','groom','grabbed','dance','working_v2'].every(key=>chiikawa[key].status==='ready'));
  assert.deepEqual(pack.find(m=>m.id==='chiikawa-waving').holdsMs,[200,110,110,170,110,170,110,300]);
  assert.deepEqual(pack.find(m=>m.id==='chiikawa-work').holdsMs,[260,110,180,120,190]);
  assert.deepEqual(pack.find(m=>m.id==='chiikawa-review').holdsMs,[150,150,150,150,150,280]);
  assert.deepEqual(pack.find(m=>m.id==='chiikawa-study').holdsMs,[300,220,100]);
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-move-right').holdsMs,[120,120,120,120,120,120,120,220]);
+ assert.deepEqual(pack.find(m=>m.id==='chiikawa-move-left').holdsMs,pack.find(m=>m.id==='chiikawa-move-right').holdsMs);
  const momonga=planMotions(skins.find(s=>s.id==='momonga'),pack).coverage;
  assert.equal(momonga.review.motionId,'momonga-review');
  assert.equal(momonga.review.status,'ready');
@@ -71,6 +48,37 @@ test('35 strips connect all approved Chiikawa motions and both click reactions',
  assert.equal(momonga.waving.status,'ready');
  assert.ok(Object.values(momonga).every(m=>m.source!=='upstream'));
  assert.equal(pack.find(m=>m.id==='momonga-review').holdsMs.reduce((a,b)=>a+b,0),2200);
+ const hachiware=planMotions(skins.find(s=>s.id==='hachiware'),pack).coverage;
+ assert.equal(hachiware.idle.motionId,'hachiware-idle');
+ assert.equal(hachiware.idle.status,'ready');
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-idle').holdsMs,[700,260,90,120,90,500]);
+ assert.equal(hachiware['running-right'].motionId,'hachiware-move-right');
+ assert.equal(hachiware['running-left'].motionId,'hachiware-move-left');
+ assert.equal(hachiware['running-right'].status,'ready');
+ assert.equal(hachiware['running-left'].status,'ready');
+ assert.equal(hachiware.waving.motionId,'hachiware-waving');
+ assert.equal(hachiware.waving.status,'ready');
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-waving').holdsMs,[180,120,140,180,140,180,120,400]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-move-right').holdsMs,[120,120,120,120,120,120,120,120]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-move-left').holdsMs,pack.find(m=>m.id==='hachiware-move-right').holdsMs);
+ assert.equal(hachiware.running.motionId,'hachiware-weeding');
+ assert.equal(hachiware.sleep.motionId,'hachiware-sleep');
+ assert.equal(hachiware.feed_munch.motionId,'hachiware-eat');
+ assert.equal(hachiware.groom.motionId,'hachiware-groom');
+ assert.equal(hachiware.working_v2.motionId,'hachiware-study');
+ assert.ok(['running','sleep','feed_munch','groom','working_v2'].every(key=>hachiware[key].status==='ready'));
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-weeding').holdsMs,[260,110,180,120,190]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-sleep').holdsMs,[350,350,400,450,400,350]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-eat').holdsMs,[160,120,180,120,160,120,180,120]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-groom').holdsMs,[130,110,110,110,160,110,110,110]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-study').holdsMs,[300,220,100]);
+ assert.deepEqual(Object.entries(hachiware).filter(([,motion])=>motion.source==='upstream').map(([key])=>key).sort(),['failed','grabbed','review']);
+ const hachiwareRight=decodeMotionPng(await readFile(new URL('../assets/generated/hachiware-move-right.png',import.meta.url)));
+ const hachiwareLeft=decodeMotionPng(await readFile(new URL('../assets/generated/hachiware-move-left.png',import.meta.url)));
+ for(let frame=0;frame<8;frame++)for(let y=0;y<208;y++)for(let x=0;x<192;x++){
+  const right=(y*1536+frame*192+x)*4,left=(y*1536+frame*192+(191-x))*4;
+  assert.deepEqual(hachiwareLeft.pixels.subarray(left,left+4),hachiwareRight.pixels.subarray(right,right+4),'Hachiware left walk must be an exact frame-local mirror');
+ }
  const usagi=planMotions(skins.find(s=>s.id==='usagi'),pack).coverage;
  assert.equal(usagi.waving.motionId,'usagi-happy');
  assert.ok(Object.values(usagi).every(m=>m.source!=='upstream'));
@@ -105,7 +113,7 @@ test('35 strips connect all approved Chiikawa motions and both click reactions',
  assert.deepEqual(pack.find(m=>m.id==='usagi-move-left').holdsMs,pack.find(m=>m.id==='usagi-move-right').holdsMs);
 });
 
-test('upstream rows stay exact except Chiikawa left and right RGB rings; approved rows replace only their actions',async()=>{
+test('upstream rows stay exact and approved rows replace only their actions',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-independent-'));
  try{
   await mkdir(join(root,'assets/atlases'),{recursive:true});
@@ -119,13 +127,7 @@ test('upstream rows stay exact except Chiikawa left and right RGB rings; approve
     const strip=decodeMotionPng(await readFile(join(root,choices[key].file)));
     const rowBytes=1536*208*4;
     const source=choices[key].source==='upstream'?strip.pixels.subarray(choices[key].sourceRow*rowBytes,(choices[key].sourceRow+1)*rowBytes):strip.pixels;
-    const expected=outlinedChiikawaMotions.has(choices[key].id)?addChiikawaOuterRing(source,1536,208,192):source;
-    assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),expected);
-    if(outlinedChiikawaMotions.has(choices[key].id)){
-     const actual=image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes);
-     assert.notDeepEqual(actual,source,'the selected runtime row receives its outer ring');
-     for(let pixel=3;pixel<actual.length;pixel+=4)assert.equal(actual[pixel],source[pixel],'runtime outline must preserve source alpha');
-    }
+    assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),source);
     assert.deepEqual(clip.holdsMs,choices[key].holdsMs);
    }
    if(!modern)assert.equal(Object.keys(result.animations).length,9);
@@ -150,14 +152,15 @@ test('Momonga grab and Usagi dance keep idle scale, and both Momonga reading cli
  assert.equal(working.length,2);assert.ok(working.every(m=>m.holdsMs.length===8));
 });
 
-test('fully replaced character composes without downloading or reading originals',async()=>{
+test('fully replaced Chiikawa and Usagi compose without downloading or reading originals',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-complete-'));
  try{
  const {catalog}=await fixture(root,skins,{originals:false});
- const skin=catalog.find(s=>s.id==='usagi'),base=pack.find(m=>m.id==='usagi-idle');
- const complete=PRODUCTION_MOTIONS.filter(k=>k!=='working_v2').map(key=>({...base,id:'complete-'+key,motion:key}));
- assert.ok(Object.values(planMotions(skin,complete).choices).every(m=>m.source!=='upstream'));
- await prepareMotionSkin(root,skin,complete,true,true);
+ for(const id of ['chiikawa','usagi']){
+  const skin=catalog.find(s=>s.id===id);
+  assert.ok(Object.values(planMotions(skin,pack).choices).every(m=>m.source!=='upstream'));
+  await prepareMotionSkin(root,skin,pack,true,true);
+ }
  }finally{await rm(root,{recursive:true,force:true});}
 });
 

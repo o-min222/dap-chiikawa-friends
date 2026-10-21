@@ -49,49 +49,6 @@ export function encodeMotionPng({ width, height, pixels }) {
   return Buffer.concat([PNG_HEADER, chunk('IHDR', header), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
 }
 
-const CHIIKAWA_OUTLINE_RGB = [55,25,22];
-const CHIIKAWA_OUTLINED_UPSTREAM_MOTIONS = new Set([
-  'upstream-chiikawa-running-right',
-  'upstream-chiikawa-running-left',
-]);
-/**
- * Recolour only the transparent exterior ring around each atlas frame. Alpha and
- * every opaque source pixel remain byte-for-byte identical to the upstream art.
- */
-export function addChiikawaOuterRing(pixels, width, height, frameWidth=width) {
-  if(!Number.isInteger(width)||!Number.isInteger(height)||!Number.isInteger(frameWidth)||width<1||height<1||frameWidth<1||width%frameWidth||pixels.length!==width*height*4)throw Error('Invalid outline pixels');
-  const result=Buffer.from(pixels),framePixels=frameWidth*height;
-  for(let frameX=0;frameX<width;frameX+=frameWidth){
-    const opaque=new Uint8Array(framePixels),exterior=new Uint8Array(framePixels),queue=new Uint32Array(framePixels);
-    for(let y=0;y<height;y++)for(let x=0;x<frameWidth;x++)opaque[y*frameWidth+x]=pixels[(y*width+frameX+x)*4+3]>=128?1:0;
-    let head=0,tail=0;
-    const enqueue=(x,y)=>{const i=y*frameWidth+x;if(!opaque[i]&&!exterior[i]){exterior[i]=1;queue[tail++]=i;}};
-    for(let x=0;x<frameWidth;x++){enqueue(x,0);if(height>1)enqueue(x,height-1);}
-    for(let y=1;y<height-1;y++){enqueue(0,y);if(frameWidth>1)enqueue(frameWidth-1,y);}
-    while(head<tail){
-      const i=queue[head++],x=i%frameWidth,y=Math.floor(i/frameWidth);
-      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
-        if(!dx&&!dy)continue;
-        const nx=x+dx,ny=y+dy;
-        if(nx>=0&&nx<frameWidth&&ny>=0&&ny<height)enqueue(nx,ny);
-      }
-    }
-    for(let y=0;y<height;y++)for(let x=0;x<frameWidth;x++){
-      const local=y*frameWidth+x;
-      if(!exterior[local])continue;
-      let nearOpaque=false;
-      for(let dy=-3;dy<=3&&!nearOpaque;dy++)for(let dx=-3;dx<=3;dx++){
-        const nx=x+dx,ny=y+dy;
-        if(nx>=0&&nx<frameWidth&&ny>=0&&ny<height&&opaque[ny*frameWidth+nx]){nearOpaque=true;break;}
-      }
-      if(nearOpaque){
-        const offset=(y*width+frameX+x)*4;
-        result[offset]=CHIIKAWA_OUTLINE_RGB[0];result[offset+1]=CHIIKAWA_OUTLINE_RGB[1];result[offset+2]=CHIIKAWA_OUTLINE_RGB[2];
-      }
-    }
-  }
-  return result;
-}
 export const LEGACY_MOTIONS = ['idle','running-right','running-left','waving','jumping','failed','waiting','running','review'];
 export const EXTRA_MOTIONS = ['sleep','feed_munch','groom','grabbed','success','dance','working_v2'];
 // Renderer-compatible slots. A renderer mapping alone does not establish a normal UI trigger.
@@ -147,9 +104,7 @@ export async function prepareMotionSkin(root, skin, pack, extended, workingVaria
       if(upstream)original=strip;
     }
     if(upstream){
-      const source=strip.pixels.subarray(motion.sourceRow*rowBytes,(motion.sourceRow+1)*rowBytes);
-      const row=CHIIKAWA_OUTLINED_UPSTREAM_MOTIONS.has(motion.id)?addChiikawaOuterRing(source,1536,208,192):source;
-      row.copy(pixels,index*rowBytes);
+      strip.pixels.subarray(motion.sourceRow*rowBytes,(motion.sourceRow+1)*rowBytes).copy(pixels,index*rowBytes);
     }else strip.pixels.copy(pixels,index*rowBytes);
   }
   const animations=Object.fromEntries(keys.map(key=>{

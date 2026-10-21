@@ -111,10 +111,10 @@
       "source": "generated"
     },
     "failed": {
-      "status": "upstream",
+      "status": "ready",
       "production": false,
-      "motionId": "upstream-hachiware-failed",
-      "source": "upstream"
+      "motionId": "hachiware-failed",
+      "source": "generated"
     },
     "running": {
       "status": "ready",
@@ -123,10 +123,10 @@
       "source": "generated"
     },
     "review": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-hachiware-review",
-      "source": "upstream"
+      "motionId": "hachiware-review",
+      "source": "generated"
     },
     "sleep": {
       "status": "ready",
@@ -147,10 +147,10 @@
       "source": "generated"
     },
     "grabbed": {
-      "status": "upstream",
+      "status": "ready",
       "production": true,
-      "motionId": "upstream-hachiware-waiting",
-      "source": "upstream"
+      "motionId": "hachiware-grabbed",
+      "source": "generated"
     },
     "success": {
       "status": "ready",

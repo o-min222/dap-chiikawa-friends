@@ -43,7 +43,7 @@ test('voice scenarios cover character-local address overrides and isolation',()=
  assert.match(isolated.review,/캐릭터별 채팅의 호칭 지정은 서로 독립적/);
 });
 
-test('first installation fetches pinned originals once; cached skins restore offline and unload cleanly',async()=>{
+test('first installation and cached restores keep all four characters offline',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-offline-'));
  const {bytes}=await pluginFixture(root,skins);
  const oldFetch=globalThis.fetch;let requests=0;const urls=[];globalThis.fetch=async url=>{requests++;urls.push(url);return new Response(bytes);};
@@ -58,17 +58,16 @@ test('first installation fetches pinned originals once; cached skins restore off
  const ctx={pluginId:'demo',actions:{registerAction({id,callback}){actions.set(id,callback);}},trayMenu:{addItem(){}},radialMenu:{addItem(){}},host:{petSkins:api,settings:{values(){return {...values};},set(_section,key,value){values[key]=value;}},windows:{openPalette(){return{show(){},toggle(){},isDestroyed(){return closed;},close(){closed=true;},postMessage(m){messages.push(m);},onMessage(fn){listener=fn;return()=>listener=null;}};}}}};
  try{
   const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);let stop=await activate(ctx);
-  actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,false);
-  assert.deepEqual(messages.at(-1).readySkinIds,['chiikawa','usagi','momonga']);
-  for(const id of ['chiikawa','usagi','momonga']){
+  actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
+  assert.deepEqual(messages.at(-1).readySkinIds,['chiikawa','hachiware','usagi','momonga']);
+  for(const id of ['chiikawa','hachiware','usagi','momonga']){
    await listener({type:'apply',id});assert.equal(active,`demo.${id}`);assert.equal(requests,0);
    await stop();closed=false;stop=await activate(ctx);assert.equal(active,`demo.${id}`);
-   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,false);
+   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
    assert.equal(requests,0,'first apply and saved character restore need no downloads');
   }
-  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,1);
-  assert.ok(urls.every(url=>!url.includes('/pets/chiikawa')&&!url.includes('/pets/momonga')&&!url.includes('/pets/usagi')),'complete characters need no upstream artwork');
-  assert.ok(urls.every(url=>url.startsWith('https://raw.githubusercontent.com/heelee912/chiikawa-dots-pets/bb96582f525fbdf88a236b4703433ae92bfd5888/pets/')));
+  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,0);
+  assert.deepEqual(urls,[],'all four characters must require zero upstream artwork');
   globalThis.fetch=()=>{throw Error('Cached reload must stay offline');};assert.equal(messages.at(-1).coverage.usagi.idle.status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-right'].status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-left'].status,'ready');assert.equal(messages.at(-1).coverage.usagi.grabbed.status,'ready');assert.equal(messages.at(-1).coverage.usagi.sleep.status,'ready');assert.equal(messages.at(-1).coverage.usagi.dance.status,'ready');
   for(const skin of skins){await listener({type:'apply',id:skin.id});assert.equal(active,`demo.${skin.id}`);assert.equal(persona,active);}
   await listener({type:'set-persona',enabled:false});assert.equal(persona,null);
@@ -78,6 +77,6 @@ test('first installation fetches pinned originals once; cached skins restore off
   await listener({type:'apply',id:'momonga'});await stop();assert.equal(listeners.size,0);assert.equal(closed,true);
   stop=await activate(ctx);assert.equal(active,'demo.momonga');await stop();
   values.appliedCharacter='removed-character';stop=await activate(ctx);assert.equal(values.appliedCharacter,'');await stop();
-  assert.equal(requests,1);
+  assert.equal(requests,0);
  }finally{globalThis.fetch=oldFetch;await rm(root,{recursive:true,force:true});}
 });

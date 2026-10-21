@@ -1,11 +1,12 @@
 import {readFile,readdir,stat} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {planMotions} from '../src/motions.mjs';
 // Use file URLs for actual reads so paths with spaces and Windows drive letters remain valid.
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,46);
+assert.equal(motions.length,49);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
@@ -30,10 +31,11 @@ const tag=process.argv[2];if(tag?.startsWith('v'))assert.equal(tag,`v${metadata.
 const entry=await readFile(new URL('dap_chiikawa/plugin.mjs',base),'utf8');
 for(const match of entry.matchAll(/^import .* from "([^"]+)";/gm))assert.ok(match[1].startsWith('node:'),'only Node built-ins may remain external');
 assert.ok(!entry.includes('__SKINS_JSON__')&&!entry.includes('__SOURCE_JSON__'));
-assert.match(entry,/downloadOriginalAssets/,'unreplaced motions retain the pinned source downloader');
+assert.match(entry,/downloadOriginalAssets/,'legacy source preparation remains compatible even when no source rows are selected');
 const catalog=JSON.parse(await readFile(new URL('assets/catalog.json',base),'utf8'));
 assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga']);
 assert.ok(motions.every(m=>catalog.some(s=>s.id===m.characterId)));
+assert.ok(catalog.every(skin=>Object.values(planMotions(skin,motions).choices).every(motion=>motion.source!=='upstream')),'all characters must compose from bundled generated strips');
 const source=JSON.parse(await readFile(new URL('assets/originals.json',base),'utf8'));
 assert.equal(source.repository,'heelee912/chiikawa-dots-pets');
 assert.equal(source.commit,'bb96582f525fbdf88a236b4703433ae92bfd5888');

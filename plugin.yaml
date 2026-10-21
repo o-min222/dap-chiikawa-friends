@@ -1,6 +1,6 @@
 id: io.github.o-min222.chiikawa_friends
 name: Chiikawa Friends
-version: 2.7.0
+version: 2.8.0
 manifest_version: 2
 entry: dap_chiikawa.plugin:activate
 description: 치이카와·하치와레·우사기·모몽가의 외형·모션·말투·캐릭터별 대화를 적용합니다. 하치와레의 대기·이동·일하기·수면·먹기·그루밍·공부 등 승인된 자체 모션을 포함합니다.

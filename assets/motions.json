@@ -312,6 +312,59 @@
     "reviewStatus": "approved"
   },
   {
+    "id": "hachiware-failed",
+    "characterId": "hachiware",
+    "motion": "failed",
+    "file": "assets/generated/hachiware-failed.png",
+    "bytes": 101806,
+    "sha256": "aadbe12e024be7693cdb228866aa95e1b351a9bebb0da921da9313dc16a09362",
+    "holdsMs": [
+      140,
+      140,
+      140,
+      140,
+      140,
+      140,
+      140,
+      240
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-review",
+    "characterId": "hachiware",
+    "motion": "review",
+    "file": "assets/generated/hachiware-review.png",
+    "bytes": 111035,
+    "sha256": "fcc9b591597a593557c8fef41a2bc1d45f80b7ae369b2bd80dd1bc48f1cb296e",
+    "holdsMs": [
+      150,
+      150,
+      150,
+      150,
+      150,
+      280
+    ],
+    "reviewStatus": "approved"
+  },
+  {
+    "id": "hachiware-grabbed",
+    "characterId": "hachiware",
+    "motion": "grabbed",
+    "file": "assets/generated/hachiware-grabbed.png",
+    "bytes": 109389,
+    "sha256": "b19ddb03bfdf37465fda8a2954e95c3a9ce8893293719ce03a7d4adb20973acd",
+    "holdsMs": [
+      120,
+      120,
+      120,
+      120,
+      120,
+      120
+    ],
+    "reviewStatus": "approved"
+  },
+  {
     "id": "hachiware-weeding",
     "characterId": "hachiware",
     "motion": "running",

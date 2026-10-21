@@ -7,8 +7,8 @@ import {decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions} from '../
 import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
-test('46 strips connect every approved Chiikawa and Hachiware motion plus both click reactions',async()=>{
- assert.equal(pack.length,46);assert.equal(new Set(pack.map(m=>m.id)).size,46);
+test('49 strips connect every approved motion and leave no character on upstream rows',async()=>{
+ assert.equal(pack.length,49);assert.equal(new Set(pack.map(m=>m.id)).size,49);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
@@ -18,11 +18,11 @@ test('46 strips connect every approved Chiikawa and Hachiware motion plus both c
   }
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='ready').length,52);
+ assert.equal(coverage.filter(m=>m.status==='ready').length,55);
  assert.equal(coverage.filter(m=>m.status==='shared').length,1);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,3);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,0);
  const chiikawa=planMotions(skins.find(s=>s.id==='chiikawa'),pack).coverage;
  assert.equal(chiikawa.idle.motionId,'chiikawa-idle');
  assert.equal(chiikawa.idle.status,'ready');
@@ -72,7 +72,13 @@ test('46 strips connect every approved Chiikawa and Hachiware motion plus both c
  assert.deepEqual(pack.find(m=>m.id==='hachiware-eat').holdsMs,[160,120,180,120,160,120,180,120]);
  assert.deepEqual(pack.find(m=>m.id==='hachiware-groom').holdsMs,[130,110,110,110,160,110,110,110]);
  assert.deepEqual(pack.find(m=>m.id==='hachiware-study').holdsMs,[300,220,100]);
- assert.deepEqual(Object.entries(hachiware).filter(([,motion])=>motion.source==='upstream').map(([key])=>key).sort(),['failed','grabbed','review']);
+ assert.equal(hachiware.review.motionId,'hachiware-review');
+ assert.equal(hachiware.failed.motionId,'hachiware-failed');
+ assert.equal(hachiware.grabbed.motionId,'hachiware-grabbed');
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-review').holdsMs,[150,150,150,150,150,280]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-failed').holdsMs,[140,140,140,140,140,140,140,240]);
+ assert.deepEqual(pack.find(m=>m.id==='hachiware-grabbed').holdsMs,[120,120,120,120,120,120]);
+ assert.ok(Object.values(hachiware).every(m=>m.source!=='upstream'));
  const hachiwareRight=decodeMotionPng(await readFile(new URL('../assets/generated/hachiware-move-right.png',import.meta.url)));
  const hachiwareLeft=decodeMotionPng(await readFile(new URL('../assets/generated/hachiware-move-left.png',import.meta.url)));
  for(let frame=0;frame<8;frame++)for(let y=0;y<208;y++)for(let x=0;x<192;x++){
@@ -113,11 +119,11 @@ test('46 strips connect every approved Chiikawa and Hachiware motion plus both c
  assert.deepEqual(pack.find(m=>m.id==='usagi-move-left').holdsMs,pack.find(m=>m.id==='usagi-move-right').holdsMs);
 });
 
-test('upstream rows stay exact and approved rows replace only their actions',async()=>{
+test('all approved rows compose exactly without original sprite sheets',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-independent-'));
  try{
   await mkdir(join(root,'assets/atlases'),{recursive:true});
-  const {catalog}=await fixture(root,skins);
+  const {catalog}=await fixture(root,skins,{originals:false});
   for(const skin of catalog)for(const modern of [true,false]){
    const result=await prepareMotionSkin(root,skin,pack,modern,modern,`assets/atlases/${skin.id}-${modern?'modern':'legacy'}.png`);
    const image=decodeMotionPng(await readFile(join(root,result.spritesheetPath)));
@@ -152,11 +158,11 @@ test('Momonga grab and Usagi dance keep idle scale, and both Momonga reading cli
  assert.equal(working.length,2);assert.ok(working.every(m=>m.holdsMs.length===8));
 });
 
-test('fully replaced Chiikawa and Usagi compose without downloading or reading originals',async()=>{
+test('all four fully replaced characters compose without downloading or reading originals',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-complete-'));
  try{
  const {catalog}=await fixture(root,skins,{originals:false});
- for(const id of ['chiikawa','usagi']){
+ for(const id of ['chiikawa','hachiware','usagi','momonga']){
   const skin=catalog.find(s=>s.id===id);
   assert.ok(Object.values(planMotions(skin,pack).choices).every(m=>m.source!=='upstream'));
   await prepareMotionSkin(root,skin,pack,true,true);

@@ -7,7 +7,7 @@ import {decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions} from '../
 import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
-test('49 strips connect every approved motion and leave no character on upstream rows',async()=>{
+test('49 approved strips keep the existing four independent while Shisa uses originals',async()=>{
  assert.equal(pack.length,49);assert.equal(new Set(pack.map(m=>m.id)).size,49);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
@@ -19,10 +19,10 @@ test('49 strips connect every approved motion and leave no character on upstream
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
  assert.equal(coverage.filter(m=>m.status==='ready').length,55);
- assert.equal(coverage.filter(m=>m.status==='shared').length,1);
+ assert.equal(coverage.filter(m=>m.status==='shared').length,2);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,0);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,13);
  const chiikawa=planMotions(skins.find(s=>s.id==='chiikawa'),pack).coverage;
  assert.equal(chiikawa.idle.motionId,'chiikawa-idle');
  assert.equal(chiikawa.idle.status,'ready');
@@ -124,7 +124,7 @@ test('all approved rows compose exactly without original sprite sheets',async()=
  try{
   await mkdir(join(root,'assets/atlases'),{recursive:true});
   const {catalog}=await fixture(root,skins,{originals:false});
-  for(const skin of catalog)for(const modern of [true,false]){
+  for(const skin of catalog.filter(s=>s.id!=='shisa'))for(const modern of [true,false]){
    const result=await prepareMotionSkin(root,skin,pack,modern,modern,`assets/atlases/${skin.id}-${modern?'modern':'legacy'}.png`);
    const image=decodeMotionPng(await readFile(join(root,result.spritesheetPath)));
    assert.ok(image.height<=4096);assert.equal(image.height,result.grid.rows*208);assert.equal(result.look,undefined);
@@ -202,4 +202,26 @@ test('approved click reactions keep preview timing and compose every slot withou
   }
  }finally{await rm(root,{recursive:true,force:true});}
  }
+});
+
+
+test('Shisa retains original row pixels and timing across modern and legacy skin modes',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'dap-shisa-'));
+ try{
+  const {catalog}=await fixture(root,skins,{originals:true});
+  const skin=catalog.find(s=>s.id==='shisa'),{choices,coverage}=planMotions(skin,pack);
+  assert.ok(Object.values(choices).every(m=>m.source==='upstream'));
+  assert.equal(coverage.working_v2.status,'shared');
+  const original=decodeMotionPng(await readFile(join(root,skin.spritesheetPath))),rowBytes=1536*208*4;
+  for(const modern of [true,false]){
+   const result=await prepareMotionSkin(root,skin,pack,modern,modern);
+   const image=decodeMotionPng(await readFile(join(root,result.spritesheetPath)));
+   assert.ok(image.height<=4096);
+   for(const [key,clip] of Object.entries(result.animations)){
+    const m=choices[key];
+    assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),original.pixels.subarray(m.sourceRow*rowBytes,(m.sourceRow+1)*rowBytes));
+    assert.deepEqual(clip.holdsMs,m.holdsMs);
+   }
+  }
+ }finally{await rm(root,{recursive:true,force:true});}
 });

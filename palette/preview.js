@@ -6,6 +6,7 @@ let selectedId = skin.id;
 let activeId = null;
 let statusReceived = false;
 const descriptions = {
+  shisa: "성실하게 배우고 꾸준히 연습하며, 정중한 말투로 함께하는 노력가 친구예요.",
   chiikawa: "겁이 많고 눈물이 많지만, 친구를 위해 작은 용기를 내는 다정한 친구예요.",
   hachiware: "밝고 낙천적이며, 친구의 마음을 세심하게 살피는 든든한 친구예요.",
   usagi: "자유롭고 장난스럽지만, 겁 없이 먼저 움직이는 행동파 친구예요.",

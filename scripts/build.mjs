@@ -41,5 +41,6 @@ lines.push('치이카와 쓰다듬기·기쁨 반응(waving): 고정 원본의 �
 lines.push('치이카와 일하기(running): 승인된 5프레임 새싹 뽑기 모션을 적용했습니다. 몸을 낮춰 힘을 준 뒤 뿌리가 빠지고 반동하는 0.86초 루프입니다.','');
 lines.push('치이카와 생각 중(review): 생각 구름 없이 고정 원본의 6프레임 고개 기울이기와 1.03초 타이밍을 적용했습니다.','');
 lines.push('치이카와 일하기 변형(working_v2): 책상에서 초록 연필로 공부하는 승인 3프레임·0.62초 모션을 선택형 작업 동작으로 적용했습니다.','');
+lines.push('시사 추가: 현재 자체 모션은 미제작이며 고정 원본의 연결 동작과 재생 시간을 사용합니다. 원본에 없는 독립 슬롯은 기존 DAP 호환 매핑을 따릅니다. 이미지 준비는 시사에만 필요하며, 나머지 네 캐릭터의 적용을 막지 않습니다.','');
 await writeFile(new URL('MOTIONS.md',root),lines.join('\n'));
-console.log(`Built ${catalog.length} characters; ${pack.length} approved strips; all characters use bundled motion rows`);
+console.log(`Built ${catalog.length} characters; ${pack.length} approved strips; existing four use bundled rows; Shisa uses verified upstream rows`);

@@ -342,5 +342,91 @@
       "motionId": "momonga-work-flyer",
       "source": "generated"
     }
+  },
+  "shisa": {
+    "idle": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-idle",
+      "source": "upstream"
+    },
+    "running-right": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-running-right",
+      "source": "upstream"
+    },
+    "running-left": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-running-left",
+      "source": "upstream"
+    },
+    "waving": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-waving",
+      "source": "upstream"
+    },
+    "failed": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-shisa-failed",
+      "source": "upstream"
+    },
+    "running": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-running",
+      "source": "upstream"
+    },
+    "review": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-review",
+      "source": "upstream"
+    },
+    "sleep": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-waiting",
+      "source": "upstream"
+    },
+    "feed_munch": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-running",
+      "source": "upstream"
+    },
+    "groom": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-waiting",
+      "source": "upstream"
+    },
+    "grabbed": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-waiting",
+      "source": "upstream"
+    },
+    "success": {
+      "status": "upstream",
+      "production": false,
+      "motionId": "upstream-shisa-waving",
+      "source": "upstream"
+    },
+    "dance": {
+      "status": "upstream",
+      "production": true,
+      "motionId": "upstream-shisa-jumping",
+      "source": "upstream"
+    },
+    "working_v2": {
+      "status": "shared",
+      "production": true,
+      "motionId": "upstream-shisa-running",
+      "source": "upstream"
+    }
   }
 }

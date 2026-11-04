@@ -21,6 +21,11 @@
       "id": "momonga",
       "sha256": "bd5a3616354bbbb54bdb891aa125d5fd773eb6ffe3c683a3f698d1113449a5f6",
       "bytes": 2722232
+    },
+    {
+      "id": "shisa",
+      "sha256": "81dfdd39fd1620df4b7cdde553852c6d9cd14c66bfcea4d02218955bec04273e",
+      "bytes": 2115226
     }
   ]
 }

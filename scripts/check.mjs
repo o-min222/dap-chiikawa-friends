@@ -33,9 +33,10 @@ for(const match of entry.matchAll(/^import .* from "([^"]+)";/gm))assert.ok(matc
 assert.ok(!entry.includes('__SKINS_JSON__')&&!entry.includes('__SOURCE_JSON__'));
 assert.match(entry,/downloadOriginalAssets/,'legacy source preparation remains compatible even when no source rows are selected');
 const catalog=JSON.parse(await readFile(new URL('assets/catalog.json',base),'utf8'));
-assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga']);
+assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga','shisa']);
 assert.ok(motions.every(m=>catalog.some(s=>s.id===m.characterId)));
-assert.ok(catalog.every(skin=>Object.values(planMotions(skin,motions).choices).every(motion=>motion.source!=='upstream')),'all characters must compose from bundled generated strips');
+assert.ok(catalog.filter(skin=>skin.id!=='shisa').every(skin=>Object.values(planMotions(skin,motions).choices).every(motion=>motion.source!=='upstream')),'existing four characters must stay independent');
+assert.ok(Object.values(planMotions(catalog.find(skin=>skin.id==='shisa'),motions).choices).every(motion=>motion.source==='upstream'),'Shisa uses pinned originals until replacement');
 const source=JSON.parse(await readFile(new URL('assets/originals.json',base),'utf8'));
 assert.equal(source.repository,'heelee912/chiikawa-dots-pets');
 assert.equal(source.commit,'bb96582f525fbdf88a236b4703433ae92bfd5888');

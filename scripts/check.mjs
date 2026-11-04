@@ -6,7 +6,7 @@ import {planMotions} from '../src/motions.mjs';
 const base=new URL('../',import.meta.url);
 const iconUrl=new URL('icon.png',base);
 const motions=JSON.parse(await readFile(new URL('assets/motions.json',base),'utf8'));
-assert.equal(motions.length,49);
+assert.equal(motions.length,60);
 const generated=new Set();
 for(const motion of motions){
  assert.match(motion.file,/^assets\/generated\/[a-z-]+\.png$/);
@@ -31,16 +31,27 @@ const tag=process.argv[2];if(tag?.startsWith('v'))assert.equal(tag,`v${metadata.
 const entry=await readFile(new URL('dap_chiikawa/plugin.mjs',base),'utf8');
 for(const match of entry.matchAll(/^import .* from "([^"]+)";/gm))assert.ok(match[1].startsWith('node:'),'only Node built-ins may remain external');
 assert.ok(!entry.includes('__SKINS_JSON__')&&!entry.includes('__SOURCE_JSON__'));
-assert.match(entry,/downloadOriginalAssets/,'legacy source preparation remains compatible even when no source rows are selected');
+assert.doesNotMatch(entry,/downloadOriginalAssets|hasOriginalAssets|raw\.githubusercontent|heelee912|__SOURCE_JSON__/,'runtime must have no external image source');
 const catalog=JSON.parse(await readFile(new URL('assets/catalog.json',base),'utf8'));
-assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga']);
+assert.deepEqual(catalog.map(s=>s.id),['chiikawa','hachiware','usagi','momonga','shisa']);
 assert.ok(motions.every(m=>catalog.some(s=>s.id===m.characterId)));
-assert.ok(catalog.every(skin=>Object.values(planMotions(skin,motions).choices).every(motion=>motion.source!=='upstream')),'all characters must compose from bundled generated strips');
-const source=JSON.parse(await readFile(new URL('assets/originals.json',base),'utf8'));
-assert.equal(source.repository,'heelee912/chiikawa-dots-pets');
-assert.equal(source.commit,'bb96582f525fbdf88a236b4703433ae92bfd5888');
-assert.deepEqual(source.assets.map(a=>a.id),catalog.map(s=>s.id));
-for(const skin of catalog){const asset=source.assets.find(a=>a.id===skin.id);assert.equal(asset.sha256,skin.originalAsset.sha256);assert.equal(asset.bytes,skin.originalAsset.bytes);}
+assert.ok(catalog.every(skin=>Object.values(planMotions(skin,motions).choices).every(motion=>motion.source!=='upstream')),'all five characters must stay independent');
+const shisa=planMotions(catalog.find(skin=>skin.id==='shisa'),motions).choices;
+assert.equal(shisa.idle.id,'shisa-idle');
+assert.equal(shisa['running-right'].id,'shisa-move-right');
+assert.equal(shisa['running-left'].id,'shisa-move-left');
+assert.equal(shisa.waving.id,'shisa-happy');
+assert.equal(shisa.running.id,'shisa-work');
+assert.equal(shisa.review.id,'shisa-review');
+assert.equal(shisa.sleep.id,'shisa-sleep');
+assert.equal(shisa.feed_munch.id,'shisa-eat');
+assert.equal(shisa.groom.id,'shisa-groom');
+assert.equal(shisa.grabbed.id,'shisa-grabbed');
+assert.equal(shisa.working_v2.id,'shisa-work');
+assert.equal(shisa.success.id,'shisa-happy');
+assert.equal(shisa.dance.id,'shisa-dance');
+assert.equal(shisa.failed.id,'shisa-idle');
+assert.ok(catalog.every(skin=>skin.originalAsset===undefined&&skin.spritesheetPath===undefined));
 let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
  if(['.git','.github','node_modules','dist','outputs','.DS_Store'].includes(item.name))continue;

@@ -1,0 +1,21 @@
+Use case: precise-object-edit.
+Asset: ONE revised Shisa THINKING / chat-response waiting sprite sheet, eight complete poses, four columns by two rows, true transparency.
+Image 1 is the approved NEW IDLE sheet: the exact edit base and drawing model. Preserve its identity and proportions.
+Image 2 is the old THINKING sheet: use only its calm chin-paw / upward-glance action as the guide. Replace the old tall rounded ears, tall body, different face placement and missing tail with image1's model.
+
+Character invariants: preserve image1's broad compact continuous cream head-and-body shape, small low outward-pointed ears, softly tapered modest lower belly, tiny planted foot nubs, short orange side tail on viewer RIGHT, peach-orange curled eyebrows and three orange mane clumps on each side. The same warm dark-brown outline weight, cream/orange/pink palette and subtle warm finish. Same dark glossy oval eyes with white glints, same pink cheek ovals with three short hatches, tiny closed w mouth and little dash beneath. Same eye spacing, forehead height and face location. No chin/neck seam, separate torso, swollen belly, long chest, large arms or fingers.
+
+Action: quiet listening and considering a question. One SMALL paw rises to the chin, eyes glance a little upward toward screen right, a very subtle 2-degree inclination toward that same side, one gentle blink, then return to the approved neutral idle. Other short paw can rest close to belly. Keep the paws short rounded nubs naturally attached, not long human forearms. Mouth stays closed. No speaking, happy waving, grooming/rubbing, food, props, question marks or symbols.
+
+Exactly eight chronological whole-character poses in reading order:
+1 EXACT approved neutral idle, eyes open and both paws down.
+2 one short paw starts rising toward chin; other paw rests near lower belly.
+3 paw lightly touches chin, eyes glance slightly upward to viewer RIGHT; tiny head inclination at most 2 degrees.
+4 hold this thoughtful pose and gentle expression.
+5 same pose with one short relaxed blink.
+6 eyes reopen to the same upward glance.
+7 paw lowers, gaze and tiny inclination settle back toward neutral.
+8 EXACT return to frame1.
+
+Registration: feet remain planted with a fixed baseline, same silhouette width/height and same drawing scale in all cells. Keep ears/mane/eyebrows/tail shape consistent, no shape swelling, perspective changes, bobbing, body sway or facial jitter. Only the specified tiny paw movement, glance, blink and small deliberate inclination. Whole coherently drawn poses, not detached puppet pieces.
+Layout: regular 4 columns by 2 rows of equal cells, all eight whole characters with generous transparent gutters, nothing cropped or crossing cells. Background and gaps truly transparent. No floor, shadows, glow, effects, text, captions, labels, clothes, grid, watermark, decorations or other characters. Output this ONE thinking motion sheet only.

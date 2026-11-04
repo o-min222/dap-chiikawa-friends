@@ -1,0 +1,19 @@
+Use case: identity-preserve
+Asset: corrected Shisa EATING RAMEN sprite sheet, replacing the over-large torso in the previous version.
+REFERENCE PRIORITY:
+Image 1 is the USER'S TRUE SHISA REFERENCE. It is the authority for anatomy and character likeness.
+Image 2 is the old eating animation: use ONLY its sequence of eating actions and white/pale-blue ramen bowl. Its tall large torso and round bear-like ears are WRONG and must NOT be preserved.
+Critical correction: Shisa has a very LARGE, WIDE, round head, with a generous forehead and small face features positioned LOW on the face, and an extremely SHORT LITTLE body almost hidden behind the food bowl. Copy this head-to-body relationship from image 1. No long chest, no pear-shaped belly, no cylindrical standing torso. Do not just shrink the old whole character.
+Proportion guide: complete character silhouette including ears and tiny seated feet should be approximately as tall as it is wide, preferably a little wider than tall. Head/face/mane account for about 75% of the character height. Only a tiny torso is visible beneath the chin. The bowl rim sits immediately beneath the chin/short paws, with no large blank cream chest between mouth and bowl. Front paws are tiny curved nubs attached beside the lower face, not long arms. Feet tiny beside the bowl. Wide low seated pose as in image 1, no tall upright torso.
+Identity: creamy pale yellow fur, slightly pointed cat/lion-like ears as in image 1 (not round teddy ears), paired orange curled eyebrows, three orange mane tufts down each side, low dark glossy eyes with a white glint and small lower highlight, small w-mouth, pink round cheeks with short dark hatches. Preserve a clean thick very dark warm-brown outline and simple flat cream/orange colors consistent with this project. Keep the character coherent and identical across frames.
+One small white ramen bowl with one pale-blue rim in front, containing pale yellow noodles, tan broth and a few green garnish marks. Do not copy the bento box, blue lid, lettering or food from image 1. One paw rests at the rim, other tiny paw holds exactly ONE pair of wooden chopsticks. No ladle.
+Exactly 4 columns x 2 rows, 8 whole complete character poses in reading order, equal cells and ample transparent gutters:
+1 chopsticks at rest over bowl, small closed mouth.
+2 short noodle bite lifted toward mouth.
+3 mouth slightly open, noodle tip reaches mouth.
+4 soft closed happy eyes, slurping one short noodle strand.
+5 noodles gone into mouth, chopsticks lower, mouth closes.
+6 small chewing cheeks with content closed eyes.
+7 swallow and reopen eyes.
+8 exact return to pose 1.
+Keep head, forehead, mane, eyebrows, ears, bowl footprint, seated body proportions and baseline steady in all cells. No camera movement, no head-size changes, no melting outlines. Only tiny paw/chopstick/noodle and mouth/eye expression changes. All sprites fully contained. Actual transparent background with no shadow, text, bubbles, steam, effects, grid or scenery.

@@ -1,0 +1,16 @@
+Use case: illustration-story
+Asset: ONE Shisa DANCING animation sprite sheet for a desktop pet.
+Input image 1 is the approved full-body model. Match its continuous round cream head/body, gently tapered modest belly (not puffy), face around upper-middle, small flat slightly pointed ears, paired peach-orange curled eyebrows, three orange mane tufts each side, small dark eyes with white glints, pink cheeks, tiny w-mouth, very short side paws and foot nubs, short orange tail on lower screen-right. Same clean dark warm-brown outline, soft pale cream/orange colors and compact proportions.
+Dance concept: a small cheerful left-step/right-step dance, modest and eager. Short paws lift alternately and very short feet tap side to side, with tiny rhythmic weight shifts. This is a grounded DANCE, not walking across the screen, waving with still feet, or a suspended grabbed pose.
+Exactly 4 columns x 2 rows, eight complete whole-character frames in reading order, equal cells and generous transparent gutters:
+1 centered dance-ready stance, tiny paws held slightly out, feet down, little happy smile.
+2 small step to screen-left with the left paw a little up and right paw a little down; body shifts only 1-2% of head width to left.
+3 gentle left-side accent: short left foot planted and right heel briefly lifted, eyes softly smiling, same little paw pose.
+4 return to center, paws briefly close near chest, feet gather under body.
+5 mirrored small step to screen-right with right paw a little up and left down; tiny weight shift to right.
+6 right-side accent: right foot planted and left heel briefly lifted, happy eyes, same small paw pose.
+7 return toward center, feet gather, paws lower.
+8 exact return to pose 1.
+Keep the SAME head/face/mane shapes and scale across all cells; head upright facing viewer, no camera/perspective changes. The body may move rigidly a very small amount with intended steps, but do not stretch, inflate, tilt strongly or redraw a different face. Small smiles and relaxed closed-eye accents only; no huge mouth or shouting.
+Paws remain short nubs, no long arms, human fingers, knees or long legs. Step reach tiny, all motion in place. Tail follows subtly, never changes shape. Each pose a complete coherent character, not separated body parts. Full ears, mane, paws, tail and feet fit within cells.
+True transparent background. No music note symbols, text, props, costume, jumping effects, streaks, shadows, floor, scenery, labels or borders.

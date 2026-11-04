@@ -1,0 +1,20 @@
+Use case: precise-object-edit.
+Asset: ONE revised Shisa happy petting/click reaction animation sheet for DAP, eight frames in a four-column by two-row grid, true transparent background.
+Image 1 is the NEW APPROVED IDLE SHEET and the edit base. Its exact drawing is the character model to preserve.
+Image 2 is the OLD HAPPY ANIMATION. Use ONLY its action sequence as a motion guide. Replace its old tall rounded ears, thinner body, face proportions and missing tail with the approved model of image1.
+
+Edit the approved idle drawing into a happy tiny-paw wave. Preserve image1's compact broad continuous cream head/body, small LOW OUTWARD-POINTED ears, modest smoothly tapered lower belly, tiny planted foot nubs, short orange tail on viewer RIGHT, peach-orange curled eyebrows, three broad orange mane tufts on each side, dark chocolate glossy eyes with white glints, pink cheek ovals with three hatches, tiny w mouth and little dash below. EXACTLY match its warm brown outline thickness, cream/orange/pink palette and subtle warm finish. Do not inflate the belly or lengthen the chest. Do not add a chin/neck seam or separate head and body. Facial landmarks stay at the same height and spacing as image1.
+
+Action: front-facing, polite pleased delight when petted, both feet fixed on the ground. Tiny paws raise near cheeks, eyes smile as happy closed arches, mouth opens in a small happy smile, paws wave gently in alternation, return to idle. No jump, dance, head tilt, tail wag or body sway. Full coherent drawn character every frame, no separated puppet parts.
+Exactly eight chronological frames:
+1 exact neutral open-eyed approved idle pose, both paws down and closed w mouth.
+2 tiny paws begin rising to chest height, mouth starts a small smile.
+3 both paws at cheek level, closed happy arch eyes, tiny open smiling mouth with pink tongue.
+4 viewer-left paw a little higher, viewer-right paw a little lower, same happy eyes and mouth.
+5 opposite paw higher, same happy eyes and mouth.
+6 paws close beside cheeks, content happy smile.
+7 paws lower halfway, eyes reopen, mouth returns to closed w shape.
+8 EXACT return to frame1.
+Keep all paws short small rounded nubs attached naturally to the body, no extra arms or long fingers.
+
+Registration and framing: all eight sprites same scale, identical head/ear/mane contour, fixed face anchor and planted foot baseline, the same compact width-to-height ratio as image1. Change just paw poses, eyelids and mouth. No per-frame changes in body volume, head size, eye spacing, mane or tail shape; no jitter, rotation, zoom or squash/stretch. Generous transparent gutters around EACH complete character, nothing cropped or crossing cells. Regular 4 columns x 2 rows, reading left to right then next row. No background, floor, shadow, text, labels, props, symbols, effects, grid, clothes or other characters. One happy reaction only.

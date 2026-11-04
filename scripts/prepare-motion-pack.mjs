@@ -4,9 +4,13 @@ import {decodeMotionPng,encodeMotionPng} from '../src/motions.mjs';
 const root=new URL('../',import.meta.url), study=new URL('dist/chiikawa-motion-v3/',root);
 const source=JSON.parse(await readFile(new URL('motions.json',study),'utf8'));
 const aliases={'eat':'feed_munch','move-left':'running-left','move-right':'running-right','work':'running','work-book':'running','work-flyer':'working_v2'};
-const pack=[];
+const targetId=process.argv[2];
+const selected=targetId?source.motions.filter(m=>m.id===targetId):source.motions;
+if(targetId&&(!selected.length||selected.some(m=>m.previewOnly||['deferred','awaiting-user-review'].includes(m.reviewStatus))))throw Error('Motion must exist and be approved before packing');
+// Targeted packing preserves approved strips absent from an older local preview manifest.
+const pack=targetId?JSON.parse(await readFile(new URL('assets/motions.json',root),'utf8')).filter(m=>m.id!==targetId):[];
 await mkdir(new URL('assets/generated/',root),{recursive:true});
-for(const motion of source.motions){
+for(const motion of selected){
  if(motion.reviewStatus==='deferred'||motion.previewOnly)continue;
  const image=decodeMotionPng(await readFile(new URL(motion.alignedFile,study)));
  const pixels=Buffer.alloc(1536*208*4);
@@ -18,7 +22,7 @@ for(const motion of source.motions){
   image.pixels.copy(pixels,(y*1536+frame*192)*4,start,start+192*4);
  }
  const bytes=encodeMotionPng({width:1536,height:208,pixels});
- const characterId=motion.characterId??'chiikawa', key=motion.id.replace(/^(chiikawa|hachiware|usagi|momonga)-/,'');
+ const characterId=motion.characterId??'chiikawa', key=motion.id.replace(/^(chiikawa|hachiware|usagi|momonga|shisa)-/,'');
  const item={id:motion.id,characterId,motion:motion.motion??aliases[key]??key,file:`assets/generated/${motion.id}.png`,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),holdsMs:frames.map(f=>f.holdMs)};
  if(motion.hops)item.hops=motion.hops;
  if(motion.reviewStatus)item.reviewStatus=motion.reviewStatus;

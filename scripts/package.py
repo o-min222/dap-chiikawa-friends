@@ -1,4 +1,4 @@
-"""Package generated strips and source metadata; exclude all downloaded and composed caches."""
+"""Package locally bundled generated strips; exclude all downloaded and composed caches."""
 from pathlib import Path
 import hashlib,json,zipfile
 root=Path(__file__).resolve().parents[1]
@@ -20,4 +20,4 @@ with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
     for file in sorted(files):z.write(file,Path('dap-chiikawa-friends')/file.relative_to(root))
 with zipfile.ZipFile(archive) as z:assert z.testzip() is None
 (out/'SHA256SUMS.txt').write_text(hashlib.sha256(archive.read_bytes()).hexdigest()+'  '+archive.name+'\n')
-print(f'Packaged {archive.name}: {archive.stat().st_size:,} bytes (generated strips and upstream metadata; no downloaded originals)')
+print(f'Packaged {archive.name}: {archive.stat().st_size:,} bytes (verified generated strips only; no external image source)')

@@ -1,0 +1,13 @@
+Use case: illustration-story
+Asset: ONE Shisa SLEEP animation sprite sheet for a desktop pet.
+Reference image 1 is the approved Shisa character master. Keep the SAME compact cream character with small round ears, thick warm dark brown lines, peach-orange paired curled eyebrows and three peach-orange mane tufts each side, pink cheeks with three dark hatches and tiny w-shaped mouth. Maintain exactly the same head/face proportions and orange mane shapes across all frames. This is Shisa, not a cat or a rabbit.
+Scene: Shisa sleeps cozily with eyes gently CLOSED throughout, lying low on the belly behind a little pale cream pillow and tucked under a simple pale mint blanket covering the lower body. The big round face, both small ears, orange brows and orange mane remain clearly visible above the blanket. Two very short front paws rest on the top blanket edge. Head resting gently against the small pillow, body reclined rather than standing. The pillow and blanket form one compact self-contained bed with no ground shadow or floor. No sleep hat, costume or extra object.
+Motion: almost still, very calm breathing. Six complete whole-character frames in a precise 3 columns x 2 rows grid, equal cells with ample clear transparent gutters.
+1 resting exhale pose, closed eyes and tiny peaceful closed mouth.
+2 beginning inhale, blanket top rises by only about 1% of character height.
+3 gentle full inhale, blanket a tiny bit fuller.
+4 hold full inhale, same resting face.
+5 gentle exhale, blanket lowers toward resting.
+6 return exactly to frame 1.
+The face, head, ears, eyebrows, cheeks, mane, pillow and outer blanket footprint remain in the SAME location and identical size. Only the very small fullness near the blanket top changes, paws follow the edge minimally. No head bobbing, opening eyes, blinking, tossing, drifting, rocking, pulsing outline or changing camera angle. Do not redraw a different face in every cell. No stretching the body or adding limbs.
+All six frames are fully contained in cells, blanket and pillow never clip edges or touch neighboring sprites. Actual transparent background. Clean simple readable rounded shapes, identical palette and outline weight to reference. No zzz text, bubbles, symbols, steam, glow, stars, scenery, frame numbers or borders.

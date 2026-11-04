@@ -1,0 +1,14 @@
+Use case: illustration-story
+Asset: ONE Shisa PICKED-UP / DRAGGED animation sprite sheet for a desktop pet.
+Input image 1 is the APPROVED current full-body model. Copy this exact anatomy and style: continuous round cream head/body, moderately tapered lower belly (not puffy), face around upper-middle, small flat slightly pointed ears, paired orange curled brows, three peach-orange mane tufts each side, dark glossy oval eyes with white glints, pink cheeks, tiny pleasant w-mouth, tiny side paws/foot nubs and short orange tail peeking at lower screen-right. Preserve face width, head shape, body proportions and dark warm-brown outline.
+Show Shisa being gently HELD UP by the upper back/head area, off the ground. The holding hand/cursor is invisible and must not be drawn. Upper head is held steady while the small lower belly and little feet hang down under gravity. A subtle 2-3% lower-body sag only, no long stretched torso or thin neck. Tiny front paws spread a little to the sides with limp rounded tips; feet point downward with relaxed tiny toe nubs. This should read as suspended and gently dangling, not walking or standing.
+The upper head, eyes, brows, cheeks, ears and mane stay the SAME size, angle and location in all frames. No zoom or making the head bigger when picked up. Do not inflate the belly. Match the reference's modest waist/belly width and tiny limbs. Expression remains mildly surprised but calm and cute; small closed or tiny rounded mouth, not frightened.
+Exactly SIX full character frames, precise 3 columns x 2 rows, equal cells, transparent gutters:
+1 hanging rest, both little feet dangling straight down, tiny paws a little out.
+2 one short foot flicks slightly forward while other keeps hanging.
+3 both feet return to hanging.
+4 opposite short foot flicks slightly forward.
+5 feet settle down, little orange tail relaxes a tiny amount.
+6 return exactly to frame 1.
+Only small feet and lower belly settle/flick very subtly, never walking steps or a big pendulum swing. Keep upper-head anchor fixed. No long legs, knees, big soles, duplicate feet or human hands. Short front paws stay near their natural side attachment points, no stretching around the face. Whole character is coherently redrawn in each pose.
+Full ears, mane, paws, tail and dangling feet must fit in every cell with ample margins. True transparent background. No hands, hook, clamp, rotor, harness, rope, ground, floor shadow, bubbles, motion streaks, text, labels or other props. Consistent soft cream/orange palette, line thickness and clean finish from the reference.

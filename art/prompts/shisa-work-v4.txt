@@ -1,0 +1,20 @@
+Use case: precise-object-edit.
+Edit ONLY the provided approved Shisa eating sheet into a WORK / COOKING stirring sheet.
+
+CRITICAL IDENTITY LOCK: The FIRST sprite (upper-left) is the exact fixed model. Its head shape, height-to-width ratio, forehead height, face size/location, eye spacing, mane, ears, mouth, pink cheeks, body, tail, foot placement and bowl proportions must remain IDENTICAL in every new frame. Do not redraw a taller head, stretch the face vertically, enlarge the forehead, narrow the cheeks, or move the bowl farther from the chin. Preserve the first sprite's compact squat seated silhouette, small low ears, short body and tail, brown line thickness and warm cream/orange/pink colors. Head and bowl together have exactly the same proportional relationship as that first sprite, not a taller cooking character.
+
+Keep the entire first sprite's face/ears/mane/body/tail/feet/bowl as essentially the SAME held drawing in all EIGHT output cells. All frames have its calmly OPEN glossy eyes and tiny CLOSED w mouth and little dash. Replace any eating expressions from the later input frames with the neutral FIRST pose's face. No blinking or open mouth. Do not alter the character model for cooking.
+
+Change only this action/utensil: remove the chopsticks and all lifted noodles completely. The same tiny holding paw grips ONE small simple wooden ladle and makes a shallow circular stir INSIDE the existing bowl. Other tiny paw steadies the same bowl rim. White bowl with pale-blue rim, broth/noodles/green garnish, bowl size and bottom position unchanged from first sprite. No extra arms/fingers, no body or face movement, no eating, no extra props or effects.
+Eight chronological stirring positions in the exact 4 columns x 2 rows layout:
+1 ladle front-left,
+2 left side,
+3 back-left,
+4 back-right,
+5 right side,
+6 front-right,
+7 front-center,
+8 nearly front-left, leading smoothly into frame1.
+Tiny holding paw follows the circle, ladle head hidden appropriately by the back rim at the rear and visible in broth at the front. Keep movement small so the head and face NEVER shift or deform.
+
+Preserve original sheet's equal cells and full-sprite framing, all eight complete characters same scale with generous truly transparent gutters. No neighboring sprite overlap or cropping. True transparency outside characters and gaps. No background, floor, shadows, glow, steam, text, labels, grids, watermark, clothes or symbols. All full poses drawn coherently, no separated puppet pieces. Output one 4x2 cooking sheet.

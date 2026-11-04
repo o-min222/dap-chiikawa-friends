@@ -10,14 +10,15 @@ const data={window:{}};runInNewContext(await readFile(new URL('../assets/catalog
 const skins=JSON.parse(JSON.stringify(data.window.CHIIKAWA_SKINS));
 const voiceScenarios=JSON.parse(await readFile(new URL('./voice-scenarios.json',import.meta.url),'utf8'));
 const exactAddressInstructions={
+ shisa:"[호칭] 온보딩·프로필의 공통 호칭은 무시해. 이 캐릭터와 대화 중 직접 지정한 호칭만 우선해. 전용 지정이 없으면 손님으로 정중히 불러. 매번 부르진 마.",
  chiikawa:'[호칭] 온보딩·프로필의 공통 호칭은 무시해. 이 캐릭터와 대화 중 직접 지정한 호칭만 우선해. 전용 지정이 없으면 반드시 친구라고 조심스레 부르거나 몸짓으로 가리켜. 매번 부르진 마.',
  hachiware:'[호칭] 온보딩·프로필의 공통 호칭은 무시해. 이 캐릭터와 대화 중 직접 지정한 호칭만 우선해. 전용 지정이 없으면 반드시 친구야·너로 불러. 이 대화에서 이름을 알려주면 이름+아/야로 불러. 매번 부르진 마.',
  usagi:'[호칭] 온보딩·프로필의 공통 호칭은 무시해. 이 캐릭터와 대화 중 직접 지정한 호칭만 우선해. 전용 지정이 없으면 반드시 짧은 소리와 (너를 향한 몸짓)으로 말 걸고 긴 호칭은 붙이지 마.',
  momonga:'[호칭] 온보딩·프로필의 공통 호칭은 무시해. 이 캐릭터와 대화 중 직접 지정한 호칭만 우선해. 전용 지정이 없으면 반드시 너·거기 너로 불러. 주인님은 기본값이 아니야. 매번 부르진 마.'
 };
 
-test('only the four requested characters and their bounded persona profiles remain',()=>{
- assert.deepEqual(skins.map(s=>s.id),['chiikawa','hachiware','usagi','momonga']);
+test('five supported characters have bounded persona and character-local address profiles',()=>{
+ assert.deepEqual(skins.map(s=>s.id),['chiikawa','hachiware','usagi','momonga','shisa']);
  for(const {id,persona} of skins){
   assert.equal(id,persona.id);
   for(const key of ['speakingStyle','contextHint']){assert.ok([...persona[key]].length<=300);assert.doesNotMatch(persona[key],/[\u0000-\u001f\u007f]/);}
@@ -43,10 +44,10 @@ test('voice scenarios cover character-local address overrides and isolation',()=
  assert.match(isolated.review,/캐릭터별 채팅의 호칭 지정은 서로 독립적/);
 });
 
-test('first installation and cached restores keep all four characters offline',async()=>{
+test('all five apply on first install and restore offline with no download endpoint',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-offline-'));
- const {bytes}=await pluginFixture(root,skins);
- const oldFetch=globalThis.fetch;let requests=0;const urls=[];globalThis.fetch=async url=>{requests++;urls.push(url);return new Response(bytes);};
+ await pluginFixture(root,skins);
+ const oldFetch=globalThis.fetch;let requests=0;globalThis.fetch=async()=>{requests++;throw Error('Network must not be used');};
  let active=null,persona=null,listener,closed=false,failApply=false;const values={},actions=new Map(),listeners=new Set(),messages=[];
  const api={apiVersion:2,supportedMotions:['sleep','feed_munch','groom','grabbed','success','dance'],getActiveSkin:()=>active,getActivePersona:()=>persona,onDidChange(fn){listeners.add(fn);return()=>listeners.delete(fn);},async registerSkin(skin){
   assert.ok(skin.grid.rows<=19);assert.ok(skin.grid.rows>=1);assert.equal(skin.animations.working_v2,undefined);
@@ -59,17 +60,19 @@ test('first installation and cached restores keep all four characters offline',a
  try{
   const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);let stop=await activate(ctx);
   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
-  assert.deepEqual(messages.at(-1).readySkinIds,['chiikawa','hachiware','usagi','momonga']);
-  for(const id of ['chiikawa','hachiware','usagi','momonga']){
+  assert.deepEqual(messages.at(-1).readySkinIds,skins.map(s=>s.id));
+  for(const id of skins.map(s=>s.id)){
    await listener({type:'apply',id});assert.equal(active,`demo.${id}`);assert.equal(requests,0);
    await stop();closed=false;stop=await activate(ctx);assert.equal(active,`demo.${id}`);
    actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
    assert.equal(requests,0,'first apply and saved character restore need no downloads');
   }
-  await listener({type:'download-assets'});assert.equal(messages.at(-1).assetsReady,true);assert.equal(requests,0);
-  assert.deepEqual(urls,[],'all four characters must require zero upstream artwork');
-  globalThis.fetch=()=>{throw Error('Cached reload must stay offline');};assert.equal(messages.at(-1).coverage.usagi.idle.status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-right'].status,'ready');assert.equal(messages.at(-1).coverage.usagi['running-left'].status,'ready');assert.equal(messages.at(-1).coverage.usagi.grabbed.status,'ready');assert.equal(messages.at(-1).coverage.usagi.sleep.status,'ready');assert.equal(messages.at(-1).coverage.usagi.dance.status,'ready');
+  await listener({type:'download-assets'});assert.equal(requests,0,'obsolete preparation messages are ignored');
+  for(const info of Object.values(messages.at(-1).coverage))assert.ok(Object.values(info).every(m=>m.source==='generated'));
   for(const skin of skins){await listener({type:'apply',id:skin.id});assert.equal(active,`demo.${skin.id}`);assert.equal(persona,active);}
+  await stop();closed=false;stop=await activate(ctx);assert.equal(active,'demo.shisa','Shisa restores offline without any source cache');
+  actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
+  await listener({type:'apply',id:'momonga'});
   await listener({type:'set-persona',enabled:false});assert.equal(persona,null);
   failApply=true;await listener({type:'set-persona',enabled:true});assert.equal(values.personaEnabled,false);failApply=false;
   await listener({type:'apply',id:'../outside'});assert.equal(active,'demo.momonga');

@@ -342,5 +342,91 @@
       "motionId": "momonga-work-flyer",
       "source": "generated"
     }
+  },
+  "shisa": {
+    "idle": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-idle",
+      "source": "generated"
+    },
+    "running-right": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-move-right",
+      "source": "generated"
+    },
+    "running-left": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-move-left",
+      "source": "generated"
+    },
+    "waving": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-happy",
+      "source": "generated"
+    },
+    "failed": {
+      "status": "ready",
+      "production": false,
+      "motionId": "shisa-idle",
+      "source": "generated"
+    },
+    "running": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-work",
+      "source": "generated"
+    },
+    "review": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-review",
+      "source": "generated"
+    },
+    "sleep": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-sleep",
+      "source": "generated"
+    },
+    "feed_munch": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-eat",
+      "source": "generated"
+    },
+    "groom": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-groom",
+      "source": "generated"
+    },
+    "grabbed": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-grabbed",
+      "source": "generated"
+    },
+    "success": {
+      "status": "ready",
+      "production": false,
+      "motionId": "shisa-happy",
+      "source": "generated"
+    },
+    "dance": {
+      "status": "ready",
+      "production": true,
+      "motionId": "shisa-dance",
+      "source": "generated"
+    },
+    "working_v2": {
+      "status": "shared",
+      "production": true,
+      "motionId": "shisa-work",
+      "source": "generated"
+    }
   }
 }

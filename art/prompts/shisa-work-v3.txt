@@ -1,0 +1,24 @@
+Use case: precise-object-edit.
+Asset: ONE revised Shisa WORKING / PREPARING RAMEN sprite sheet for DAP. Eight complete poses, regular four columns by two rows, true transparent background.
+Input1 = the NEW APPROVED IDLE model, exact character identity, small low outward-pointed ears, facial proportions, line weight and colors.
+Input2 = the NEW APPROVED EATING RAMEN sheet. Use its first neutral pose as the direct EDIT BASE: keep this exact compact seated anatomy, head, face, paws, tiny feet, orange side tail and white bowl with pale-blue rim.
+Input3 = the OLD WORKING sheet. Use ONLY its circular ladle-stirring action sequence. Do not preserve its taller pointed ears, oversized forehead, lower face placement or missing tail.
+
+Convert input2 into cooking, matching input1/2 exactly. The head and face should be essentially one held drawing across all eight frames. Preserve the broad cream head, same forehead and eye placement/spacing, dark glossy oval eyes with white glints, paired peach-orange curled eyebrows, three orange mane clumps each side, pink cheek ovals with three short hatches, tiny closed w-mouth and little dash. Same small low outward-pointed ears, warm dark chocolate-brown outline thickness, cream/orange/pink palette and subtle warm finish.
+Keep the tiny seated lower body mostly hidden behind the bowl, short rounded paw nubs, tiny feet beside the bowl and small orange tail peeking behind the lower body on viewer RIGHT. No elongated chest, inflated belly, separate large torso, long arms, human fingers or duplicate limbs.
+
+Prop change: REMOVE the chopsticks entirely. Holding paw now grips exactly ONE simple small WOODEN LADLE. Other paw steadies the bowl rim. Same small white ramen bowl with one pale-blue rim, tan broth, yellow noodles and a few green garnish marks as input2. Bowl size/footprint and bottom position fixed. No noodles near the mouth. Mouth stays CLOSED, eyes calmly OPEN throughout: this is cooking rather than eating.
+
+Action: one smooth small circular STIRRING loop inside the bowl, eight chronological key poses around that circle:
+1 ladle near front-left of bowl;
+2 toward left side;
+3 toward back-left;
+4 back-right;
+5 right side;
+6 front-right;
+7 front-center;
+8 approaching front-left again, naturally leading into frame1.
+The tiny holding paw follows the small circle; ladle head properly disappears behind the BACK rim when toward the rear, and is visible in broth toward the FRONT. One continuous ladle, one holding paw and one stabilizing paw only. Broth/noodle marks may shift minutely. No splashes, steam, food lifting, eating or extra props.
+
+Registration: exactly same drawing scale, head shape/position, ears, mane, eyebrows, eye glints, closed mouth, body, tail, seated feet and bowl position in every cell. No head bob, sway, camera changes, tilts, per-frame resizing, melting outlines or facial jitter. Only the small paw/ladle stirring and tiny broth marks change. Draw each full pose coherently, no detached puppet components.
+Layout: eight whole sprites in a regular 4x2 grid of equal cells, reading left-to-right then lower row. Generous actual transparent gutters around every character and bowl, nothing cropped or crossing cells. True transparent background and gaps. No floor, shadows, glow, effects, text, labels, numbers, grids, clothes, decorative symbols or other characters. Output only this one working motion sheet.

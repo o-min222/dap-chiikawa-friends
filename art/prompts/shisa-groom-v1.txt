@@ -1,0 +1,17 @@
+Use case: illustration-story
+Asset: ONE Shisa GROOMING / tidying cheek and orange mane sprite sheet for a desktop pet.
+Input image 1 is the approved compact Shisa model. Preserve its anatomy and tone exactly: huge wide round cream-yellow head, generous wide forehead, small face features positioned LOW, slightly pointed cat/lion ears, paired peach-orange curled eyebrows, three orange mane tufts on each side, small glossy dark eyes with white glint and lower highlight, pink cheeks with dark hatches, tiny closed w-mouth, very dark warm-brown thick outline, flat gentle cream/orange colors.
+REMOVE the food bowl, noodles, chopsticks and ALL props completely. This is NOT cooking or eating. Do not carry over any utensil from the reference.
+Body must stay extremely small and SHORT under the large head; head/mane about 75-80% of complete silhouette height. Tiny seated cream belly and two small rounded feet only, not a tall standing torso or big chest. Entire outlined character roughly as wide as tall, or a little wider. Front paws very short rounded nubs attached beside the lower face, no human fingers or long arms.
+Action: Shisa tidies itself politely and gently. One tiny paw goes to the PINK CHEEK on screen-left, rubs the cheek, brushes the lower orange mane tuft right beside that cheek, then lowers. Eyes softly close while grooming, reopening at the end. Other short paw rests by tiny belly. Head stays steady and upright; no bowing, flipping, strong leaning or changing camera angle.
+Exactly 4 columns x 2 rows, EIGHT complete whole-character frames, equal cells with ample transparent gutters, chronological reading order:
+1 neutral seated pose, both paws down, eyes open.
+2 one tiny paw rises toward screen-left cheek.
+3 paw gently rests on pink cheek, eyes softly closed.
+4 paw strokes a small distance upward toward the neighboring lower orange mane tuft, closed eyes.
+5 gentle little brush across that lower orange tuft beside the cheek, closed eyes.
+6 paw strokes back down to cheek, same expression.
+7 paw lowers, eyes reopen.
+8 exact return to pose 1.
+Make paw-to-cheek contact readable without covering the whole face. Maximum tiny paw travel around cheek only; do not stretch the arm up to the top of the head or ears. Leave head contour, forehead, mane silhouette, eyebrows and face size unchanged across all cells. No reshaping of orange mane points. Only the paw articulation and intended eye expression move.
+Full ears, mane, feet and paws fit in each cell. Actual transparent background. No food, accessories, grooming tool, towel, bubbles, text, labels, stars, shadow, stage, scenery, borders, duplicate limbs or detached parts. Keep the same clean line weight and approved compact proportions in all frames.

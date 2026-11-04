@@ -66,7 +66,7 @@ test('character cards select active character once and show its description', ()
   const status = {type: 'status', available: true, activeId: 'momonga', assetsReady: true, assetRevision: 0, personaEnabled: true};
   receive(status);
   const cards = element('character-list').children;
-  assert.equal(cards.length, 4);
+  assert.equal(cards.length, 5);
   assert.equal(cards.find(card => card.dataset.id === 'momonga').attrs['aria-selected'], 'true');
   assert.equal(element('persona-title').textContent, '모몽가');
   assert.match(element('character-description').textContent, /남의 몫.*떠넘기며 공은 자기 것/);
@@ -82,8 +82,15 @@ test('character cards select active character once and show its description', ()
 
   receive({...status, assetsReady: false, readySkinIds: ['usagi', 'momonga']});
   assert.equal(element('apply').disabled, false);
-  assert.equal(element('download-assets').hidden, true);
+  assert.doesNotMatch(html,/id="download-assets"/);
   element('character-list').children.find(card => card.dataset.id === 'chiikawa').listeners.click();
   assert.equal(element('apply').disabled, true);
-  assert.equal(element('download-assets').hidden, false);
+  assert.doesNotMatch(source,/download-assets/);
+  element('character-list').children.find(card => card.dataset.id === 'shisa').listeners.click();
+  assert.equal(element('persona-title').textContent, '시사');
+  assert.match(element('character-description').textContent, /노력가/);
+  assert.equal(element('apply').disabled, true);
+  receive({...status, assetsReady: true, readySkinIds: skins.map(s=>s.id)});
+  assert.equal(element('apply').disabled, false);
+  assert.doesNotMatch(html,/id="download-assets"/);
 });

@@ -1,0 +1,14 @@
+Use case: illustration-story
+Asset: ONE desktop-pet Shisa happy reaction / gentle paw wave sprite sheet.
+Reference image 1 is the APPROVED character master. Match its face size, compact round cream body, warm dark brown thick outlines, peach-orange curly eyebrows, three orange mane tufts on each side, little rounded ears, dark round eyes with white shine, pink cheeks with three hatches, short arms and feet. This character is Shisa, not a generic cat.
+Create 8 complete whole-character frames in a precise 4 columns by 2 rows grid on transparent background, equal cells, generous clear gutters. No text, props, decorative symbols, motion streaks or shadows.
+Action: pleased and politely delighted when petted/clicked, a little grateful wave. Front-facing, both feet planted, no walking. Tiny arms raise beside the cheeks, eyes turn to smiling closed crescents, then tiny alternating paw waves, and arms settle to idle. Warm modest delight, not a wild dance or jump.
+Frame 1 exact approved neutral pose, arms at sides, eyes open, tiny closed w-mouth.
+Frame 2 short arms begin rising to chest height, pleased smile.
+Frame 3 both little paws at cheek height, smiling closed crescent eyes, mouth slightly happy open.
+Frame 4 left paw just a little higher and right a little lower, same smile.
+Frame 5 opposite paw a little higher, same smile.
+Frame 6 both paws close beside cheeks, content happy closed eyes.
+Frame 7 arms lower halfway, eyes reopen and mouth returns to tiny closed w-mouth.
+Frame 8 exact same neutral pose as frame 1.
+All 8: identical head/torso contour, face proportions and placement, mane and eyebrow shapes. Facial expression changes only as specified; never change viewing angle or face size. Body fixed, no stretchy torso, no wobble, no tilting. Paws tiny rounded nubs, not long human arms. Head/ears/mane stay still. Render every pose coherently as one full character, no part separation. Original cream/orange palette and gentle finish from the reference, consistent line thickness. Actual transparent background.

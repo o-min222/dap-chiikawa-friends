@@ -1,0 +1,22 @@
+Use case: precise-object-edit.
+Asset: ONE revised Shisa EATING RAMEN animation sprite sheet, eight complete poses in a regular four-column by two-row grid, truly transparent.
+Image 1 is the NEW APPROVED IDLE model. It is the authority for the character's exact face, small low outward-pointed ears, outline, colors and compact anatomy.
+Image 2 is the previously approved EATING sheet. Keep ONLY its seated ramen-eating pose, small white bowl with pale-blue rim, chopsticks, noodles and chronological eating actions. Replace its taller pointed ears, oversized forehead and lower facial placement with image1's model.
+
+Character locks: SAME broad compact cream face as image1; same forehead proportions, eye placement/spacing, dark glossy oval eyes with white glints, paired peach-orange curled eyebrows, three orange mane clumps each side, pink cheek ovals with three short hatches, tiny w mouth and little dash. SMALL LOW OUTWARD-POINTED ears, not tall pointed cat ears or round bear ears. Match image1's warm dark chocolate-brown line weight, cream/orange/pink palette and subtle warm finish. No extra facial markings, chin/neck seam or separate large torso. Preserve facial identity even during expression changes.
+
+Body/pose: compact seated Shisa, tiny lower body mostly hidden behind the bowl, short rounded paw nubs, tiny seated feet beside the bowl. No long chest, inflated belly, long arms, human fingers or duplicate limbs. Bowl rim immediately below chin/short paws with only a small gap below mouth. One paw rests at the bowl rim, other holds exactly ONE pair of wooden chopsticks. Small orange tail may peek from behind the lower body on viewer RIGHT, consistent with image1, kept short and unobtrusive. No ladle.
+Bowl: same small WHITE ramen bowl with one pale blue rim as image2, tan broth, yellow noodles and a few green garnish marks. Its footprint and bottom position remain fixed. No steam or text.
+
+Exactly eight chronological complete frames:
+1 relaxed open-eyed face, small closed mouth, chopsticks resting above bowl.
+2 lift one short noodle bite toward mouth.
+3 mouth opens slightly as noodle tip reaches mouth.
+4 soft happy closed eyes, slurp the short remaining noodle strand.
+5 strand has gone into mouth, chopsticks lower, mouth closes.
+6 tiny chewing cheeks with content closed eyes.
+7 swallow, reopen eyes, return chopsticks to rest.
+8 EXACT return to frame1.
+All eyes/mouth/paw/chopstick/noodle changes stay small and readable. Head, ears, eyebrows, mane and body contours stay almost a held drawing, same face size and position across all cells. No rotating, swaying, bobbing, zooming, changing camera or jitter. Entire coherently drawn poses, no separated puppet pieces.
+
+Layout: regular 4 columns x 2 rows, equal cells, reading left to right then next row. Generous true transparent gutters around every whole head, paws, feet, tail and bowl. Nothing cropped or touching neighboring cells. Same scale throughout. Actual transparency outside sprites and in gaps. No scenery, floor, shadows, glow, effects, text, labels, grid, clothes, decorations, additional props or other characters. One eating motion only.

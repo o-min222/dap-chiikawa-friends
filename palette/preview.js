@@ -6,6 +6,7 @@ let selectedId = skin.id;
 let activeId = null;
 let statusReceived = false;
 const descriptions = {
+  shisa: "성실하게 배우고 꾸준히 연습하며, 정중한 말투로 함께하는 노력가 친구예요.",
   chiikawa: "겁이 많고 눈물이 많지만, 친구를 위해 작은 용기를 내는 다정한 친구예요.",
   hachiware: "밝고 낙천적이며, 친구의 마음을 세심하게 살피는 든든한 친구예요.",
   usagi: "자유롭고 장난스럽지만, 겁 없이 먼저 움직이는 행동파 친구예요.",
@@ -20,7 +21,6 @@ const workingVariantLabels = {chiikawa:"작업 중 · 책상 공부", momonga:"�
 const status = document.getElementById("status");
 const apply = document.getElementById("apply");
 const reset = document.getElementById("reset");
-const download = document.getElementById("download-assets");
 const personaToggle = document.getElementById("persona-enabled");
 const bridge = window.dapPalette;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -38,8 +38,6 @@ const image = new Image();
 
 function buttons() {
   const selectedReady = readySkinIds.includes(skin.id);
-  download.hidden = selectedReady;
-  download.disabled = !available || busy;
   apply.disabled = !available || !selectedReady || busy || activeId === skin.id;
   for (const button of characterList.querySelectorAll("button")) button.disabled = busy;
   reset.disabled = !available || busy || !activeId;
@@ -77,7 +75,7 @@ image.onerror = () => { status.textContent = "스프라이트 이미지를 불�
 function motionTitle(key) {
   const item = coverage[skin.id]?.[key];
   const label = key === "working_v2" ? (workingVariantLabels[skin.id] ?? "작업 중 · 다른 동작") : (motionLabels[key] ?? key);
-  return label + (item?.status === "upstream" ? " · 원본 유지" : item?.status === "shared" ? " · 일하기 공유" : "");
+  return label + (item?.status === "shared" ? " · 일하기 공유" : "");
 }
 
 function paintPortrait(item, portrait, placeholder) {
@@ -139,23 +137,22 @@ function selectCharacter(id = selectedId) {
   selectedId = skin.id;
   updateCharacterSelection();
   const previousMotion = motion.value;
+  const animations = skin.animations ?? {};
   if (motion.replaceChildren) {
     motion.replaceChildren();
-    for (const key of Object.keys(skin.animations).filter(key => !["jumping","waiting"].includes(key) && coverage[skin.id]?.[key]?.production !== false && coverage[skin.id]?.[key]?.status !== "shared")) {
+    for (const key of Object.keys(animations).filter(key => !["jumping","waiting"].includes(key) && coverage[skin.id]?.[key]?.production !== false && coverage[skin.id]?.[key]?.status !== "shared")) {
       const option = document.createElement("option");
       option.value = key;
       option.textContent = motionTitle(key);
       motion.append(option);
     }
-    motion.value = skin.animations[previousMotion] && !["jumping","waiting"].includes(previousMotion) && coverage[skin.id]?.[previousMotion]?.production !== false && coverage[skin.id]?.[previousMotion]?.status !== "shared" ? previousMotion : "idle";
+    motion.value = animations[previousMotion] && !["jumping","waiting"].includes(previousMotion) && coverage[skin.id]?.[previousMotion]?.production !== false && coverage[skin.id]?.[previousMotion]?.status !== "shared" ? previousMotion : "idle";
   }
   elapsed = 0;
   loaded = false;
   document.getElementById("motion-name").textContent = motionTitle(motion.value);
   const info = coverage[skin.id] ?? {};
-  const pending = Object.values(info).filter(item => item.production !== false && item.status === "upstream").length;
-  const review = Object.values(info).filter(item => item.status === "review").length;
-  document.getElementById("coverage-note").textContent = `원본 유지 ${pending}개 · 검토 중 ${review}개. 승인된 동작만 자체 모션으로 교체합니다.`;
+  document.getElementById("coverage-note").textContent = "모든 연결 동작을 포함된 자체 이미지로 재생해요.";
   document.getElementById("persona-title").textContent = skin.displayName;
   document.getElementById("character-description").textContent = descriptions[skin.id] ?? "치이카와 친구들과 함께해요.";
   document.getElementById("persona-traits").textContent = skin.persona.traits.join(" · ");
@@ -175,7 +172,7 @@ motion.addEventListener("change", () => {
   elapsed = 0;
   document.getElementById("motion-name").textContent = motion.selectedOptions[0].textContent;
   canvas.setAttribute("aria-label", `${skin.displayName} ${motion.selectedOptions[0].textContent}`);
-  document.getElementById("hint").textContent = coverage[skin.id]?.[motion.value]?.status === "upstream" ? "아직 교체하지 않은 동작은 기존 패키지의 원본 모션으로 재생합니다." : "모션별 프레임 속도로 재생해요.";
+  document.getElementById("hint").textContent = "모션별 프레임 속도로 재생해요.";
   render();
 });
 document.addEventListener("visibilitychange", () => { previousTime = null; });
@@ -231,4 +228,3 @@ window.addEventListener("pagehide", () => {
   offMessage?.();
   reducedMotion.removeEventListener("change", onReducedMotion);
 }, {once: true});
-download.addEventListener("click", () => bridge?.postMessage({type: "download-assets"}));

@@ -1,0 +1,20 @@
+Use case: identity-preserve
+Asset: revise Shisa GROOMING animation to match the user's NEW full-body proportion reference.
+REFERENCE PRIORITY:
+Image 1 is the user's authoritative full-body Shisa reference. Copy its body silhouette, face placement, ear size, belly width and tiny limb proportions closely.
+Image 2 is the previous grooming sheet. Use ONLY its sequence of paw motions and eye expressions. Do NOT copy its giant separate-looking head, narrow tiny lower body or low face placement.
+ANATOMY CORRECTION:
+Shisa is ONE nearly circular, plump cream silhouette from forehead to broad rounded BELLY, with the head and torso flowing together. Match image 1's whole-body mass. The lower belly is broad and naturally rounded, not a little neck/waist or a separate smaller body tucked below a huge face. No horizontal chin seam, no head/body boundary, no pear-shaped skinny waist, no tiny attached body block, no long upright chest.
+Face belongs around the upper-middle of the overall cream body as in image 1: eyes approximately 40% down from the top of the cream oval, small mouth around 55%, leaving a generous broad round belly below the mouth. Do not put the entire face down at the bottom of an oversized head. Lower body sides stay wide and curve smoothly into the rounded base.
+Ears are SMALL, slightly pointed and flattened cat/lion ears at the outer top corners of the round body, exactly like image 1; not tall bear ears or tall pointed triangles. Three peach-orange mane tufts beside each cheek/upper side, curled orange brows above small dark oval eyes with white glints, pink cheek ovals with small hatches. A short little orange tufted tail can peek from behind the lower screen-right body as in image 1. Two front paws are extremely short nubs emerging from the sides; two feet are tiny short projections from the body bottom. No big palms, round boot balls, separate foot pads or human fingers.
+Preserve this project's clean dark warm-brown outline, pale cream fill, peach-orange tufts and pink cheeks, while following image 1's anatomy. Ignore its background, lettering, motion marks and the other cropped characters.
+Same grooming action and timing design, exact 4 columns x 2 rows, 8 coherent complete whole-character poses with transparent gutters:
+1 neutral standing round body, paws down, eyes open, small pleasant w-mouth.
+2 one short front paw rises toward screen-left cheek.
+3 paw on cheek, eyes softly closed.
+4 gentle small upward stroke toward the nearby lower orange cheek tuft.
+5 little brush at that tuft, closed eyes.
+6 paw returns down to cheek.
+7 paw lowers, eyes reopen.
+8 exact return to pose 1.
+The torso/face/mane/ears/tail/feet stay steady in shape, size, perspective and position. Only the one short grooming limb and intended eye expression change. Tiny paw travel around cheek only, no long hose-shaped arm, no head bobbing or stretching. All sprites same scale and foot baseline, all ears/mane/tail/paws/feet completely inside each cell. Actual transparent background. No props, food, outfits, symbols, text, labels, shadows, scenery, grid or extra limbs.

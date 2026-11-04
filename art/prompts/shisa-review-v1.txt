@@ -1,0 +1,15 @@
+Use case: illustration-story
+Asset: ONE Shisa THINKING / waiting for chat response animation sprite sheet.
+Input image 1 is the approved Shisa character master. Copy this identity exactly: very compact round integrated cream-yellow head/body, warm dark brown thick line, small rounded ears, peach-orange paired curled eyebrows and three orange mane tufts on each side, dark eyes with white glints, pink cheeks with three hatches, tiny closed w-mouth, very short rounded paws/feet. Match the reference's width-to-height proportions, not a long torso.
+Motion: calm, attentive thinking. Shisa brings one tiny front paw to the chin, looks slightly upward to one side as if considering the user's question, briefly blinks, then relaxes back to neutral. The other short front paw rests near the belly. No eating, grooming, waving, props or question marks. This is a quiet listening/thinking response.
+Exactly eight complete whole-character poses in a 4-column x 2-row grid, equal cells, ample transparent gutters, reading order.
+1 approved neutral stance, paws at sides, eyes open.
+2 one short paw rises toward chin, other paw comes near belly.
+3 raised paw lightly touches chin, eyes shift a little up toward screen right; head can incline ONLY 2 degrees to the same side, body stays in place.
+4 hold chin-paw and upward glance with a modest thoughtful expression.
+5 same chin-paw pose but eyes briefly closed in a relaxed blink.
+6 eyes reopen to upward glance, same tiny inclination and chin-paw.
+7 paw gently lowers, gaze returns toward viewer, head returns to neutral.
+8 exact same neutral pose as frame 1.
+Keep ears, orange mane, curled eyebrow shapes, face size and torso contours the same from frame to frame. Only the intended eye expression, very small head inclination and tiny paw position changes. No changes in camera angle, no perspective shift, no swelling face, no wobble or stretched body. No extra dark eyebrows or forehead marks. Expression stays gentle and courteous rather than angry or smug.
+Fixed foot baseline, consistent head center and scale, no walking or jumping. Truly transparent background, no shadow, no text, no bubbles, no symbols, no frame borders. Draw each pose as a coherent complete character, no detachable parts or duplicate limbs. Same soft cream/orange palette and clean thick brown outline as the reference.

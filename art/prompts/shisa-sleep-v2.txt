@@ -1,0 +1,19 @@
+Use case: precise-object-edit.
+Asset: ONE revised Shisa sleeping animation sheet for the DAP desktop pet, six complete frames arranged in a regular 3 columns by 2 rows grid, true transparent background.
+Image 1 is the NEW APPROVED IDLE model: use its exact character identity, face proportions, small low outward-pointed ears, palette and outline weight.
+Image 2 is the OLD SLEEP sheet: retain only its sleeping pose, cream pillow, pale mint blanket and six-stage very quiet breathing sequence. Replace the old rounded tall bear ears and old face/line style with image1. Do not preserve any brown background, colored haze or shadow visible in the old source; outside the character/pillow/blanket must be truly transparent.
+
+Character: Shisa sleeps with eyes gently CLOSED throughout. Match image1's broad cream round face, SAME face placement and forehead proportions, paired peach-orange curled eyebrows, three peach-orange mane tufts on each side, pink cheek ovals with three dark short strokes, tiny peaceful closed w mouth and short dash below. Ears are small, LOW and outward-pointed as in image1, not round bear ears. Exactly match the warm dark chocolate-brown outline thickness and cream/orange/pink fills and subtle warm finish of image1. No extra facial features, new forehead marks or changed eyebrow shapes.
+
+Pose and props: reclined low, face resting against a little pale cream pillow behind the head, tucked under a compact softly rounded PALE MINT BLANKET covering the lower body. Two tiny cream front paws rest lightly on the top blanket edge. The head/ears/orange mane remain fully visible. Lower belly, feet and orange tail are under the blanket, not displayed. No hat, clothes, bed frame, additional props or floor. Keep the head the same perceived scale as image1's head, don't enlarge the face to fill the sheet. Pillow/blanket only slightly wider than the visible mane, a compact self-contained sleeping silhouette.
+
+SIX chronological whole poses, left to right then lower row:
+1 relaxed exhale, eyes closed, peaceful face.
+2 tiny inhale begins, upper blanket rises only about 1% of character height.
+3 gentle full inhale, blanket a tiny bit fuller near the paws.
+4 hold this subtle inhale.
+5 slow exhale, blanket settles.
+6 EXACT return to frame1.
+Face, head, ears, brows, mane and pillow are the SAME held drawing in all six frames. Eyes never open. Same head position, scale, face shape, camera and closed mouth. The outer blanket bottom and lateral footprint remain fixed; only slight upper blanket fullness and tiny accompanying paw movement. No head bob, drifting, rocking, pulsing silhouette, perspective shift, per-frame resizing or outline jitter.
+
+Layout: regular 3x2 grid, six equal cells with generous truly transparent gutters. Every complete head, pillow and blanket fully fits within its own cell; no crossing cells or cropping. Transparent background and gaps, no ground shadows, glow, halo, scenery, text, labels, numbers, borders, zzz, bubbles, symbols, stars or other characters. Draw each complete pose coherently; no detached puppet parts. Output only this one sleep sheet.

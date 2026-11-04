@@ -22,6 +22,7 @@ jobs:
       - run: git diff --exit-code -- dap_chiikawa/plugin.mjs assets/catalog.js assets/coverage.json MOTIONS.md
       - run: npm test
       - run: node scripts/check.mjs "$RELEASE_REF"
+        shell: bash
         env:
           RELEASE_REF: ${{ github.ref_name }}
   release:
@@ -37,7 +38,7 @@ jobs:
           node-version: '22'
       - run: node scripts/check.mjs "$GITHUB_REF_NAME"
       - run: python3 scripts/package.py
-      - name: Publish plugin archive with verified generated motions and pinned fallback
+      - name: Publish plugin archive with verified generated motions
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

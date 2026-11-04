@@ -1,0 +1,12 @@
+Use case: precise-object-edit
+Asset: correct ONLY the lower-body anatomy of the Shisa grooming sprite sheet.
+Image 1 is the edit target: existing 8-frame grooming sheet. Preserve its large round head, generous forehead, low face features, slightly pointed ears, orange brows/mane, cream/orange palette, thick dark brown outline, facial expressions and the eight paw-grooming poses.
+Image 2 is the user's Shisa anatomy reference: use its natural connected head/body and tiny limbs; ignore ALL food, bento, lid, lettering and props.
+REQUIRED BODY FIX IN ALL EIGHT CELLS:
+Remove the long horizontal dark chin/neck seam across the lower face. The cream head and tiny cream body must form ONE organically connected mascot shape, with no interior line cutting the head off from the chest.
+Remove the little rectangular belly and the two separate circular feet in image 1. Replace them with a very SHORT SOFT ROUND U-SHAPED underside merging naturally into the lower sides of the head, with two tiny rounded foot nubs that are continuous with the bottom outline. Feet are not separate balls, boots, knees or pads.
+No box, straight sidewalls, horizontal bottom edge, thick neck band, floating head, separate attached body block or belly outline. No long torso either. Keep the huge head/mane about 75-80% of full silhouette height, with a short integrated cream underside about 20%, two little feet and naturally attached short front paws. Face cream flows directly into belly cream.
+Show a relaxed natural low seated mascot body with a smooth curved outline. Correct connections of paw bases to sides of body so the grooming paw is a short articulated front limb, not a hose around a detached face. The resting paw is a small side nub, not a separate oval stuck to the neck.
+Preserve the current grooming action: frame 1 neutral open eyes; 2 one small paw rising to screen-left cheek; 3 eyes softly closed paw on cheek; 4 gentle small stroke upward toward neighboring lower orange mane; 5 short brush there; 6 paw down to cheek; 7 lower paw eyes reopen; 8 exact neutral return. Keep the head steady, no leaning, bobbing, resizing or changing face perspective.
+Exactly the same layout, 4 columns x 2 rows, eight whole coherent poses, consistent scale, generous transparent gutters and fixed ground baseline. Fully contain ears, mane, paws and tiny foot nubs.
+Actual transparent background. No food, bowl, clothing, props, extra body parts, text, marks, labels, bubbles, scenery or shadows. Make this a restrained lower-body correction, not a new character design.

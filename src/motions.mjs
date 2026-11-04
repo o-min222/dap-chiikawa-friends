@@ -55,34 +55,28 @@ export const EXTRA_MOTIONS = ['sleep','feed_munch','groom','grabbed','success','
 export const ACTIVE_MOTIONS = [...LEGACY_MOTIONS.filter(key=>!['jumping','waiting'].includes(key)),...EXTRA_MOTIONS];
 // Success has no normal transition; error requires explicit external pet.context input.
 export const PRODUCTION_MOTIONS = ACTIVE_MOTIONS.filter(key=>!['success','failed'].includes(key));
-const ORIGINAL_FALLBACK = {sleep:'waiting',feed_munch:'running',groom:'waiting',grabbed:'waiting',success:'waving',dance:'jumping'};
 export function planMotions(skin, pack) {
   const byKey = new Map(pack.filter(m=>m.characterId===skin.id && !['deferred','awaiting-user-review'].includes(m.reviewStatus)).map(m=>[m.motion,m]));
-  const original = key => {
-    const clip=skin.animations?.[key];
-    if(!clip)throw Error(`Missing upstream motion ${skin.id}/${key}`);
-    return {id:`upstream-${skin.id}-${key}`,motion:key,source:'upstream',sourceRow:clip.row,file:skin.spritesheetPath,holdsMs:clip.holdsMs,...skin.originalAsset};
-  };
   const choices={};
   for(const key of PRODUCTION_MOTIONS){
-    choices[key]=byKey.get(key) ?? (key==='working_v2' ? choices.running : original(ORIGINAL_FALLBACK[key]??key));
+    choices[key]=byKey.get(key) ?? (key==='working_v2' ? choices.running : undefined);
+    if(!choices[key])throw Error(`Missing approved motion ${skin.id}/${key}`);
   }
-  const needsOriginal=Object.values(choices).some(m=>m.source==='upstream');
-  choices.failed=byKey.get('failed') ?? (needsOriginal ? original('failed') : choices.idle);
+  choices.failed=byKey.get('failed') ?? choices.idle;
   choices.success=byKey.get('success') ?? choices.waving;
-  // Required by older skin validators; neither is a new animation-production task.
+  // Required by older validators; these are aliases, not separate production actions.
   choices.jumping=choices.dance;
   choices.waiting=choices.idle;
   const coverage=Object.fromEntries(ACTIVE_MOTIONS.map(key=>[key,{
-    status:key==='working_v2'&&!byKey.has(key)?'shared':choices[key].source==='upstream'?'upstream':'ready',
+    status:key==='working_v2'&&!byKey.has(key)?'shared':'ready',
     production:PRODUCTION_MOTIONS.includes(key),
     motionId:choices[key].id,
-    source:choices[key].source??'generated',
+    source:'generated',
   }]));
   return {choices,coverage};
 }
 
-/** Replace approved rows; keep unreplaced actions from the pinned upstream sheet. */
+/** Compose only locally bundled, approved strips. */
 export async function prepareMotionSkin(root, skin, pack, extended, workingVariants=false, outputFile) {
   if(outputFile && !/^assets\/atlases\/[a-z-]+\.png$/.test(outputFile))throw Error('Invalid atlas output path');
   const {choices}=planMotions(skin,pack);
@@ -90,22 +84,13 @@ export async function prepareMotionSkin(root, skin, pack, extended, workingVaria
   const motions=[...new Map(keys.map(key=>[choices[key].id,choices[key]])).values()];
   const rowBytes=1536*208*4,pixels=Buffer.alloc(rowBytes*motions.length);
   if(!motions.length||motions.length*208>4096)throw Error('Invalid atlas dimensions');
-  let original;
-  for(const [index,motion] of motions.entries()){
-    const upstream=motion.source==='upstream';
-    if(upstream){if(motion.file!==`assets/${skin.id}.png`)throw Error('Invalid original motion path');}
-    else if(!/^assets\/generated\/[a-z-]+\.png$/.test(motion.file))throw Error('Invalid generated motion path');
-    let strip=original;
-    if(!upstream||!strip){
-      const bytes=await readMotionFile(motionJoin(root,motion.file));
-      if(bytes.length!==motion.bytes||motionHash('sha256').update(bytes).digest('hex')!==motion.sha256)throw Error('Motion artwork integrity check failed');
-      strip=decodeMotionPng(bytes);
-      if(strip.width!==1536||strip.height!==(upstream?2288:208))throw Error('Invalid motion dimensions');
-      if(upstream)original=strip;
-    }
-    if(upstream){
-      strip.pixels.subarray(motion.sourceRow*rowBytes,(motion.sourceRow+1)*rowBytes).copy(pixels,index*rowBytes);
-    }else strip.pixels.copy(pixels,index*rowBytes);
+  for (const [index,motion] of motions.entries()){
+    if(!/^assets\/generated\/[a-z-]+\.png$/.test(motion.file))throw Error('Invalid generated motion path');
+    const bytes=await readMotionFile(motionJoin(root,motion.file));
+    if(bytes.length!==motion.bytes||motionHash('sha256').update(bytes).digest('hex')!==motion.sha256)throw Error('Motion artwork integrity check failed');
+    const strip=decodeMotionPng(bytes);
+    if(strip.width!==1536||strip.height!==208)throw Error('Invalid motion dimensions');
+    strip.pixels.copy(pixels,index*rowBytes);
   }
   const animations=Object.fromEntries(keys.map(key=>{
     const motion=choices[key],clip={row:motions.findIndex(m=>m.id===motion.id),holdsMs:motion.holdsMs};

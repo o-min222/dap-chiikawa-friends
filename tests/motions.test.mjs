@@ -7,8 +7,8 @@ import {decodeMotionPng,encodeMotionPng,prepareMotionSkin,planMotions} from '../
 import {fixture} from './fixtures.mjs';
 const pack=JSON.parse(await readFile(new URL('../assets/motions.json',import.meta.url),'utf8'));
 const skins=JSON.parse(await readFile(new URL('../assets/catalog.json',import.meta.url),'utf8'));
-test('49 approved strips keep the existing four independent while Shisa uses originals',async()=>{
- assert.equal(pack.length,49);assert.equal(new Set(pack.map(m=>m.id)).size,49);
+test('60 approved strips keep all five characters independent',async()=>{
+ assert.equal(pack.length,60);assert.equal(new Set(pack.map(m=>m.id)).size,60);
  for(const motion of pack){
   const image=decodeMotionPng(await readFile(new URL('../'+motion.file,import.meta.url)));
   assert.equal(image.width,1536);assert.equal(image.height,208);
@@ -18,11 +18,11 @@ test('49 approved strips keep the existing four independent while Shisa uses ori
   }
  }
  const coverage=skins.flatMap(s=>Object.values(planMotions(s,pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='ready').length,55);
+ assert.equal(coverage.filter(m=>m.status==='ready').length,68);
  assert.equal(coverage.filter(m=>m.status==='shared').length,2);
  assert.ok(!('jumping' in planMotions(skins[0],pack).coverage));
  assert.ok(!('waiting' in planMotions(skins[0],pack).coverage));
- assert.equal(coverage.filter(m=>m.status==='upstream').length,13);
+ assert.equal(coverage.filter(m=>m.status==='upstream').length,0);
  const chiikawa=planMotions(skins.find(s=>s.id==='chiikawa'),pack).coverage;
  assert.equal(chiikawa.idle.motionId,'chiikawa-idle');
  assert.equal(chiikawa.idle.status,'ready');
@@ -123,8 +123,8 @@ test('all approved rows compose exactly without original sprite sheets',async()=
  const root=await mkdtemp(join(tmpdir(),'dap-independent-'));
  try{
   await mkdir(join(root,'assets/atlases'),{recursive:true});
-  const {catalog}=await fixture(root,skins,{originals:false});
-  for(const skin of catalog.filter(s=>s.id!=='shisa'))for(const modern of [true,false]){
+  const {catalog}=await fixture(root,skins);
+  for(const skin of catalog)for(const modern of [true,false]){
    const result=await prepareMotionSkin(root,skin,pack,modern,modern,`assets/atlases/${skin.id}-${modern?'modern':'legacy'}.png`);
    const image=decodeMotionPng(await readFile(join(root,result.spritesheetPath)));
    assert.ok(image.height<=4096);assert.equal(image.height,result.grid.rows*208);assert.equal(result.look,undefined);
@@ -132,7 +132,7 @@ test('all approved rows compose exactly without original sprite sheets',async()=
    for(const [key,clip] of Object.entries(result.animations)){
     const strip=decodeMotionPng(await readFile(join(root,choices[key].file)));
     const rowBytes=1536*208*4;
-    const source=choices[key].source==='upstream'?strip.pixels.subarray(choices[key].sourceRow*rowBytes,(choices[key].sourceRow+1)*rowBytes):strip.pixels;
+    const source=strip.pixels;
     assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),source);
     assert.deepEqual(clip.holdsMs,choices[key].holdsMs);
    }
@@ -158,11 +158,11 @@ test('Momonga grab and Usagi dance keep idle scale, and both Momonga reading cli
  assert.equal(working.length,2);assert.ok(working.every(m=>m.holdsMs.length===8));
 });
 
-test('all four fully replaced characters compose without downloading or reading originals',async()=>{
+test('all five characters compose without downloading or reading originals',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-complete-'));
  try{
- const {catalog}=await fixture(root,skins,{originals:false});
- for(const id of ['chiikawa','hachiware','usagi','momonga']){
+ const {catalog}=await fixture(root,skins);
+ for(const id of ['chiikawa','hachiware','usagi','momonga','shisa']){
   const skin=catalog.find(s=>s.id===id);
   assert.ok(Object.values(planMotions(skin,pack).choices).every(m=>m.source!=='upstream'));
   await prepareMotionSkin(root,skin,pack,true,true);
@@ -184,7 +184,7 @@ test('approved click reactions keep preview timing and compose every slot withou
  }
  const root=await mkdtemp(join(tmpdir(),'dap-'+character+'-happy-'));
  try{
-  const {catalog}=await fixture(root,skins,{originals:false});
+  const {catalog}=await fixture(root,skins);
   const skin=catalog.find(s=>s.id===character);
   assert.ok(Object.values(planMotions(skin,pack).choices).every(m=>m.source!=='upstream'));
   for(const modern of [true,false]){
@@ -205,21 +205,44 @@ test('approved click reactions keep preview timing and compose every slot withou
 });
 
 
-test('Shisa retains original row pixels and timing across modern and legacy skin modes',async()=>{
+test('Shisa composes every approved slot offline in modern and legacy skin modes',async()=>{
  const root=await mkdtemp(join(tmpdir(),'dap-shisa-'));
  try{
-  const {catalog}=await fixture(root,skins,{originals:true});
+  const {catalog}=await fixture(root,skins);
   const skin=catalog.find(s=>s.id==='shisa'),{choices,coverage}=planMotions(skin,pack);
-  assert.ok(Object.values(choices).every(m=>m.source==='upstream'));
+  assert.equal(choices.idle.id,'shisa-idle');
+  assert.equal(choices.waiting.id,'shisa-idle');
+  assert.equal(choices['running-right'].id,'shisa-move-right');
+  assert.equal(choices['running-left'].id,'shisa-move-left');
+  assert.equal(choices.waving.id,'shisa-happy');
+  assert.equal(choices.running.id,'shisa-work');
+  assert.equal(choices.review.id,'shisa-review');
+  assert.equal(choices.sleep.id,'shisa-sleep');
+  assert.equal(choices.feed_munch.id,'shisa-eat');
+  assert.equal(choices.groom.id,'shisa-groom');
+  assert.equal(choices.grabbed.id,'shisa-grabbed');
+  assert.equal(choices.dance.id,'shisa-dance');
+  assert.equal(choices.failed.id,'shisa-idle');
+  assert.deepEqual(choices.dance.holdsMs,[160,140,160,140,160,160,140,140]);
+  assert.deepEqual(choices.grabbed.holdsMs,[180,160,160,180,160,160]);
+  assert.deepEqual(choices.groom.holdsMs,[300,150,250,200,180,180,200,340]);
+  assert.deepEqual(choices.feed_munch.holdsMs,[200,200,180,260,180,320,180,280]);
+  assert.deepEqual(choices.sleep.holdsMs,[550,450,500,550,450,500]);
+  assert.deepEqual(choices.review.holdsMs,[300,180,250,300,120,250,200,400]);
+  assert.equal(choices.working_v2.id,'shisa-work');
+  assert.deepEqual(choices.running.holdsMs,Array(8).fill(200));
+  assert.deepEqual(choices.waving.holdsMs,[280,180,200,180,180,300,180,500]);
+  assert.equal(coverage.idle.status,'ready');
   assert.equal(coverage.working_v2.status,'shared');
-  const original=decodeMotionPng(await readFile(join(root,skin.spritesheetPath))),rowBytes=1536*208*4;
+  const rowBytes=1536*208*4;
   for(const modern of [true,false]){
    const result=await prepareMotionSkin(root,skin,pack,modern,modern);
    const image=decodeMotionPng(await readFile(join(root,result.spritesheetPath)));
    assert.ok(image.height<=4096);
    for(const [key,clip] of Object.entries(result.animations)){
     const m=choices[key];
-    assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),original.pixels.subarray(m.sourceRow*rowBytes,(m.sourceRow+1)*rowBytes));
+    const expected=decodeMotionPng(await readFile(new URL('../'+m.file,import.meta.url))).pixels;
+    assert.deepEqual(image.pixels.subarray(clip.row*rowBytes,(clip.row+1)*rowBytes),expected);
     assert.deepEqual(clip.holdsMs,m.holdsMs);
    }
   }

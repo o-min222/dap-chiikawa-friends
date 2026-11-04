@@ -82,15 +82,15 @@ test('character cards select active character once and show its description', ()
 
   receive({...status, assetsReady: false, readySkinIds: ['usagi', 'momonga']});
   assert.equal(element('apply').disabled, false);
-  assert.equal(element('download-assets').hidden, true);
+  assert.doesNotMatch(html,/id="download-assets"/);
   element('character-list').children.find(card => card.dataset.id === 'chiikawa').listeners.click();
   assert.equal(element('apply').disabled, true);
-  assert.equal(element('download-assets').hidden, false);
+  assert.doesNotMatch(source,/download-assets/);
   element('character-list').children.find(card => card.dataset.id === 'shisa').listeners.click();
   assert.equal(element('persona-title').textContent, '시사');
   assert.match(element('character-description').textContent, /노력가/);
   assert.equal(element('apply').disabled, true);
   receive({...status, assetsReady: true, readySkinIds: skins.map(s=>s.id)});
   assert.equal(element('apply').disabled, false);
-  assert.equal(element('download-assets').hidden, true);
+  assert.doesNotMatch(html,/id="download-assets"/);
 });

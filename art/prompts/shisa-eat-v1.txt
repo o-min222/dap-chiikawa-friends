@@ -1,0 +1,16 @@
+Use case: illustration-story
+Asset: ONE Shisa EATING RAMEN sprite animation for a desktop pet.
+Input image 1: approved Shisa character identity master. Input image 2: approved Shisa ramen preparation pose, reference ONLY for the same character/body scale, bowl design and placement. Replace stirring with EATING, use chopsticks instead of a ladle. No ladle in this animation.
+Keep the identical compact round cream head/body, small rounded ears, paired peach-orange curly eyebrows and three orange mane tufts on each side, warm dark brown thick outline, pink cheeks with three hatches, very short paws and feet. Do not stretch torso or change face size across frames.
+One white round ramen bowl with a single pale-blue rim sits on the ground directly in front of the lower belly, same as input 2, both short feet visible beside it. Pale yellow noodles, light tan broth and a few green garnish marks. One little paw steadies the rim. The other little paw holds ONE pair of plain short wooden chopsticks, pinching one small noodle bite. Simple clean correct anatomy: two front paws total, no human fingers, no extra utensils, no duplicate chopsticks.
+EIGHT sequential complete whole-character frames, exact 4 columns x 2 rows grid, equal cells, clear transparent gutters.
+1 calm face, chopsticks just over the bowl, about to take a bite.
+2 lift a short small bundle of noodles from the bowl toward mouth.
+3 mouth opens a little, noodle tip reaches mouth, chopsticks near lower cheek.
+4 happily slurp: eyes softly closed, just a short noodle strand between mouth and chopsticks, bowl stays still.
+5 noodles fully in mouth, mouth closes, chopsticks lower back toward bowl.
+6 contented chewing with gently rounded cheeks and closed happy eyes, no visible noodles outside mouth.
+7 swallow, reopen eyes, tiny satisfied w-mouth, chopsticks at resting height.
+8 return exactly to frame 1.
+Draw small readable changes in mouth, cheeks and the noodle length, not a big head bob. Head, ears, brows, mane, torso, bowl and feet keep the same size, position and viewing angle. Only the holding paw, chopsticks, noodles and intended facial expression move. No walking, stirring, waving, bouncing, changing head angle or swelling head shape. Whole coherent character in each pose, no separated parts.
+Actual transparent background. All ears, mane, chopsticks, feet and bowl fully inside their own cell. Same soft cream/orange palette and dark brown line as approved references. No text, labels, bubbles, steam, stars, floor, shadows or background scenery.

@@ -4,3 +4,13 @@ dist/
 node_modules/
 outputs/
 .DS_Store
+
+# DAP Assistant local production exports
+art/dap-assistant-assets-*.zip
+art/dap-character-reference-kit-*.zip
+art/production/takes/
+art/production/motions/*/frames-512.zip
+art/production/motions/*/*.webp
+art/production/motions/*/*.jpg
+art/production/*-review.jpg
+scripts/__pycache__/

@@ -1,0 +1,444 @@
+{
+  "format": "dap-assistant-animation-pack",
+  "formatVersion": 1,
+  "character": "DAP Assistant",
+  "status": "ready",
+  "integrationStatus": "host-runtime-implemented",
+  "referenceElement": "05d384a2-ec9d-4951-8738-85731dbbe46e",
+  "baseMotionCount": 16,
+  "interactionCount": 11,
+  "motionMap": {
+    "idle": "idle-quiet",
+    "walk-right": "walk-right",
+    "walk-left": "walk-left",
+    "thinking": "thinking-refined",
+    "working": "working",
+    "working-v2": "working-v2",
+    "happy": "happy",
+    "groom": "groom",
+    "grabbed": "grabbed",
+    "sleep": "sleep",
+    "dance": "dance",
+    "success": "success",
+    "error": "error",
+    "music-playing": "music-listening",
+    "self-play": "self-play",
+    "laptop-working": "laptop-working",
+    "greeting": "greeting",
+    "listening": "listening",
+    "acknowledge": "acknowledge",
+    "speaking": "speaking",
+    "approval-wait": "approval-wait",
+    "clarify": "clarify",
+    "cancel": "cancel",
+    "resume": "resume",
+    "work-interrupt": "work-interrupt",
+    "work-stretch": "work-stretch",
+    "work-finish": "work-finish"
+  },
+  "aliases": {
+    "headtilt": "thinking-refined",
+    "review": "thinking-refined",
+    "working_v2": "laptop-working",
+    "running": "working",
+    "waving": "greeting",
+    "waiting": "idle-quiet"
+  },
+  "locomotion": {
+    "left": "walk-left",
+    "right": "walk-right"
+  },
+  "musicPlayback": {
+    "motion": "music-listening",
+    "hostVisualAction": "dance",
+    "variants": {
+      "quiet": "music-listening",
+      "energetic": "dance"
+    },
+    "startSignal": "petEngine.onAudio(true)",
+    "stopSignal": "petEngine.onAudio(false)",
+    "stopPhase": "exit",
+    "afterStop": "restore-host-state"
+  },
+  "idleVariants": [
+    "idle-quiet",
+    "idle-glance",
+    "idle-soft"
+  ],
+  "idleActivities": [
+    "self-play"
+  ],
+  "computerWork": {
+    "motion": "laptop-working",
+    "interruptMotion": "work-interrupt",
+    "stretchMotion": "work-stretch",
+    "finishMotion": "work-finish",
+    "finishPose": "standing-neutral"
+  },
+  "gaze": {
+    "coordinates": "screen-x-right-y-down",
+    "angleOrigin": "right",
+    "angleDirection": "clockwise",
+    "neutral": "idle-quiet",
+    "directions": [
+      {
+        "motion": "gaze-e",
+        "angleDegrees": 0
+      },
+      {
+        "motion": "gaze-se",
+        "angleDegrees": 45
+      },
+      {
+        "motion": "gaze-s",
+        "angleDegrees": 90
+      },
+      {
+        "motion": "gaze-sw",
+        "angleDegrees": 135
+      },
+      {
+        "motion": "gaze-w",
+        "angleDegrees": 180
+      },
+      {
+        "motion": "gaze-nw",
+        "angleDegrees": 225
+      },
+      {
+        "motion": "gaze-n",
+        "angleDegrees": 270
+      },
+      {
+        "motion": "gaze-ne",
+        "angleDegrees": 315
+      }
+    ],
+    "playback": "entry-on-target-change-loop-while-target-stable-exit-on-release"
+  },
+  "atlasCell": {
+    "width": 256,
+    "height": 256
+  },
+  "atlasAnchor": {
+    "x": 128,
+    "y": 224
+  },
+  "referenceHeight": 200,
+  "pngFrame": {
+    "width": 512,
+    "height": 512
+  },
+  "pngAnchor": {
+    "x": 256,
+    "y": 448
+  },
+  "playbackDirections": [
+    "forward",
+    "reverse",
+    "alternate",
+    "alternate-reverse"
+  ],
+  "clipCount": 37,
+  "totalSourceFrames": 6801,
+  "clips": {
+    "idle-quiet": {
+      "manifest": "motions/idle-quiet/clip.json",
+      "framesArchive": "motions/idle-quiet/frames-512.zip",
+      "frameCount": 145,
+      "fps": 24.0,
+      "durationMs": 6042,
+      "reviewStatus": "alpha-and-loop-reviewed"
+    },
+    "walk-right": {
+      "manifest": "motions/walk-right/clip.json",
+      "framesArchive": "motions/walk-right/frames-512.zip",
+      "frameCount": 288,
+      "fps": 24.0,
+      "durationMs": 12000,
+      "reviewStatus": "alpha-and-foot-led-turn-reviewed"
+    },
+    "walk-left": {
+      "manifest": "motions/walk-left/clip.json",
+      "framesArchive": "motions/walk-left/frames-512.zip",
+      "frameCount": 288,
+      "fps": 24.0,
+      "durationMs": 12000,
+      "reviewStatus": "alpha-and-foot-led-turn-reviewed"
+    },
+    "thinking-refined": {
+      "manifest": "motions/thinking-refined/clip.json",
+      "framesArchive": "motions/thinking-refined/frames-512.zip",
+      "frameCount": 145,
+      "fps": 24.0,
+      "durationMs": 6042,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "working": {
+      "manifest": "motions/working/clip.json",
+      "framesArchive": "motions/working/frames-512.zip",
+      "frameCount": 240,
+      "fps": 24.0,
+      "durationMs": 10000,
+      "reviewStatus": "alpha-and-prop-continuity-reviewed"
+    },
+    "working-v2": {
+      "manifest": "motions/working-v2/clip.json",
+      "framesArchive": "motions/working-v2/frames-512.zip",
+      "frameCount": 240,
+      "fps": 24.0,
+      "durationMs": 10000,
+      "reviewStatus": "alpha-and-prop-continuity-reviewed"
+    },
+    "happy": {
+      "manifest": "motions/happy/clip.json",
+      "framesArchive": "motions/happy/frames-512.zip",
+      "frameCount": 145,
+      "fps": 24.0,
+      "durationMs": 6042,
+      "reviewStatus": "alpha-and-body-mechanics-reviewed"
+    },
+    "groom": {
+      "manifest": "motions/groom/clip.json",
+      "framesArchive": "motions/groom/frames-512.zip",
+      "frameCount": 144,
+      "fps": 24.0,
+      "durationMs": 6000,
+      "reviewStatus": "alpha-and-action-reviewed"
+    },
+    "grabbed": {
+      "manifest": "motions/grabbed/clip.json",
+      "framesArchive": "motions/grabbed/frames-512.zip",
+      "frameCount": 192,
+      "fps": 24.0,
+      "durationMs": 8000,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "sleep": {
+      "manifest": "motions/sleep/clip.json",
+      "framesArchive": "motions/sleep/frames-512.zip",
+      "frameCount": 192,
+      "fps": 24.0,
+      "durationMs": 8000,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "dance": {
+      "manifest": "motions/dance/clip.json",
+      "framesArchive": "motions/dance/frames-512.zip",
+      "frameCount": 385,
+      "fps": 24.0,
+      "durationMs": 16042,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "success": {
+      "manifest": "motions/success/clip.json",
+      "framesArchive": "motions/success/frames-512.zip",
+      "frameCount": 241,
+      "fps": 24.0,
+      "durationMs": 10042,
+      "reviewStatus": "alpha-and-prop-continuity-reviewed"
+    },
+    "error": {
+      "manifest": "motions/error/clip.json",
+      "framesArchive": "motions/error/frames-512.zip",
+      "frameCount": 144,
+      "fps": 24.0,
+      "durationMs": 6000,
+      "reviewStatus": "alpha-and-action-reviewed"
+    },
+    "music-listening": {
+      "manifest": "motions/music-listening/clip.json",
+      "framesArchive": "motions/music-listening/frames-512.zip",
+      "frameCount": 288,
+      "fps": 24.0,
+      "durationMs": 12000,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "self-play": {
+      "manifest": "motions/self-play/clip.json",
+      "framesArchive": "motions/self-play/frames-512.zip",
+      "frameCount": 289,
+      "fps": 24.0,
+      "durationMs": 12042,
+      "reviewStatus": "alpha-and-action-reviewed"
+    },
+    "laptop-working": {
+      "manifest": "motions/laptop-working/clip.json",
+      "framesArchive": "motions/laptop-working/frames-512.zip",
+      "frameCount": 721,
+      "fps": 24.0,
+      "durationMs": 30042,
+      "reviewStatus": "alpha-and-idle-transition-reviewed"
+    },
+    "greeting": {
+      "manifest": "motions/greeting/clip.json",
+      "framesArchive": "motions/greeting/frames-512.zip",
+      "frameCount": 144,
+      "fps": 24.0,
+      "durationMs": 6000,
+      "reviewStatus": "alpha-and-action-reviewed"
+    },
+    "listening": {
+      "manifest": "motions/listening/clip.json",
+      "framesArchive": "motions/listening/frames-512.zip",
+      "frameCount": 144,
+      "fps": 24.0,
+      "durationMs": 6000,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "acknowledge": {
+      "manifest": "motions/acknowledge/clip.json",
+      "framesArchive": "motions/acknowledge/frames-512.zip",
+      "frameCount": 144,
+      "fps": 24.0,
+      "durationMs": 6000,
+      "reviewStatus": "alpha-and-action-reviewed"
+    },
+    "speaking": {
+      "manifest": "motions/speaking/clip.json",
+      "framesArchive": "motions/speaking/frames-512.zip",
+      "frameCount": 144,
+      "fps": 24.0,
+      "durationMs": 6000,
+      "reviewStatus": "alpha-and-loop-reviewed"
+    },
+    "approval-wait": {
+      "manifest": "motions/approval-wait/clip.json",
+      "framesArchive": "motions/approval-wait/frames-512.zip",
+      "frameCount": 240,
+      "fps": 24.0,
+      "durationMs": 10000,
+      "reviewStatus": "alpha-and-prop-continuity-reviewed"
+    },
+    "clarify": {
+      "manifest": "motions/clarify/clip.json",
+      "framesArchive": "motions/clarify/frames-512.zip",
+      "frameCount": 145,
+      "fps": 24.0,
+      "durationMs": 6042,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "cancel": {
+      "manifest": "motions/cancel/clip.json",
+      "framesArchive": "motions/cancel/frames-512.zip",
+      "frameCount": 240,
+      "fps": 24.0,
+      "durationMs": 10000,
+      "reviewStatus": "alpha-and-prop-continuity-reviewed"
+    },
+    "resume": {
+      "manifest": "motions/resume/clip.json",
+      "framesArchive": "motions/resume/frames-512.zip",
+      "frameCount": 261,
+      "fps": 24.0,
+      "durationMs": 10875,
+      "reviewStatus": "alpha-and-prop-continuity-reviewed"
+    },
+    "work-interrupt": {
+      "manifest": "motions/work-interrupt/clip.json",
+      "framesArchive": "motions/work-interrupt/frames-512.zip",
+      "frameCount": 96,
+      "fps": 24.0,
+      "durationMs": 4000,
+      "reviewStatus": "alpha-and-attentive-action-reviewed"
+    },
+    "work-stretch": {
+      "manifest": "motions/work-stretch/clip.json",
+      "framesArchive": "motions/work-stretch/frames-512.zip",
+      "frameCount": 120,
+      "fps": 24.0,
+      "durationMs": 5000,
+      "reviewStatus": "alpha-and-neck-motion-reviewed"
+    },
+    "work-finish": {
+      "manifest": "motions/work-finish/clip.json",
+      "framesArchive": "motions/work-finish/frames-512.zip",
+      "frameCount": 169,
+      "fps": 24.0,
+      "durationMs": 7042,
+      "reviewStatus": "alpha-and-device-contact-reviewed"
+    },
+    "idle-glance": {
+      "manifest": "motions/idle-glance/clip.json",
+      "framesArchive": "motions/idle-glance/frames-512.zip",
+      "frameCount": 145,
+      "fps": 24.0,
+      "durationMs": 6042,
+      "reviewStatus": "alpha-and-loop-boundary-reviewed"
+    },
+    "idle-soft": {
+      "manifest": "motions/idle-soft/clip.json",
+      "framesArchive": "motions/idle-soft/frames-512.zip",
+      "frameCount": 145,
+      "fps": 24.0,
+      "durationMs": 6042,
+      "reviewStatus": "alpha-and-loop-reviewed"
+    },
+    "gaze-e": {
+      "manifest": "motions/gaze-e/clip.json",
+      "framesArchive": "motions/gaze-e/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-se": {
+      "manifest": "motions/gaze-se/clip.json",
+      "framesArchive": "motions/gaze-se/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-s": {
+      "manifest": "motions/gaze-s/clip.json",
+      "framesArchive": "motions/gaze-s/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-sw": {
+      "manifest": "motions/gaze-sw/clip.json",
+      "framesArchive": "motions/gaze-sw/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-w": {
+      "manifest": "motions/gaze-w/clip.json",
+      "framesArchive": "motions/gaze-w/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-nw": {
+      "manifest": "motions/gaze-nw/clip.json",
+      "framesArchive": "motions/gaze-nw/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-n": {
+      "manifest": "motions/gaze-n/clip.json",
+      "framesArchive": "motions/gaze-n/frames-512.zip",
+      "frameCount": 72,
+      "fps": 24.0,
+      "durationMs": 3000,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    },
+    "gaze-ne": {
+      "manifest": "motions/gaze-ne/clip.json",
+      "framesArchive": "motions/gaze-ne/frames-512.zip",
+      "frameCount": 73,
+      "fps": 24.0,
+      "durationMs": 3042,
+      "reviewStatus": "alpha-and-directional-loop-reviewed"
+    }
+  },
+  "missingClips": [],
+  "unreviewedClips": []
+}

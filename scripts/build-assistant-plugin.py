@@ -42,6 +42,21 @@ def build(destination: Path) -> None:
               'idleVariants', 'musicPlayback', 'computerWork', 'gaze')
     runtime_pack = {key: manifest[key] for key in fields}
     runtime_pack.update(clips=clips, referenceHeight=manifest['referenceHeight'])
+    emoticons = json.loads((production / 'emoticons' / 'catalog.json').read_text(encoding='utf-8'))
+    runtime_pack['emoticons'] = {}
+    (assets / 'emoticons').mkdir(exist_ok=True)
+    for previous in (assets / 'emoticons').glob('*.gif'):
+        previous.unlink()
+    for name, label in emoticons.items():
+        source = production / 'emoticons' / f'{name}.png'
+        with Image.open(source) as image:
+            width, height = image.size
+            if image.mode != 'RGBA' or image.getextrema()[3][0] != 0:
+                raise ValueError(f'{name} requires a transparent RGBA image')
+        shutil.copy2(source, assets / 'emoticons' / source.name)
+        runtime_pack['emoticons'][name] = {
+            'label': label, 'image': f'emoticons/{source.name}', 'width': width, 'height': height,
+        }
     (assets / 'asset-pack.json').write_text(json.dumps(runtime_pack, ensure_ascii=False), encoding='utf-8')
     idle = json.loads((production / manifest['clips']['idle-quiet']['manifest']).read_text(encoding='utf-8'))
     frame = idle['frames'][0]
@@ -53,6 +68,13 @@ def build(destination: Path) -> None:
         for path in sorted(destination.rglob('*')):
             if path.is_file():
                 bundle.write(path, path.relative_to(destination).as_posix())
+    emoticon_archive = destination.parent / 'ain-emoticons.zip'
+    with zipfile.ZipFile(emoticon_archive, 'w', compression=zipfile.ZIP_STORED) as bundle:
+        for name in emoticons:
+            portrait = production / 'emoticons' / f'{name}.png'
+            bundle.write(portrait, portrait.name)
+        for name in ('index.html', 'catalog.json'):
+            bundle.write(production / 'emoticons' / name, name)
     print(json.dumps({'plugin': str(destination), 'archive': str(archive), 'clips': len(clips),
                       'frames': frame_count, 'bytes': archive.stat().st_size}, ensure_ascii=False))
 

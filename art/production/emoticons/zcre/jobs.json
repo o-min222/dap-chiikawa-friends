@@ -1,0 +1,412 @@
+{
+  "version": 1,
+  "model": "seedance-2.5",
+  "generationStage": "standard",
+  "approvedCoreCredits": 700,
+  "reference": "references/ain-neutral-white.png",
+  "motions": [
+    {
+      "id": "happy",
+      "label": "기쁨",
+      "requestId": "req_mcp_67bef620a752f67e89fd2f65d894ee9b02a401fbaffed97028de24e4507cd30c",
+      "outputId": "d0b4c4f2-02d8-40cc-ac65-295d1dc9df87",
+      "status": "succeeded",
+      "chargedCredits": 140,
+      "video": "ain-happy-seedance25.mp4",
+      "animation": "ain-happy-animated.webp",
+      "reference": "../happy.png",
+      "exportStatus": "succeeded",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": true,
+        "bytes": 9387556,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-happy-tonematched-animated.webp",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette.",
+      "postProcessing": {
+        "colorMatch": "per-frame neutral hair reference",
+        "sourceFrameRange": [
+          1,
+          109
+        ],
+        "frames": 108,
+        "durationMs": 4500,
+        "cleanVideo": "ain-happy-clean.mp4",
+        "notes": "첫 입력 그림과 끝부분 배경이 번쩍 밝아지는 전환 전체를 제외함. 윙크 후 정면 미소로 마무리."
+      },
+      "toneMatchedVideo": "ain-happy-tonematched.webm"
+    },
+    {
+      "id": "idle",
+      "label": "대기·듣기",
+      "idempotencyKey": "ain-core-idle-20261116-01",
+      "requestId": "req_mcp_3d9c076130ef0d5b4260f1471b3b0fc4bd83c389aa41fc3ceb2aec2690543d26",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "prompt": "Animate this exact original 2D chibi character as a natural, high-quality assistant portrait. Preserve the coral bob haircut and curled tuft, green eyes, ivory arrow-shaped hair clip, purple outfit, ivory collar, gold button, proportions, illustration linework and colors. Keep the character at a fixed portrait scale with the frontal camera locked. Keep both hands resting together at chest level. Keep a flat solid white background, steady lighting and a clear silhouette throughout. Begin in the exact supplied neutral pose with a small closed-mouth smile. Finish smoothly in that same neutral pose and expression, with the same framing, so this clip can connect to other reactions. Small facial movement and tiny secondary hair motion should feel hand-animated. Silent.\nThe character calmly listens to the viewer. Show one gentle breathing cycle through a tiny shoulder movement. Both eyes blink together naturally once near the middle. The gaze stays attentive and forward, with a barely perceptible head adjustment. Keep the mood calm and the mouth softly closed. Settle naturally into the reference pose.",
+      "video": "ain-idle-seedance25.mp4",
+      "animation": "ain-idle-animated.webp",
+      "loop": true,
+      "chargedCredits": 140,
+      "outputId": "2d613979-76e3-40e5-af3e-475e6884ef14",
+      "exportStatus": "succeeded",
+      "entryPose": "neutral",
+      "exitPose": "neutral",
+      "reference": "references/ain-neutral-white.png",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": true,
+        "bytes": 9975114,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-idle-tonematched-animated.webp",
+      "toneMatchedVideo": "ain-idle-tonematched.webm",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette."
+    },
+    {
+      "id": "thinking",
+      "label": "생각·집중",
+      "idempotencyKey": "ain-core-thinking-20261116-01",
+      "requestId": "req_mcp_880f82e189dc4ffb7bb2fde166ea395925e8939ed56977fa6fe4694ab2ebf172",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "prompt": "Animate this exact original 2D chibi character as a natural, high-quality assistant portrait. Preserve the coral bob haircut and curled tuft, green eyes, ivory arrow-shaped hair clip, purple outfit, ivory collar, gold button, proportions, illustration linework and colors. Keep the character at a fixed portrait scale with the frontal camera locked. Keep both hands resting together at chest level. Keep a flat solid white background, steady lighting and a clear silhouette throughout. Begin in the exact supplied neutral pose with a small closed-mouth smile. Finish smoothly in that same neutral pose and expression, with the same framing, so this clip can connect to other reactions. Small facial movement and tiny secondary hair motion should feel hand-animated. Silent.\nThe character thoughtfully considers a question. The gaze moves a little up and to one side, the eyebrows draw together gently, and the head tilts a few degrees as if weighing an idea. Both eyelids close together in one natural blink. Then the gaze returns to the viewer and the brows relax into the reference expression. Keep the hands at rest.",
+      "video": "ain-thinking-seedance25.mp4",
+      "animation": "ain-thinking-animated.webp",
+      "loop": true,
+      "chargedCredits": 140,
+      "outputId": "1d8d63be-4d19-45a1-9507-7845ec5a2ae6",
+      "exportStatus": "succeeded",
+      "entryPose": "neutral",
+      "exitPose": "neutral",
+      "reference": "references/ain-neutral-white.png",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": true,
+        "bytes": 9801170,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-thinking-tonematched-animated.webp",
+      "toneMatchedVideo": "ain-thinking-tonematched.webm",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette."
+    },
+    {
+      "id": "speaking",
+      "label": "말하기",
+      "idempotencyKey": "ain-core-speaking-20261116-01",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "prompt": "Animate this exact original 2D chibi character as a natural, high-quality assistant portrait. Preserve the coral bob haircut and curled tuft, green eyes, ivory arrow-shaped hair clip, purple outfit, ivory collar, gold button, proportions, illustration linework and colors. Keep the character at a fixed portrait scale with the frontal camera locked. Keep both hands resting together at chest level. Keep a flat solid white background, steady lighting and a clear silhouette throughout. Begin in the exact supplied neutral pose with a small closed-mouth smile. Finish smoothly in that same neutral pose and expression, with the same framing, so this clip can connect to other reactions. Small facial movement and tiny secondary hair motion should feel hand-animated. Silent.\nThe character explains something gently to the viewer. Animate a short sequence of small closed, open and rounded mouth shapes with natural brief pauses, like softly speaking a few words. Add one subtle conversational head nod and one natural two-eye blink. Keep the jaw and cheeks anatomically consistent and gestures restrained. Return to the exact closed-mouth neutral expression at the end.",
+      "video": "ain-speaking-seedance25.mp4",
+      "animation": "ain-speaking-animated.webp",
+      "loop": true,
+      "requestId": "req_mcp_29bc67bf1379e7f8f8bb5beba3666eefb4b078a1d8390fa8add94377219fe8f9",
+      "chargedCredits": 140,
+      "outputId": "d98a76cf-c799-45d2-9ac8-353299d5dcbc",
+      "exportStatus": "succeeded",
+      "entryPose": "neutral",
+      "exitPose": "neutral",
+      "reference": "references/ain-neutral-white.png",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": true,
+        "bytes": 9924412,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-speaking-tonematched-animated.webp",
+      "toneMatchedVideo": "ain-speaking-tonematched.webm",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette."
+    },
+    {
+      "id": "empathy",
+      "label": "공감·위로",
+      "idempotencyKey": "ain-core-empathy-20261116-01",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "prompt": "Animate this exact original 2D chibi character as a natural, high-quality assistant portrait. Preserve the coral bob haircut and curled tuft, green eyes, ivory arrow-shaped hair clip, purple outfit, ivory collar, gold button, proportions, illustration linework and colors. Keep the character at a fixed portrait scale with the frontal camera locked. Keep both hands resting together at chest level. Keep a flat solid white background, steady lighting and a clear silhouette throughout. Begin in the exact supplied neutral pose with a small closed-mouth smile. Finish smoothly in that same neutral pose and expression, with the same framing, so this clip can connect to other reactions. Small facial movement and tiny secondary hair motion should feel hand-animated. Silent.\nThe character responds with quiet empathy. The inner eyebrows lift slightly, the eyes soften, and the smile briefly becomes a small concerned mouth. Make one small, reassuring nod while maintaining warm eye contact. Both eyes blink together slowly once. The expression gently resolves into the original small reassuring smile. Keep the emotion tender and composed.",
+      "video": "ain-empathy-seedance25.mp4",
+      "animation": "ain-empathy-animated.webp",
+      "loop": false,
+      "requestId": "req_mcp_81bf78ffc5b3ad6020ba0640a82c7ec09ee41912eeb54c00426916d700ba7e57",
+      "chargedCredits": 140,
+      "outputId": "59a07309-03ae-49d8-884f-973e2ec9a4a4",
+      "exportStatus": "succeeded",
+      "entryPose": "neutral",
+      "exitPose": "neutral",
+      "reference": "references/ain-neutral-white.png",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": false,
+        "bytes": 9941238,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-empathy-tonematched-animated.webp",
+      "toneMatchedVideo": "ain-empathy-tonematched.webm",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette."
+    },
+    {
+      "id": "surprised",
+      "label": "놀람",
+      "idempotencyKey": "ain-core-surprised-20261116-01",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "prompt": "Animate this exact original 2D chibi character as a natural, high-quality assistant portrait. Preserve the coral bob haircut and curled tuft, green eyes, ivory arrow-shaped hair clip, purple outfit, ivory collar, gold button, proportions, illustration linework and colors. Keep the character at a fixed portrait scale with the frontal camera locked. Keep both hands resting together at chest level. Keep a flat solid white background, steady lighting and a clear silhouette throughout. Begin in the exact supplied neutral pose with a small closed-mouth smile. Finish smoothly in that same neutral pose and expression, with the same framing, so this clip can connect to other reactions. Small facial movement and tiny secondary hair motion should feel hand-animated. Silent.\nThe character reacts to a surprising piece of news. The eyebrows lift quickly but gently, the eyes widen a little and the mouth forms a small round O. The head leans back only slightly, with a tiny follow-through of the hair tips. Hold the surprised expression briefly, then relax through a natural two-eye blink and return smoothly to the supplied neutral pose and closed-mouth smile. Keep both hands at rest.",
+      "video": "ain-surprised-seedance25.mp4",
+      "animation": "ain-surprised-animated.webp",
+      "loop": false,
+      "requestId": "req_mcp_ff39cb9fc11a85928e3e1bfcb440b2e842a190b3d93aa0b4bad71a15661551e3",
+      "chargedCredits": 140,
+      "outputId": "a2e76073-685a-4a80-9c4b-53a3334337df",
+      "exportStatus": "succeeded",
+      "entryPose": "neutral",
+      "exitPose": "neutral",
+      "reference": "references/ain-neutral-white.png",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": false,
+        "bytes": 10153142,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-surprised-tonematched-animated.webp",
+      "toneMatchedVideo": "ain-surprised-tonematched.webm",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette."
+    }
+  ],
+  "coreChargedCredits": 700,
+  "motionRevisions": [
+    {
+      "id": "thinking-calm",
+      "replaces": "thinking",
+      "label": "생각·집중",
+      "idempotencyKey": "ain-calm-attentive-focus-v1-20261116",
+      "requestId": "req_mcp_133b09c52cba6c99566df69f468d44870e67d6b049617cf524b46a121e0c922d",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "prompt": "A single locked-off close-up shot of this exact friendly anime assistant. Maintain the reference face, eye size, hair, colors, clothing and proportions throughout. She quietly pays attention to a screen just beside the camera. Keep both eyebrows relaxed and level, the eyelids soft, the cheeks still and the mouth gently closed with a tiny comfortable smile throughout. Show one natural slow blink, soft breathing and one very small confident acknowledging nod. Her expression stays calm, capable and at ease from beginning to end. Camera and character scale stay fixed. Seamless return to the first pose. Exclude frowning, inner eyebrows lifting, downward mouth corners, anxious or sad expressions, crying, watery eyes, trembling, exaggerated pupil changes, head swiveling and talking. Clean solid white background. Silent.",
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "reference": "references/ain-neutral-white.png",
+      "video": "ain-thinking-calm-seedance25.mp4",
+      "animation": "ain-thinking-calm-animated.webp",
+      "loop": true,
+      "outputId": "eaf16e4e-5f29-4a17-8a02-dfd26c641739",
+      "chargedCredits": 140,
+      "exportStatus": "succeeded",
+      "export": {
+        "frames": 121,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042,
+        "fps": 24,
+        "loop": true,
+        "bytes": 9916860,
+        "sourceCanvas": [
+          960,
+          960
+        ]
+      },
+      "toneMatchedAnimation": "ain-thinking-calm-tonematched-animated.webp",
+      "toneMatchedVideo": "ain-thinking-calm-tonematched.webm",
+      "toneMatchReference": "idle frames 12..108",
+      "toneMatchMethod": "Independent RGB palette matching for coral hair, skin and purple outfit, feathered by chromaticity. Each frame is matched to the median idle palette."
+    },
+    {
+      "id": "gaze360",
+      "label": "360도 시선",
+      "idempotencyKey": "ain-authored-gaze-circle-spokes-v1-20261116",
+      "requestId": "req_mcp_2944bf71dd8026d73d53655ddca18861467ff937c41ea803a9a2f891fe6b89b2",
+      "status": "succeeded",
+      "maximumCredits": 556,
+      "prompt": "Create one continuous 20-second eye-gaze reference performance of the exact original anime assistant in the supplied first and last images. Preserve her coral bob haircut, curled hair tuft, green eyes, ivory arrow hair clip, purple outfit, ivory collar, gold button, painted line style, anatomy and colors. Keep the camera locked directly in front, the chest-up portrait framing fixed, face size steady, shoulders and hands comfortably at rest, and the solid white background and illumination constant. The head stays predominantly frontal with comfortable small turns: yaw within about 7 degrees and pitch within about 5 degrees. Her expression stays relaxed and friendly, brows level, cheeks still, lips gently closed with a tiny smile. Both eyes coordinate naturally with stable pupil/iris size and stable original catchlights. The eyes lead and the head follows subtly with soft settling. Direction words describe positions in the image as viewed by the audience.\n\nThe character follows an invisible target near the camera through these clearly legible, continuous paths.\n0-1 seconds: look at the camera in the supplied neutral pose.\n1-2 seconds: smoothly look toward image-right.\n2-8 seconds: trace one full clockwise gaze circle from image-right through lower-right, down, lower-left, left, upper-left, up, upper-right, and back to image-right. Keep each diagonal and cardinal gaze distinct while passing naturally through the intermediate poses.\n8-9 seconds: smoothly return from image-right to the centered camera gaze.\n9-19 seconds: make eight gentle out-and-back gaze excursions, returning through the same neutral center between each one. Use this exact order: right and center; upper-right and center; up and center; upper-left and center; left and center; lower-left and center; down and center; lower-right and center. Give each excursion approximately 1.25 seconds and a tiny readable pause at its outermost gaze.\n19-20 seconds: rest in the exact original centered pose, matching the supplied final image.\n\nUse small, comfortable ocular travel with subtle whole-head support, genuine smoothly drawn intermediate poses, soft breathing and minimal secondary hair movement. Place natural brief blinks in centered rests, and keep the eyes open at the directional apexes. Make the direction sequence the principal action. Keep the pleasant expression and the face geometry consistent for every frame. Silent.",
+      "options": {
+        "resolution": "720p",
+        "duration": "20",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "reference": "references/ain-neutral-white.png",
+      "video": "ain-gaze360-seedance25.mp4",
+      "animation": "ain-gaze360-animated.webp",
+      "loop": true,
+      "chargedCredits": 556,
+      "outputId": "a3bf9065-e94c-4c04-a4a1-501a4b9e0349",
+      "exportStatus": "succeeded",
+      "reviewStatus": "rejected",
+      "mapping": "ain-gaze360.json",
+      "transparentVideo": "ain-gaze360-transparent.webm",
+      "frameArchive": {
+        "file": "ain-gaze360-frames.zip",
+        "directory": "gaze360",
+        "prefix": "gaze360_",
+        "digits": 4,
+        "extension": ".png",
+        "frames": 481
+      },
+      "export": {
+        "frames": 481,
+        "fps": 24,
+        "durationMs": 20042,
+        "canvas": [
+          384,
+          384
+        ],
+        "sourceCanvas": [
+          960,
+          960
+        ],
+        "bytes": 39217854
+      },
+      "reviewNotes": [
+        "The generated order and timing differ from the requested eight-spoke sequence.",
+        "The full circular gaze path contains intermediate poses for all eight directions.",
+        "Head-turn amount varies across directions.",
+        "Natural blinks occur during the later centered resting section."
+      ],
+      "userFeedback": "3D처럼 보이는 고개 회전이 어색함. 정면 얼굴을 유지하면서 작은 고개 움직임을 포함하는 2D 시선으로 수정."
+    },
+    {
+      "id": "gaze2d",
+      "label": "2D 시선",
+      "idempotencyKey": "ain-frontal-gaze-small-tilt-v1-20261116",
+      "requestId": "req_mcp_dc6dd55c69cf380fa4cf73bf6933370feec6202fc63477843e270c82547201b6",
+      "status": "succeeded",
+      "maximumCredits": 140,
+      "prompt": "Animate the supplied original assistant as a flat hand-drawn 2D character with a locked frontal camera, fixed chest-up illustration scale, stable painted colors and a clean solid white background. Maintain the exact original character design, coral hair, ivory arrow hair clip, green eyes, purple outfit and comfortable tiny closed-mouth smile.\n\nKeep the head facing directly forward throughout. Preserve the frontal face width, centered nose, original cheek widths, fixed perspective, and the same relative size and shape of both eye openings. The character always reads as the same flat frontal drawing. Allow a very small in-plane head lean of about one or two degrees and tiny vertical settling for a soft nod. Both cheeks and both eyes retain the original frontal proportions through these small movements. Hair follows softly with minimal secondary motion. Keep the torso, hands and camera steady.\n\nThe eye movement leads, and the tiny frontal head lean follows after a slight natural delay. Both green irises and pupils move together within the original eyelids. Their travel is small and comfortable, approximately one tenth of an eye opening's width horizontally and less vertically. Maintain the original pupil and iris sizes and consistently painted catchlights. Brows stay relaxed and mouth gently closed.\n\nOver five seconds, perform this clear 2D eye-gaze path. 0-0.5 seconds: centered eye contact in the supplied pose. 0.5-1 seconds: slide the irises gently toward image-right with a tiny in-plane lean. 1-4 seconds: make one continuous clockwise iris circle through image-right, lower-right, down, lower-left, left, upper-left, up, upper-right, and back to image-right. Keep the gaze directions readable with genuine smooth intermediate positions. 4-4.5 seconds: return gently to centered eye contact and level the small head lean. 4.5-5 seconds: a brief comfortable blink and soft settling, finishing in the exact supplied original centered pose. Keep the eyes open during the circular gaze portion. Every movement remains delicate and understated. Silent.",
+      "options": {
+        "resolution": "720p",
+        "duration": "5",
+        "aspect_ratio": "1:1",
+        "generate_audio": false
+      },
+      "reference": "references/ain-neutral-white.png",
+      "video": "ain-gaze2d-seedance25.mp4",
+      "animation": "ain-gaze2d-animated.webp",
+      "loop": true,
+      "chargedCredits": 140,
+      "outputId": "2c216896-3a36-4629-a9fe-8562667f9733",
+      "reviewStatus": "partial",
+      "reviewNotes": "정면 구도는 개선되었으나 눈동자 움직임이 좌우에 치우치고 상하 시선이 부족함. 커서 전방향 시선에는 기존 ZCRE 분리 소재의 고정 정면 2D 리그를 사용함.",
+      "export": {
+        "frames": 121,
+        "fps": 24,
+        "canvas": [
+          384,
+          384
+        ],
+        "durationMs": 5042
+      },
+      "applicationStatus": "disabled",
+      "userFeedback": "시선 처리가 생동감을 떨어뜨려 전체 시선 추적 제거 요청."
+    }
+  ],
+  "activeMotionRevisions": {
+    "thinking": "thinking-calm",
+    "worried": "thinking-original"
+  },
+  "reusedMotions": {
+    "worried": {
+      "sourceMotion": "thinking",
+      "requestId": "req_mcp_880f82e189dc4ffb7bb2fde166ea395925e8939ed56977fa6fe4694ab2ebf172",
+      "video": "ain-thinking-seedance25.mp4",
+      "animation": "ain-thinking-animated.webp",
+      "loop": false
+    }
+  }
+}

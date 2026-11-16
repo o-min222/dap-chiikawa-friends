@@ -56,6 +56,7 @@ assert.ok(catalog.every(skin=>skin.originalAsset===undefined&&skin.spritesheetPa
 let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
  if(['.git','.github','node_modules','dist','outputs','.DS_Store'].includes(item.name))continue;
+ if(url.href===base.href && item.name==='art')continue; // Authoring sources are excluded by scripts/package.py.
  const file=new URL(encodeURIComponent(item.name)+(item.isDirectory()?'/':''),url);
  if(item.isDirectory())await walk(file);else{if(url.href===new URL('assets/',base).href && /\.(png|part)$/.test(item.name))continue;assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
 }}

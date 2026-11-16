@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>아인 · 핵심 반응</title>
+  <style>
+    :root { color-scheme: light dark; --bg:light-dark(#fafaf8,#1b1b1c); --surface:light-dark(#fff,#252526); --text:light-dark(#252525,#ededeb); --muted:light-dark(#666663,#aaa9a5); --line:light-dark(#e2e2dd,#40403e); }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:32px 20px; color:var(--text); background:var(--bg); font-family:Geist,"Segoe UI",sans-serif; }
+    main { max-width:1000px; margin:auto; }
+    h1 { margin:0; font-size:23px; font-weight:600; }
+    header { margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    button,a { font:inherit; color:inherit; }
+    button { cursor:pointer; padding:9px 14px; background:var(--surface); border:1px solid var(--line); border-radius:9px; }
+    button[aria-pressed="true"] { background:var(--text); color:var(--bg); border-color:var(--text); }
+    button:focus-visible,a:focus-visible { outline:2px solid var(--text); outline-offset:4px; }
+    .motions { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+    .viewer { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:24px; display:grid; grid-template-columns:minmax(0,1fr) minmax(220px,.7fr); gap:36px; align-items:center; }
+    .stage { margin:auto; position:relative; width:100%; max-width:360px; aspect-ratio:1; overflow:hidden; border-radius:14px; background:#efefeb; }
+    .stage[data-background="dark"] { background:#29272b; }
+    .stage img { position:absolute; width:130%; max-width:none; height:auto; left:-15%; top:-2%; }
+    .stage[data-crop="full"] img { width:100%; left:0; top:0; }
+    h2 { margin:0 0 14px; font-size:21px; font-weight:600; }
+    .details p { margin:0 0 18px; color:var(--muted); line-height:1.7; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; margin:18px 0; }
+    .downloads { display:flex; gap:18px; flex-wrap:wrap; margin-top:28px; }
+    .downloads a { text-underline-offset:4px; }
+    .metadata { font-variant-numeric:tabular-nums; }
+    @media(max-width:650px) { body { padding:24px 14px; } .viewer { grid-template-columns:minmax(0,1fr); padding:18px; gap:24px; } .details { min-width:0; } }
+    @media(pointer:coarse) { button { min-height:44px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><h1>아인 · 핵심 반응</h1><button type="button" id="replay">다시 재생</button></header>
+  <nav class="motions" aria-label="모션 선택" id="motions"></nav>
+  <section class="viewer" aria-label="선택한 모션 미리보기">
+    <div class="stage" id="stage" data-background="light" data-crop="face"><img id="portrait" alt=""></div>
+    <div class="details">
+      <h2 id="name"></h2>
+      <p id="description"></p>
+      <p class="metadata" id="metadata" role="status" aria-live="polite"></p>
+      <div class="controls" aria-label="구도">
+        <button type="button" data-crop="face" aria-pressed="true">얼굴</button>
+        <button type="button" data-crop="full" aria-pressed="false">전체</button>
+      </div>
+      <div class="controls" aria-label="배경">
+        <button type="button" data-background="light" aria-pressed="true">밝은 배경</button>
+        <button type="button" data-background="dark" aria-pressed="false">어두운 배경</button>
+      </div>
+      <div class="downloads"><a id="webp" download>투명 WebP</a><a id="video">영상 파일</a></div>
+    </div>
+  </section>
+</main>
+<script type="application/json" id="catalog">[{"id":"idle","label":"대기·듣기","description":"차분히 듣고, 가볍게 숨 쉬며 눈을 깜빡여요.","video":"ain-idle-tonematched.webm","animation":"ain-idle-tonematched-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":true,"bytes":9990420,"sourceCanvas":[960,960]},{"id":"thinking","label":"생각·집중","description":"편안한 눈썹과 작은 미소를 유지하며, 천천히 깜빡이고 작게 끄덕여요.","video":"ain-thinking-calm-tonematched.webm","animation":"ain-thinking-calm-tonematched-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":true,"bytes":9931844,"sourceCanvas":[960,960]},{"id":"worried","label":"걱정","description":"눈썹을 살짝 모으고 고개를 기울이며 걱정을 표현해요.","video":"ain-thinking-tonematched.webm","animation":"ain-thinking-tonematched-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":false,"bytes":9814944,"sourceCanvas":[960,960]},{"id":"speaking","label":"말하기","description":"고개를 살짝 움직이며 설명하는 범용 무음 입 모션이에요.","video":"ain-speaking-tonematched.webm","animation":"ain-speaking-tonematched-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":true,"bytes":9944284,"sourceCanvas":[960,960]},{"id":"happy","label":"기쁨","description":"미소와 윙크로 기쁨을 표현해요. 끝부분 배경이 번쩍 밝아지는 전환을 제외하고 정면 미소로 마무리해요.","video":"ain-happy-tonematched.webm","animation":"ain-happy-tonematched-animated.webp","frames":108,"canvas":[384,384],"durationMs":4500,"fps":24,"loop":false,"bytes":8602956,"sourceCanvas":[960,960]},{"id":"empathy","label":"공감·위로","description":"눈빛과 눈썹이 부드럽게 변하고 작게 끄덕여요.","video":"ain-empathy-tonematched.webm","animation":"ain-empathy-tonematched-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":false,"bytes":9954534,"sourceCanvas":[960,960]},{"id":"surprised","label":"놀람","description":"눈이 커지고 입이 동그랗게 열렸다가 편안한 표정으로 돌아와요.","video":"ain-surprised-tonematched.webm","animation":"ain-surprised-tonematched-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":false,"bytes":10182862,"sourceCanvas":[960,960]},{"id":"gaze360","label":"시선 시안 1 · 고개 회전","description":"고개 회전이 포함된 첫 시안이에요. 정면을 유지한 미세한 고개 움직임으로 수정 중이에요. 현재 앱의 커서 시선 추적은 꺼져 있어요.","video":"ain-gaze360-seedance25.mp4","animation":"ain-gaze360-animated.webp","frames":481,"canvas":[384,384],"durationMs":20042,"fps":24,"loop":true,"bytes":39217854,"sourceCanvas":[960,960]},{"id":"gaze2d","label":"시선 시안 2 · 정면 좌우","description":"정면을 유지하며 작은 고개 기울임과 좌우 시선을 보여줘요. 상하 시선이 부족해 커서 전방향 반응은 별도 2D 리그로 연결했어요. 현재 앱의 커서 시선 추적은 꺼져 있어요.","video":"ain-gaze2d-seedance25.mp4","animation":"ain-gaze2d-animated.webp","frames":121,"canvas":[384,384],"durationMs":5042,"fps":24,"loop":true,"bytes":9837608,"sourceCanvas":[960,960]}]</script>
+<script>
+  const motions=JSON.parse(document.getElementById('catalog').textContent);
+  const nav=document.getElementById('motions');
+  const portrait=document.getElementById('portrait');
+  const stage=document.getElementById('stage');
+  let selected=motions[0];
+  function show(motion) {
+    selected=motion;
+    portrait.src=motion.animation+'?play='+Date.now();
+    portrait.alt=motion.label+' 모션';
+    document.getElementById('name').textContent=motion.label;
+    document.getElementById('description').textContent=motion.description;
+    document.getElementById('metadata').textContent=(motion.durationMs/1000).toFixed(2)+'초 · '+motion.frames+'프레임 · 투명 배경';
+    document.getElementById('webp').href=motion.animation;
+    document.getElementById('video').href=motion.video;
+    nav.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.motion===motion.id)));
+  }
+  for(const motion of motions) {
+    const button=document.createElement('button');
+    button.type='button';button.textContent=motion.label;button.dataset.motion=motion.id;
+    button.addEventListener('click',()=>show(motion));nav.append(button);
+  }
+  for(const property of ['crop','background']) {
+    document.querySelectorAll('button[data-'+property+']').forEach(button=>button.addEventListener('click',()=>{
+      stage.dataset[property]=button.dataset[property];
+      document.querySelectorAll('button[data-'+property+']').forEach(peer=>peer.setAttribute('aria-pressed',String(peer===button)));
+    }));
+  }
+  document.getElementById('replay').addEventListener('click',()=>show(selected));
+  portrait.addEventListener('error',()=>{document.getElementById('metadata').textContent='이미지를 불러오지 못했어요.';});
+  show(selected);
+</script>
+</body>
+</html>

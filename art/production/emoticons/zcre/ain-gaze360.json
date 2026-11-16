@@ -1,0 +1,142 @@
+{
+  "id": "gaze360",
+  "label": "360도 시선 시안",
+  "generator": "ZCRE Seedance 2.5",
+  "requestId": "req_mcp_2944bf71dd8026d73d53655ddca18861467ff937c41ea803a9a2f891fe6b89b2",
+  "outputId": "a3bf9065-e94c-4c04-a4a1-501a4b9e0349",
+  "chargedCredits": 556,
+  "video": "ain-gaze360-seedance25.mp4",
+  "animation": "ain-gaze360-animated.webp",
+  "transparentVideo": "ain-gaze360-transparent.webm",
+  "frames": 481,
+  "fps": 24,
+  "durationMs": 20042,
+  "sourceCanvas": [
+    960,
+    960
+  ],
+  "canvas": [
+    384,
+    384
+  ],
+  "frameArchive": {
+    "file": "ain-gaze360-frames.zip",
+    "directory": "gaze360",
+    "prefix": "gaze360_",
+    "digits": 4,
+    "extension": ".png",
+    "frames": 481
+  },
+  "coordinateSystem": {
+    "xPositive": "image-right",
+    "yPositive": "image-down",
+    "angles": "clockwise from image-right"
+  },
+  "mappingBasis": "Visually inspected source frames. Direction anchors are approximate.",
+  "neutralFrames": [
+    0,
+    192,
+    480
+  ],
+  "circle": {
+    "startFrame": 24,
+    "endFrameInclusive": 156,
+    "anchors": [
+      {
+        "direction": "e",
+        "angleDegrees": 0,
+        "frame": 24
+      },
+      {
+        "direction": "se",
+        "angleDegrees": 45,
+        "frame": 48
+      },
+      {
+        "direction": "s",
+        "angleDegrees": 90,
+        "frame": 72
+      },
+      {
+        "direction": "sw",
+        "angleDegrees": 135,
+        "frame": 84
+      },
+      {
+        "direction": "w",
+        "angleDegrees": 180,
+        "frame": 96
+      },
+      {
+        "direction": "nw",
+        "angleDegrees": 225,
+        "frame": 108
+      },
+      {
+        "direction": "n",
+        "angleDegrees": 270,
+        "frame": 132
+      },
+      {
+        "direction": "ne",
+        "angleDegrees": 315,
+        "frame": 144
+      },
+      {
+        "direction": "e",
+        "angleDegrees": 360,
+        "frame": 156
+      }
+    ]
+  },
+  "radialCoverage": {
+    "reviewedDirections": [
+      "e",
+      "w",
+      "n",
+      "s"
+    ],
+    "pendingDirections": [
+      "ne",
+      "nw",
+      "sw",
+      "se"
+    ]
+  },
+  "reviewNotes": [
+    "The generated order and timing differ from the requested eight-spoke sequence.",
+    "The full circular gaze path contains intermediate poses for all eight directions.",
+    "Head-turn amount varies across directions.",
+    "Natural blinks occur during the later centered resting section."
+  ],
+  "exportChecks": {
+    "frameCountMatchesSource": true,
+    "transparentCorners": true,
+    "archiveVerified": true,
+    "decodedWebmSamples": {
+      "frames": [
+        0,
+        120,
+        240,
+        360,
+        480
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "faceAlpha": [
+        255,
+        255,
+        255,
+        255,
+        255
+      ]
+    }
+  },
+  "reviewStatus": "rejected",
+  "userFeedback": "3D처럼 보이는 고개 회전이 어색함. 정면 얼굴을 유지하면서 작은 고개 움직임을 포함하는 2D 시선으로 수정."
+}

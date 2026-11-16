@@ -1,0 +1,13 @@
+id: local.dap.assistant
+name: DAP Assistant
+version: 1.0.0
+manifest_version: 2
+entry: dap_assistant.plugin:activate
+description: 24fps 고프레임 DAP 조수 캐릭터와 37개 상호작용 모션
+author: DAP
+min_app_version: "1.7.0"
+surface: user
+permissions:
+  - pet.skin
+execution_modes:
+  - user

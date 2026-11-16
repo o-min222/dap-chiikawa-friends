@@ -25,7 +25,8 @@ const manifest=await readFile(new URL('plugin.yaml',base),'utf8');
 const metadata=JSON.parse(await readFile(new URL('package.json',base),'utf8'));
 assert.match(manifest,new RegExp(`^version: ${metadata.version.replaceAll('.','\\.')}\\s*$`,'m'));
 assert.match(manifest,/^min_app_version: "1\.6\.14"$/m);
-assert.match(manifest,/^  - pet\.skin$/m);
+assert.doesNotMatch(manifest,/pet\.skin/);
+assert.doesNotMatch(await readFile(new URL('src/plugin.template.mjs',base),'utf8'),/petSkins|registerSkin|prepareMotionSkin/);
 assert.match(manifest,/^  - window\.palette$/m);
 const tag=process.argv[2];if(tag?.startsWith('v'))assert.equal(tag,`v${metadata.version}`);
 const entry=await readFile(new URL('dap_chiikawa/plugin.mjs',base),'utf8');
@@ -55,6 +56,7 @@ assert.ok(catalog.every(skin=>skin.originalAsset===undefined&&skin.spritesheetPa
 let bytes=0,files=0;
 async function walk(url){for(const item of await readdir(url,{withFileTypes:true})){
  if(['.git','.github','node_modules','dist','outputs','.DS_Store'].includes(item.name))continue;
+ if(url.href===base.href && item.name==='art')continue; // Authoring sources are excluded by scripts/package.py.
  const file=new URL(encodeURIComponent(item.name)+(item.isDirectory()?'/':''),url);
  if(item.isDirectory())await walk(file);else{if(url.href===new URL('assets/',base).href && /\.(png|part)$/.test(item.name))continue;assert.ok(file.href===iconUrl.href||generated.has(file.href)||!/\.(png|gif|webp|jpe?g|mp4|part)$/i.test(item.name),'only verified generated art may ship; do not distribute downloaded originals');files++;bytes+=(await stat(file)).size;}
 }}

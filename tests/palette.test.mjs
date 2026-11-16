@@ -1,96 +1,121 @@
-import {test} from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {runInNewContext} from 'node:vm';
+import { readFile } from 'node:fs/promises';
+import { runInNewContext } from 'node:vm';
 
-const catalog = {window: {}};
-runInNewContext(await readFile(new URL('../assets/catalog.js', import.meta.url), 'utf8'), catalog);
-const skins = JSON.parse(JSON.stringify(catalog.window.CHIIKAWA_SKINS));
 const source = await readFile(new URL('../palette/preview.js', import.meta.url), 'utf8');
-const html = await readFile(new URL('../palette/index.html', import.meta.url), 'utf8');
-const css = await readFile(new URL('../palette/style.css', import.meta.url), 'utf8');
-const pluginTemplate = await readFile(new URL('../src/plugin.template.mjs', import.meta.url), 'utf8');
+const markdown = await readFile(new URL('../palette/markdown.js', import.meta.url), 'utf8');
 
-function makeNode(tagName = 'div', id = '') {
-  return {
-    tagName: tagName.toUpperCase(), id, value: id === 'motion' ? 'idle' : '', textContent: '',
-    hidden: false, disabled: false, checked: false, children: [], listeners: {}, attrs: {}, dataset: {},
-    className: '', parentElement: null,
-    classList: {add() {}},
-    append(...nodes) { for (const node of nodes) { node.parentElement = this; this.children.push(node); } },
-    replaceChildren(...nodes) { this.children = []; this.append(...nodes); },
-    addEventListener(type, fn) { this.listeners[type] = fn; },
-    setAttribute(key, value) { this.attrs[key] = value; },
-    closest() { return element('stage'); },
-    querySelectorAll(selector) { return selector === 'button' ? this.children.filter(node => node.tagName === 'BUTTON') : []; },
-    getContext() { return {clearRect() {}, drawImage() {}, imageSmoothingEnabled: false}; },
-    get selectedOptions() { return this.children.filter(node => node.value === this.value); },
-  };
+function mount() {
+  const elements = new Map(), posted = [];
+  let receive;
+  function node() {
+    return {
+      value: '', dataset: {}, style: {}, disabled: false, hidden: false, content: '', children: [], attrs: {}, listeners: {},
+      get textContent() { return this.content + this.children.map(child => typeof child === 'string' ? child : child.textContent).join(''); },
+      set textContent(value) { this.content = value; this.children = []; },
+      scrollHeight: 100, clientHeight: 100, scrollTop: 0,
+      append(...items) { this.children.push(...items); },
+      replaceChildren(...items) { this.children = items; },
+      setAttribute(key, value) { this.attrs[key] = value; },
+      addEventListener(name, fn) { this.listeners[name] = fn; },
+      focus() {}, contains(target) { return this === target || this.children.some(child => child.contains(target)); },
+    };
+  }
+  const element = id => { if (!elements.has(id)) elements.set(id, node()); return elements.get(id); };
+  runInNewContext(markdown + '\n' + source, {
+    document: { getElementById: element, createElement: node, createDocumentFragment: node, addEventListener() {} },
+    window: { matchMedia: () => ({ matches: false }), addEventListener() {}, confirm: () => true,
+      dapPalette: { onMessage(fn) { receive = fn; }, postMessage(message) { posted.push(message); } } },
+    requestAnimationFrame() {}, cancelAnimationFrame() {}, performance: { now: () => 0 },
+  });
+  const state = { type: 'chat-state', available: true, selectedId: 'shisa', visibleCharacters: ['shisa'],
+    characters: [{ id: 'shisa', name: '시사', greeting: '어서 오세요', art: {} }],
+    conversations: { shisa: { messages: [], pending: false, error: '' } } };
+  receive(state);
+  return { element, posted, receive, state };
 }
 
-const elements = new Map();
-function element(id) {
-  if (!elements.has(id)) elements.set(id, makeNode(id === 'pet' ? 'canvas' : 'div', id));
-  return elements.get(id);
-}
-
-test('palette uses draggable compact image cards and has no pause control', () => {
-  assert.match(html, /id="character-list"/);
-  assert.doesNotMatch(html, /id="character"/);
-  assert.doesNotMatch(html, /id="pause"/);
-  assert.match(css, /-webkit-app-region:\s*drag/);
-  assert.match(css, /\.character-option/);
-  assert.match(pluginTemplate, /width:\s*600, height:\s*650, frame:\s*false, resizable:\s*true/);
+test('Korean IME Enter completes composition and a normal Enter sends exactly once', () => {
+  const { element, posted } = mount();
+  element('message').value = '안녕';
+  const keydown = element('message').listeners.keydown;
+  keydown({ key: 'Enter', isComposing: true, keyCode: 229 });
+  assert.equal(posted.length, 1); // only the initial ready message
+  keydown({ key: 'Enter', isComposing: false, preventDefault() {} });
+  keydown({ key: 'Enter', isComposing: false, preventDefault() {} });
+  assert.equal(posted.length, 2);
+  assert.equal(posted.at(-1).text, '안녕');
+  assert.equal(element('message').value, '안녕'); // kept until persistence succeeds
 });
 
-test('character cards select active character once and show its description', () => {
-  elements.clear();
-  let receive;
-  const window = {
-    CHIIKAWA_SKINS: skins,
-    matchMedia: () => ({matches: false, addEventListener() {}, removeEventListener() {}}),
-    addEventListener() {},
-    dapPalette: {onMessage(fn) { receive = fn; return () => {}; }, postMessage() {}},
-  };
-  const document = {
-    hidden: false,
-    getElementById: element,
-    createElement: tag => makeNode(tag),
-    addEventListener() {},
-  };
-  class FakeImage {
-    set src(value) { this._src = value; }
-    get src() { return this._src; }
-  }
-  runInNewContext(source, {window, document, Image: FakeImage, cancelAnimationFrame() {}, requestAnimationFrame() { return 1; }});
-  const status = {type: 'status', available: true, activeId: 'momonga', assetsReady: true, assetRevision: 0, personaEnabled: true};
-  receive(status);
-  const cards = element('character-list').children;
-  assert.equal(cards.length, 5);
-  assert.equal(cards.find(card => card.dataset.id === 'momonga').attrs['aria-selected'], 'true');
-  assert.equal(element('persona-title').textContent, '모몽가');
-  assert.match(element('character-description').textContent, /남의 몫.*떠넘기며 공은 자기 것/);
-  assert.equal(element('apply').textContent, '모몽가 적용');
-  assert.equal(element('apply').disabled, true);
-  assert.equal(element('stage').attrs['aria-label'], '모몽가 모션 미리보기');
+test('failed persistence preserves the input and model output is rendered as plain text', () => {
+  const { element, receive, state } = mount();
+  element('message').value = '보존할 메시지';
+  element('composer').listeners.submit({ preventDefault() {} });
+  receive({ ...state, conversations: { shisa: { messages: [], pending: false, error: '저장 오류' } } });
+  assert.equal(element('message').value, '보존할 메시지');
+  assert.equal(element('send').disabled, false);
+  receive({ ...state, conversations: { shisa: { messages: [{ id: 'reply', role: 'assistant', content: '<img onerror=alert(1)>' }], pending: false, error: '' } } });
+  assert.equal(element('messages').children[0].children[1].textContent, '<img onerror=alert(1)>');
+});
 
-  cards.find(card => card.dataset.id === 'usagi').listeners.click();
-  receive({...status, busy: false});
-  assert.equal(element('persona-title').textContent, '우사기');
-  assert.match(element('character-description').textContent, /행동파/);
-  assert.equal(element('apply').disabled, false);
+test('profiles open chat and desktop visibility lives in the profile context menu', () => {
+  const { element, posted, receive, state } = mount();
+  receive({ ...state, visibleCharacters: [] });
+  assert.equal(element('friends-panel').hidden, false);
+  assert.equal(element('chat-panel').hidden, true);
+  const row = element('character-list').children[0];
+  const menu = row.children[2];
+  assert.equal(menu.hidden, true);
+  row.children[0].listeners.contextmenu({ preventDefault() {} });
+  assert.equal(menu.hidden, false);
+  menu.children[0].listeners.click();
+  assert.equal(posted.at(-1).type, 'summon');
+  assert.equal(menu.hidden, true);
+  row.children[0].listeners.click();
+  assert.equal(element('chat-panel').hidden, false);
+  assert.equal(posted.at(-1).id, 'shisa');
+});
 
-  receive({...status, assetsReady: false, readySkinIds: ['usagi', 'momonga']});
-  assert.equal(element('apply').disabled, false);
-  assert.doesNotMatch(html,/id="download-assets"/);
-  element('character-list').children.find(card => card.dataset.id === 'chiikawa').listeners.click();
-  assert.equal(element('apply').disabled, true);
-  assert.doesNotMatch(source,/download-assets/);
-  element('character-list').children.find(card => card.dataset.id === 'shisa').listeners.click();
-  assert.equal(element('persona-title').textContent, '시사');
-  assert.match(element('character-description').textContent, /노력가/);
-  assert.equal(element('apply').disabled, true);
-  receive({...status, assetsReady: true, readySkinIds: skins.map(s=>s.id)});
-  assert.equal(element('apply').disabled, false);
-  assert.doesNotMatch(html,/id="download-assets"/);
+test('profile menu size slider updates px while dragging and saves on release', () => {
+  const { element, posted } = mount();
+  const menu = element('character-list').children[0].children[2];
+  const controls = menu.children[1];
+  const slider = controls.children[2];
+  slider.value = '180';
+  slider.listeners.input();
+  assert.equal(controls.children[1].textContent, '180px');
+  assert.equal(posted.at(-1).type, 'ready');
+  slider.listeners.change();
+  assert.equal(posted.at(-1).type, 'set-size');
+  assert.equal(posted.at(-1).sizePx, 180);
+});
+
+test('sending a friend away disables the composer and recalling enables it with history intact', () => {
+  const { element, receive, state, posted } = mount();
+  element('message').value = '이어갈 말';
+  receive({ ...state, visibleCharacters: [] });
+  assert.equal(element('message').disabled, true);
+  element('composer').listeners.submit({ preventDefault() {} });
+  assert.equal(posted.length, 1);
+  assert.equal(element('summon-chat').textContent, '불러오기');
+  receive(state);
+  assert.equal(element('message').disabled, false);
+  assert.equal(element('message').value, '이어갈 말');
+  assert.equal(element('summon-chat').textContent, '돌려보내기');
+});
+
+test('profiles visibly track active and inactive state after summoning and dismissal', () => {
+  const { element, receive, state } = mount();
+  const profile = element('character-list').children[0].children[0];
+  const status = profile.children[1].children[1];
+  assert.equal(status.textContent, '활성');
+  assert.equal(profile.dataset.active, 'true');
+  receive({ ...state, visibleCharacters: [] });
+  assert.equal(status.textContent, '비활성');
+  assert.equal(profile.dataset.active, 'false');
+  assert.match(profile.attrs['aria-label'], /시사, 비활성/);
+  receive(state);
+  assert.equal(status.textContent, '활성');
 });

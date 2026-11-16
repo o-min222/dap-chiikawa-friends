@@ -3,52 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>치이카와 친구들</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+  <title>치이카와 친구들과 대화</title>
   <link rel="stylesheet" href="style.css">
-  <script src="../assets/catalog.js" defer></script>
   <script src="animation.js" defer></script>
+  <script src="markdown.js" defer></script>
   <script src="preview.js" defer></script>
 </head>
 <body>
-  <main>
-    <header class="window-bar">
-      <div><p class="eyebrow">CHIIKAWA FRIENDS</p><h1>오늘은 누구와 함께할까?</h1></div>
-      <button id="close" class="icon" aria-label="창 닫기">×</button>
-    </header>
-    <section class="character-layout" aria-label="캐릭터 선택과 설명">
-      <div class="character-picker">
-        <div class="section-heading"><h2>캐릭터</h2><span>친구를 선택해요</span></div>
-        <div id="character-list" class="character-list" role="listbox" aria-label="캐릭터 선택"></div>
-      </div>
-      <section class="character-details" aria-labelledby="persona-title">
-        <p class="eyebrow">SELECTED FRIEND</p>
-        <h2 id="persona-title">치이카와</h2>
-        <p id="character-description" class="character-description"></p>
-        <p id="persona-traits" class="traits"></p>
-        <blockquote id="persona-example"></blockquote>
-      </section>
-    </section>
-    <section class="preview-layout">
-      <section class="stage" aria-label="치이카와 모션 미리보기">
-        <span id="character-badge" class="badge">CHIIKAWA</span>
-        <canvas id="pet" width="192" height="208" role="img" aria-label="쉬고 있는 치이카와"></canvas>
-        <span id="motion-name" class="motion-name">쉬기</span>
-      </section>
-      <div class="preview-settings">
-        <label for="motion">모션 미리보기</label>
-        <select id="motion">
-          <option value="idle">쉬기</option><option value="running-right">오른쪽 달리기</option><option value="running-left">왼쪽 달리기</option><option value="waving">쓰다듬기·기쁨 반응</option><option value="failed">실패</option><option value="running">작업 중</option><option value="review">생각 중</option>
-        </select>
-        <p id="hint" class="hint">모션별 프레임 속도로 재생해요.</p>
-        <label class="persona-toggle"><input id="persona-enabled" type="checkbox" disabled> 캐릭터 이름·말투·호칭 사용</label>
-        <p id="persona-note" class="hint">선택한 친구의 말투와 호칭을 함께 적용해요.</p>
-        <p id="coverage-note" class="coverage-note">전용 모션을 확인하고 있어요.</p>
-      </div>
-    </section>
-    <div class="actions"><button id="apply" class="primary" disabled>선택한 캐릭터 적용</button><button id="reset" disabled>기본 외형으로</button></div>
-    <p id="status" class="status" role="status" aria-live="polite">연결 상태를 확인하고 있어요.</p>
-    <footer>비공식 팬 제작물 · 캐릭터 권리: 나가노 및 각 권리자</footer>
-  </main>
+  <header class="titlebar"><span>치이카와 친구들</span><button id="close" aria-label="창 닫기">×</button></header>
+  <div id="tabs" role="tablist" aria-label="친구와 대화">
+    <button id="friends-tab" role="tab" aria-selected="true" aria-controls="friends-panel">친구목록</button>
+    <button id="chat-tab" role="tab" aria-selected="false" aria-controls="chat-panel">채팅</button>
+  </div>
+  <section id="friends-panel" role="tabpanel" aria-labelledby="friends-tab"><div id="character-list" aria-label="친구목록"></div></section>
+  <div class="layout" id="chat-panel" role="tabpanel" aria-labelledby="chat-tab" hidden>
+    <main>
+      <header class="conversation-header">
+        <canvas id="pet" width="192" height="208" aria-hidden="true"></canvas>
+        <div class="identity"><h1 id="character-name">친구들과 대화</h1><p id="activity" role="status">불러오는 중…</p></div>
+        <details class="chat-options"><summary aria-label="대화 설정">⋯</summary><div class="chat-options-menu"><button id="summon-chat">불러오기</button><button id="clear" disabled>대화 지우기</button></div></details>
+      </header>
+      <section id="messages" aria-label="대화 내용" tabindex="0"></section>
+      <div id="error-panel" hidden><p id="error" role="alert"></p><button id="retry" class="quiet">다시 시도</button></div>
+      <form id="composer">
+        <label class="sr-only" for="message">메시지</label>
+        <textarea id="message" placeholder="하고 싶은 말을 적어 주세요" maxlength="4000" rows="2" disabled></textarea>
+        <button id="send" type="submit" disabled>보내기</button>
+      </form>
+    </main>
+  </div>
 </body>
 </html>

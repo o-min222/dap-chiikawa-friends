@@ -1,14 +1,13 @@
 id: io.github.o-min222.chiikawa_friends
 name: Chiikawa Friends
-version: 2.9.0
+version: 3.0.0
 manifest_version: 2
 entry: dap_chiikawa.plugin:activate
-description: 치이카와·하치와레·우사기·모몽가·시사의 외형·모션·말투·캐릭터별 대화를 적용합니다. 다섯 캐릭터의 모든 연결 모션을 포함된 자체 이미지로 재생하며 외부 이미지 다운로드가 필요하지 않습니다.
+description: 치이카와·하치와레·우사기·모몽가·시사와 전용 채팅창에서 대화합니다. 캐릭터별 말투와 대화 기록, 대기·생각 중·답변 모션을 지원합니다.
 author: o-min222
 min_app_version: "1.6.14"
 surface: user
 permissions:
   - window.palette
-  - pet.skin
 execution_modes:
   - user

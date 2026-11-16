@@ -1,11 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,readFile,mkdir,rm,cp} from 'node:fs/promises';
-import {tmpdir} from 'node:os';
-import {join} from 'node:path';
-import {pathToFileURL} from 'node:url';
+import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
-import {pluginFixture} from './fixtures.mjs';
 const data={window:{}};runInNewContext(await readFile(new URL('../assets/catalog.js',import.meta.url),'utf8'),data);
 const skins=JSON.parse(JSON.stringify(data.window.CHIIKAWA_SKINS));
 const voiceScenarios=JSON.parse(await readFile(new URL('./voice-scenarios.json',import.meta.url),'utf8'));
@@ -42,44 +38,4 @@ test('voice scenarios cover character-local address overrides and isolation',()=
  const isolated=voiceScenarios.find(({id})=>id==='address-does-not-leak-between-characters');
  assert.match(isolated.prompt,/다른 캐릭터.*민수님/);
  assert.match(isolated.review,/캐릭터별 채팅의 호칭 지정은 서로 독립적/);
-});
-
-test('all five apply on first install and restore offline with no download endpoint',async()=>{
- const root=await mkdtemp(join(tmpdir(),'dap-offline-'));
- await pluginFixture(root,skins);
- const oldFetch=globalThis.fetch;let requests=0;globalThis.fetch=async()=>{requests++;throw Error('Network must not be used');};
- let active=null,persona=null,listener,closed=false,failApply=false;const values={},actions=new Map(),listeners=new Set(),messages=[];
- const api={apiVersion:2,supportedMotions:['sleep','feed_munch','groom','grabbed','success','dance'],getActiveSkin:()=>active,getActivePersona:()=>persona,onDidChange(fn){listeners.add(fn);return()=>listeners.delete(fn);},async registerSkin(skin){
-  assert.ok(skin.grid.rows<=19);assert.ok(skin.grid.rows>=1);assert.equal(skin.animations.working_v2,undefined);
-  assert.equal(skin.animations.groom_v2,undefined);
-  for(const clip of Object.values(skin.animations))assert.ok(clip.row<skin.grid.rows);
-  const id=`demo.${skin.id}`;
-  return {id,async apply({usePersona}){if(failApply)throw Error('failed');active=id;persona=usePersona?id:null;for(const fn of listeners)fn();},async reset(){if(active===id){active=persona=null;for(const fn of listeners)fn();}},async dispose(){await this.reset();}};
- }};
- const ctx={pluginId:'demo',actions:{registerAction({id,callback}){actions.set(id,callback);}},trayMenu:{addItem(){}},radialMenu:{addItem(){}},host:{petSkins:api,settings:{values(){return {...values};},set(_section,key,value){values[key]=value;}},windows:{openPalette(){return{show(){},toggle(){},isDestroyed(){return closed;},close(){closed=true;},postMessage(m){messages.push(m);},onMessage(fn){listener=fn;return()=>listener=null;}};}}}};
- try{
-  const {activate}=await import(pathToFileURL(join(root,'dap_chiikawa/plugin.mjs')).href);let stop=await activate(ctx);
-  actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
-  assert.deepEqual(messages.at(-1).readySkinIds,skins.map(s=>s.id));
-  for(const id of skins.map(s=>s.id)){
-   await listener({type:'apply',id});assert.equal(active,`demo.${id}`);assert.equal(requests,0);
-   await stop();closed=false;stop=await activate(ctx);assert.equal(active,`demo.${id}`);
-   actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
-   assert.equal(requests,0,'first apply and saved character restore need no downloads');
-  }
-  await listener({type:'download-assets'});assert.equal(requests,0,'obsolete preparation messages are ignored');
-  for(const info of Object.values(messages.at(-1).coverage))assert.ok(Object.values(info).every(m=>m.source==='generated'));
-  for(const skin of skins){await listener({type:'apply',id:skin.id});assert.equal(active,`demo.${skin.id}`);assert.equal(persona,active);}
-  await stop();closed=false;stop=await activate(ctx);assert.equal(active,'demo.shisa','Shisa restores offline without any source cache');
-  actions.get('open')();await listener({type:'ready'});assert.equal(messages.at(-1).assetsReady,true);
-  await listener({type:'apply',id:'momonga'});
-  await listener({type:'set-persona',enabled:false});assert.equal(persona,null);
-  failApply=true;await listener({type:'set-persona',enabled:true});assert.equal(values.personaEnabled,false);failApply=false;
-  await listener({type:'apply',id:'../outside'});assert.equal(active,'demo.momonga');
-  await listener({type:'reset'});assert.equal(active,null);
-  await listener({type:'apply',id:'momonga'});await stop();assert.equal(listeners.size,0);assert.equal(closed,true);
-  stop=await activate(ctx);assert.equal(active,'demo.momonga');await stop();
-  values.appliedCharacter='removed-character';stop=await activate(ctx);assert.equal(values.appliedCharacter,'');await stop();
-  assert.equal(requests,0);
- }finally{globalThis.fetch=oldFetch;await rm(root,{recursive:true,force:true});}
 });
